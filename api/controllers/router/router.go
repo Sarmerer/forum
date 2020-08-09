@@ -3,8 +3,7 @@ package router
 import "net/http"
 
 type Route struct {
-	URI,
-	Method string
+	URI     string
 	Handler func(http.ResponseWriter, *http.Request)
 }
 

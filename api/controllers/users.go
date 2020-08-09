@@ -1,11 +1,16 @@
 package controllers
 
 import (
+	"fmt"
+	"forum/utils"
 	"net/http"
-	"strings"
 )
 
-func UserHandler(w http.ResponseWriter, r *http.Request) {
+type User struct {
+	ID int
+}
+
+func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		getUser(w, r)
@@ -15,11 +20,18 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 		updateUser(w, r)
 	case http.MethodDelete:
 		deleteUser(w, r)
+	default:
+		utils.HTTPErrorsHandler(http.StatusMethodNotAllowed, w, r)
 	}
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("get user " + strings.TrimPrefix(r.URL.Path, "/users/")))
+	ID, err := utils.ParseURL(r.URL.Path, "/users/")
+	if err != nil {
+		utils.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		return
+	}
+	w.Write([]byte(fmt.Sprint("get user ", ID)))
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {

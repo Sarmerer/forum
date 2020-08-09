@@ -2,4 +2,7 @@ package config
 
 var ()
 
-const ()
+const (
+	DbDriver = "sqlite3"
+	DbURL    = "./database.db"
+)
