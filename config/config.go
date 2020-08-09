@@ -4,5 +4,6 @@ var ()
 
 const (
 	DbDriver = "sqlite3"
-	DbURL    = "./database.db"
+	DbURL    = "../database/database.db"
+	Port     = 8080
 )
