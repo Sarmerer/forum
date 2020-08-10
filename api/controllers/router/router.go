@@ -9,12 +9,17 @@ type Route struct {
 
 func New() *http.ServeMux {
 	mux := http.NewServeMux()
-	return SetupRoutes(mux)
+	setupFileServers(mux)
+	setupRoutes(mux)
+	return mux
 }
 
-func SetupRoutes(mux *http.ServeMux) *http.ServeMux {
-	for _, route := range userRoutes {
+func setupRoutes(mux *http.ServeMux) {
+	for _, route := range routes {
 		mux.HandleFunc(route.URI, route.Handler)
 	}
-	return mux
+}
+
+func setupFileServers(mux *http.ServeMux) {
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../ui/static"))))
 }

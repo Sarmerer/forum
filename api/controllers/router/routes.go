@@ -1,11 +1,16 @@
 package router
 
 import (
+	"forum/api/auth"
 	"forum/api/controllers"
 )
 
-var userRoutes = []Route{
-	{"/users/", controllers.UsersHandler},
+var routes = []Route{
+	{"/signin", auth.AuthHandler},
+	{"/signup", auth.AuthHandler},
+
+	{"/", controllers.RootHandler},
 	{"/home", controllers.HomeHandler},
+	{"/users/", controllers.UsersHandler},
 	{"/posts/", controllers.PostsHandler},
 }
