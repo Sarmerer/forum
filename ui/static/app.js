@@ -8,8 +8,14 @@ $(document).ready(function() {
 			url: '/signin',
 			data: form.serialize(), // serializes the form's elements.
 			success: function(data) {
-				alert(data); // show response from the php script.
+				console.log(data);
 			}
+		});
+	});
+	$('#signout').on('click', function() {
+		$.ajax({
+			type: 'POST',
+			url: '/signout'
 		});
 	});
 });

@@ -8,6 +8,7 @@ import (
 var routes = []Route{
 	{"/signin", auth.AuthHandler},
 	{"/signup", auth.AuthHandler},
+	{"/signout", auth.AuthHandler},
 
 	{"/", controllers.RootHandler},
 	{"/home", controllers.HomeHandler},

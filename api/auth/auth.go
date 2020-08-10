@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"forum/utils"
+	"forum/api/errors"
 	"net/http"
 )
 
@@ -13,18 +13,38 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			signIn(w, r)
 		case "/signup":
 			signUp(w, r)
+		case "/signout":
+			signOut(w, r)
 		default:
-			utils.HTTPErrorsHandler(404, w, r)
+			errors.HTTPErrorsHandler(404, w, r)
 		}
 	default:
-		utils.HTTPErrorsHandler(405, w, r)
+		errors.HTTPErrorsHandler(405, w, r)
 	}
 }
 
 func signIn(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(r.FormValue("email") + r.FormValue("password")))
+	cookie, err := r.Cookie("sessionID")
+	if r.FormValue("password") == "admin" && r.FormValue("login") == "root" {
+		if err == http.ErrNoCookie {
+			err = nil
+			cookie = &http.Cookie{Name: "sessionID", Value: ""}
+		}
+		cookie = generateCookie()
+		http.SetCookie(w, cookie)
+	} else {
+		w.Write([]byte("Wrong login or password"))
+	}
+}
+func signUp(w http.ResponseWriter, r *http.Request) {
+//TODO: create new user
 }
 
-func signUp(w http.ResponseWriter, r *http.Request) {
-
+func signOut(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("sessionID")
+	if err != http.ErrNoCookie {
+		return
+	}
+	cookie.MaxAge = -1
+	http.SetCookie(w, cookie)
 }
