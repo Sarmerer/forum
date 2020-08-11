@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"forum/utils"
+	"forum/api/utils"
 	"html/template"
 	"net/http"
 )
@@ -16,6 +16,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getHome(w http.ResponseWriter, r *http.Request) {
-	utils.ServeTemplate("../ui/templates/", "login.html", w, r)
+	utils.ServeTemplate("./ui/templates/", "login.html", w, r)
 	//w.Write([]byte("get home"))
 }

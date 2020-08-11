@@ -3,7 +3,7 @@ package controllers
 import (
 	"fmt"
 	"forum/api/errors"
-	"forum/utils"
+	"forum/api/utils"
 	"net/http"
 )
 

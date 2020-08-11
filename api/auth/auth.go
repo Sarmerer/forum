@@ -3,6 +3,8 @@ package auth
 import (
 	"forum/api/errors"
 	"net/http"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,14 +39,15 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func signUp(w http.ResponseWriter, r *http.Request) {
-//TODO: create new user
+	//TODO: create new user
 }
 
 func signOut(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("sessionID")
-	if err != http.ErrNoCookie {
+	if err == http.ErrNoCookie {
 		return
 	}
+	delete(activeSessions, uuid.FromStringOrNil(cookie.Value))
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
 }

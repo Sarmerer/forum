@@ -2,24 +2,16 @@ package api
 
 import (
 	"fmt"
-	"forum/api/controllers/router"
+	"forum/api/controllers"
+	"forum/api/router"
 	"forum/config"
-	"forum/database"
 	"log"
 	"net/http"
 )
 
 func Run() {
-	//initDB()
-	fmt.Printf("\nListening [::]:%d\n", config.Port)
+	go http.ListenAndServe(fmt.Sprintf(":%d", config.HTTPport), http.HandlerFunc(controllers.RedirectToHTTPS))
+	fmt.Printf("\nListening [::]:%d\n", config.HTTPSport)
 	mux := router.New()
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), mux))
-}
-
-func initDB() {
-	db, err := database.Connect()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(db)
+	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.HTTPSport), "./ssl/cert.pem", "./ssl/key.pem", mux))
 }
