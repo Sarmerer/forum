@@ -5,4 +5,8 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-
+# ---> database
+/database/*
+!/database/db.go
+# ---> SSL
+/ssl

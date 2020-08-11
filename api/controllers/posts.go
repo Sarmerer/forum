@@ -2,7 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"forum/utils"
+	"forum/api/errors"
+	"forum/api/utils"
 	"net/http"
 )
 
@@ -22,7 +23,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 func getPost(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/posts/")
 	if err != nil {
-		utils.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
 		return
 	}
 	w.Write([]byte(fmt.Sprint("get post", ID)))
