@@ -9,8 +9,7 @@ import (
 const timeLayout = "2006-01-02 15:04:05"
 
 //UserModel helps performing CRUD operations
-type UserModel struct {
-}
+type UserModel struct{}
 
 //FindAll returns all users in the database
 func (*UserModel) FindAll() ([]entities.User, error) {

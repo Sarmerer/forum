@@ -1,29 +1,33 @@
 package router
 
 import (
+	"forum/api/middleware"
 	"net/http"
 )
 
 type Route struct {
-	Type       string
-	URI        string
-	Handler    func(http.ResponseWriter, *http.Request)
-	FileServer http.Handler
+	URI         string
+	Handler     func(http.ResponseWriter, *http.Request)
+	Method      string
+	RequresAuth bool
 }
 
 func New() *http.ServeMux {
 	mux := http.NewServeMux()
+	setupFileServers(mux)
 	setupRoutes(mux)
 	return mux
 }
 
 func setupRoutes(mux *http.ServeMux) {
+	routes := authRoutes
+	routes = append(routes, userRoutes...)
+	routes = append(routes, postRoutes...)
 	for _, route := range routes {
-		switch route.Type {	
-		case "fileServer":
-			mux.Handle("/static/", route.FileServer)
-		case "route":
-			mux.HandleFunc(route.URI, route.Handler)
-		}
+		mux.HandleFunc(route.URI, middleware.AllowedMethods(route.Handler, route.Method))
 	}
+}
+
+func setupFileServers(mux *http.ServeMux) {
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
 }
