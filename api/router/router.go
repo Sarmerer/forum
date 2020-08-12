@@ -1,33 +1,68 @@
 package router
 
 import (
-	"forum/api/middleware"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Route struct {
-	URI         string
-	Handler     func(http.ResponseWriter, *http.Request)
-	Method      string
-	RequresAuth bool
+	handler func(http.ResponseWriter, *http.Request)
+	method  string
+	name    string
 }
 
-func New() *http.ServeMux {
-	mux := http.NewServeMux()
-	setupFileServers(mux)
-	setupRoutes(mux)
-	return mux
+// Router serves http
+type Router struct {
+	routes []*Route
 }
 
-func setupRoutes(mux *http.ServeMux) {
-	routes := authRoutes
-	routes = append(routes, userRoutes...)
-	routes = append(routes, postRoutes...)
-	for _, route := range routes {
-		mux.HandleFunc(route.URI, middleware.AllowedMethods(route.Handler, route.Method))
+// NewRouter creates instance of Router
+func NewRouter() *Router {
+	router := new(Router)
+	//router.handlers = make(map[string]func(http.ResponseWriter, *http.Request))
+	return router
+}
+
+// ServeHTTP is called for every connection
+func (s *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, route := range s.routes {
+		if strings.HasPrefix(r.URL.Path, route.name) && r.Method == route.method {
+			route.handler(w, r)
+		}
 	}
+	bad(w)
 }
 
-func setupFileServers(mux *http.ServeMux) {
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
+func (r *Router) HandlerFunc(path, method string, f http.HandlerFunc) {
+	r.routes = append(r.routes, &Route{f, method, path})
+}
+
+// // GET sets get handler
+// func (s *Router) GET(path string, f http.HandlerFunc) {
+// 	s.handlers[key("GET", path)] = f
+// }
+
+// // POST sets post handler
+// func (s *Router) POST(path string, f http.HandlerFunc) {
+// 	s.handlers[key("POST", path)] = f
+// }
+
+// // DELETE sets delete handler
+// func (s *Router) DELETE(path string, f http.HandlerFunc) {
+// 	s.handlers[key("DELETE", path)] = f
+// }
+
+// // PUT sets put handler
+// func (s *Router) PUT(path string, f http.HandlerFunc) {
+// 	s.handlers[key("PUT", path)] = f
+// }
+
+func key(method, path string) string {
+	return fmt.Sprintf("%s:%s", method, path)
+}
+
+func bad(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"error":"not found"}`))
 }

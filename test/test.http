@@ -1,1 +1,1 @@
-GET https://127.0.0.1:4433/user/1 HTTP/1.1
+GET https://127.0.0.1:4433/users/1 HTTP/1.1
