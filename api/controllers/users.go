@@ -2,14 +2,17 @@ package controllers
 
 import (
 	"fmt"
+
+	"forum/api/entities"
 	"forum/api/errors"
+	"forum/api/models"
 	"forum/api/utils"
+
 	"net/http"
 )
 
-type User struct {
-	ID int
-}
+var um models.UserModel
+var user entities.User
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -32,7 +35,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
 		return
 	}
-	w.Write([]byte(fmt.Sprint("get user ", ID)))
+	user, err = um.Find(int(ID.(int64)))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(user)
+	w.Write([]byte(fmt.Sprint(user)))
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {

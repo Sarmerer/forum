@@ -100,19 +100,14 @@ func (*UserModel) Update(user *entities.User) bool {
 	db, err := database.Connect()
 	statement, err := db.Prepare("UPDATE users SET user_name = ?, user_password = ?, user_email = ?, user_nickname = ?, user_created = ?, user_last_online = ?, user_session_id = ?, user_role = ? WHERE user_id = ?")
 	if err != nil {
-		panic(err)
 		return false
 	}
 	res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, user.Created.Format(timeLayout), user.LastOnline.Format(timeLayout), user.SessionID, user.Role, user.ID)
 	if err != nil {
-		panic(err)
-
 		return false
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		panic(err)
-
 		return false
 	}
 	return rowsAffected > 0

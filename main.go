@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"forum/api/models"
+	"forum/api"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	// api.Run()
-	var um models.UserModel
+	api.Run()
+	// var um models.UserModel
 	// users, err := um.FindAll()
 	// if err != nil {
 	// 	panic(err)
@@ -18,11 +17,11 @@ func main() {
 	// 	fmt.Println(user)
 	// }
 
-	user, err := um.Find(1)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(user)
+	// user, err := um.Find(1)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(user)
 
 	// fmt.Println(um.Update(&user))
 
