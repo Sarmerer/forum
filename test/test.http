@@ -1,1 +1,6 @@
-GET https://127.0.0.1:4433/user/1 HTTP/1.1
+POST http://localhost:4433/signup HTTP/1.1
+{
+  "user_name": "johndoe",
+  "user_password": "mysecurepassword",
+  "user_email": "johndoe@gmail.com"
+}
