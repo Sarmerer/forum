@@ -7,12 +7,10 @@ import (
 	"forum/api/errors"
 	"forum/api/models"
 	"forum/api/utils"
+	"forum/database"
 
 	"net/http"
 )
-
-var um models.UserModel
-var user entities.User
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -30,6 +28,9 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
+	db, _ := database.Connect()
+	um, _ := models.NewUserModel(db)
+	var user entities.User
 	ID, err := utils.ParseURL(r.URL.Path, "/users/")
 	if err != nil {
 		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)

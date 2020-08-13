@@ -1,8 +1,8 @@
 package models
 
 import (
+	"database/sql"
 	"forum/api/entities"
-	"forum/database"
 	"time"
 )
 
@@ -10,15 +10,24 @@ const timeLayout = "2006-01-02 15:04:05"
 
 //UserModel helps performing CRUD operations
 type UserModel struct {
+	DB *sql.DB
 }
 
-//FindAll returns all users in the database
-func (*UserModel) FindAll() ([]entities.User, error) {
-	db, err := database.Connect()
+//NewUserModel creates an instance of UserModel
+func NewUserModel(db *sql.DB) (*UserModel, error) {
+	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_name TEXT, user_password	BLOB, user_email TEXT, user_nickname	TEXT, user_created	TEXT, user_last_online	TEXT, user_session_id TEXT, user_role INTEGER)")
 	if err != nil {
 		return nil, err
 	}
-	rows, e := db.Query("SELECT * FROM users")
+	statement.Exec()
+	return &UserModel{
+		DB: db,
+	}, nil
+}
+
+//FindAll returns all users in the database
+func (um *UserModel) FindAll() ([]entities.User, error) {
+	rows, e := um.DB.Query("SELECT * FROM users")
 	if e != nil {
 		return nil, e
 	}
@@ -38,16 +47,11 @@ func (*UserModel) FindAll() ([]entities.User, error) {
 }
 
 //Find returns a specific user from the database
-func (*UserModel) Find(id int) (entities.User, error) {
+func (um *UserModel) Find(id int) (entities.User, error) {
 	var user entities.User
-
-	db, err := database.Connect()
+	rows, err := um.DB.Query("SELECT * FROM users WHERE user_id = ?", id)
 	if err != nil {
 		return user, err
-	}
-	rows, e := db.Query("SELECT * FROM users WHERE user_id = ?", id)
-	if e != nil {
-		return user, e
 	}
 	for rows.Next() {
 		var created, lastOnline string
@@ -61,9 +65,8 @@ func (*UserModel) Find(id int) (entities.User, error) {
 }
 
 //Create adds a new user to the database
-func (*UserModel) Create(user *entities.User) bool {
-	db, err := database.Connect()
-	statement, err := db.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+func (um *UserModel) Create(user *entities.User) bool {
+	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return false
 	}
@@ -79,12 +82,8 @@ func (*UserModel) Create(user *entities.User) bool {
 }
 
 //Delete deletes user from the database
-func (*UserModel) Delete(id int) bool {
-	db, err := database.Connect()
-	if err != nil {
-		return false
-	}
-	res, err := db.Exec("DELETE FROM users WHERE user_id = ?", id)
+func (um *UserModel) Delete(id int) bool {
+	res, err := um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
 	if err != nil {
 		return false
 	}
@@ -96,9 +95,8 @@ func (*UserModel) Delete(id int) bool {
 }
 
 //Update updates existing user in the database
-func (*UserModel) Update(user *entities.User) bool {
-	db, err := database.Connect()
-	statement, err := db.Prepare("UPDATE users SET user_name = ?, user_password = ?, user_email = ?, user_nickname = ?, user_created = ?, user_last_online = ?, user_session_id = ?, user_role = ? WHERE user_id = ?")
+func (um *UserModel) Update(user *entities.User) bool {
+	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_password = ?, user_email = ?, user_nickname = ?, user_created = ?, user_last_online = ?, user_session_id = ?, user_role = ? WHERE user_id = ?")
 	if err != nil {
 		return false
 	}

@@ -8,7 +8,8 @@ import (
 
 func main() {
 	api.Run()
-	// var um models.UserModel
+	// db, _ := database.Connect()
+	// um, _ := models.NewUserModel(db)
 	// users, err := um.FindAll()
 	// if err != nil {
 	// 	panic(err)
@@ -35,5 +36,13 @@ func main() {
 	// fmt.Println(um.Create(&user))
 
 	// fmt.Println(um.Delete(3))
+
+	// users, err := um.FindAll()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// for _, user := range users {
+	// 	fmt.Println(user)
+	// }
 
 }
