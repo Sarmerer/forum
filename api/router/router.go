@@ -1,29 +1,68 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Route struct {
-	Type       string
-	URI        string
-	Handler    func(http.ResponseWriter, *http.Request)
-	FileServer http.Handler
+	handler func(http.ResponseWriter, *http.Request)
+	method  string
+	name    string
 }
 
-func New() *http.ServeMux {
-	mux := http.NewServeMux()
-	setupRoutes(mux)
-	return mux
+// Router serves http
+type Router struct {
+	routes []*Route
 }
 
-func setupRoutes(mux *http.ServeMux) {
-	for _, route := range routes {
-		switch route.Type {	
-		case "fileServer":
-			mux.Handle("/static/", route.FileServer)
-		case "route":
-			mux.HandleFunc(route.URI, route.Handler)
+// NewRouter creates instance of Router
+func NewRouter() *Router {
+	router := new(Router)
+	//router.handlers = make(map[string]func(http.ResponseWriter, *http.Request))
+	return router
+}
+
+// ServeHTTP is called for every connection
+func (s *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, route := range s.routes {
+		if strings.HasPrefix(r.URL.Path, route.name) && r.Method == route.method {
+			route.handler(w, r)
 		}
 	}
+	bad(w)
+}
+
+func (r *Router) HandlerFunc(path, method string, f http.HandlerFunc) {
+	r.routes = append(r.routes, &Route{f, method, path})
+}
+
+// // GET sets get handler
+// func (s *Router) GET(path string, f http.HandlerFunc) {
+// 	s.handlers[key("GET", path)] = f
+// }
+
+// // POST sets post handler
+// func (s *Router) POST(path string, f http.HandlerFunc) {
+// 	s.handlers[key("POST", path)] = f
+// }
+
+// // DELETE sets delete handler
+// func (s *Router) DELETE(path string, f http.HandlerFunc) {
+// 	s.handlers[key("DELETE", path)] = f
+// }
+
+// // PUT sets put handler
+// func (s *Router) PUT(path string, f http.HandlerFunc) {
+// 	s.handlers[key("PUT", path)] = f
+// }
+
+func key(method, path string) string {
+	return fmt.Sprintf("%s:%s", method, path)
+}
+
+func bad(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"error":"not found"}`))
 }
