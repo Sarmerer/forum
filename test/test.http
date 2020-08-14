@@ -1,1 +1,4 @@
 PUT  https://127.0.0.1:4433/posts/update/1 HTTP/1.1
+Cookie: sessionID=2131
+
+

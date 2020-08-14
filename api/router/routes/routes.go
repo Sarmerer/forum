@@ -24,7 +24,27 @@ func setupRoutes(mux *http.ServeMux) {
 	routes = append(routes, userRoutes...)
 	routes = append(routes, postRoutes...)
 	for _, route := range routes {
-		mux.HandleFunc(route.URI, middleware.AllowedMethods(route.Method, route.Handler))
+		if route.RequresAuth {
+			mux.HandleFunc(route.URI,
+				middleware.Logger(
+					middleware.JSON(
+						middleware.AllowedMethods(
+							route.Method, middleware.CheckUserAuth(route.Handler),
+						),
+					),
+				),
+			)
+		} else {
+			mux.HandleFunc(route.URI,
+				middleware.Logger(
+					middleware.JSON(
+						middleware.AllowedMethods(
+							route.Method, route.Handler,
+						),
+					),
+				),
+			)
+		}
 	}
 }
 
