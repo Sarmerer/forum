@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"forum/api/errors"
 	"forum/api/security"
 	"log"
 	"net/http"
@@ -37,7 +38,15 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			w.Write([]byte("user not authorized(from middleware.CheckUserAuth)"))
 			return
 		}
-		security.ValidateSession(cookie.Value)
+		sessionExists, err := security.ValidateSession(cookie.Value)
+		if err != nil {
+			errors.JSONErrors("Internal server error", http.StatusInternalServerError, w, r)
+			return
+		}
+		if !sessionExists {
+			errors.JSONErrors("user not authorized(from middleware.CheckUserAuth)", http.StatusUnauthorized, w, r)
+			return
+		}
 		next(w, r)
 	}
 }

@@ -114,13 +114,10 @@ func (um *UserModel) Update(user *entities.User) bool {
 //Validate checks if the user is logged in using session id
 func (um *UserModel) Validate(id string) (bool, error) {
 	err := um.DB.QueryRow("SELECT user_name FROM users WHERE user_session_id = ?", id).Scan(&id)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			// a real error happened! you should change your function return
-			// to "(bool, error)" and return "false, err" here
-			return false, err
-		}
+	if err == sql.ErrNoRows {
 		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	return true, nil
 }

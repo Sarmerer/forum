@@ -14,7 +14,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/posts/")
 	if err != nil {
-		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrors(http.StatusNotFound, w, r)
 		return
 	}
 	w.Write([]byte(fmt.Sprint("get post", ID)))
@@ -27,7 +27,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/posts/update/")
 	if err != nil {
-		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrors(http.StatusNotFound, w, r)
 		return
 	}
 	w.Write([]byte(fmt.Sprint("update post ", ID)))
@@ -36,7 +36,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/posts/delete/")
 	if err != nil {
-		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrors(http.StatusNotFound, w, r)
 		return
 	}
 	w.Write([]byte(fmt.Sprint("delete post ", ID)))

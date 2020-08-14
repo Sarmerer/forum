@@ -1,2 +1,2 @@
-POST https://localhost:4433/posts/create HTTP/1.1
-Cookie: sessionID=somesession1
+PUT https://localhost:4433/users/update/1 HTTP/1.1
+Cookie: sessionID=somesession

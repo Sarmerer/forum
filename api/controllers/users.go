@@ -29,7 +29,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user entities.User
 	ID, err := utils.ParseURL(r.URL.Path, "/users/")
 	if err != nil {
-		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrors(http.StatusNotFound, w, r)
 		return
 	}
 	user, err = um.Find(int(ID.(int64)))
@@ -47,7 +47,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/users/update/")
 	if err != nil {
-		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrors(http.StatusNotFound, w, r)
 		return
 	}
 	w.Write([]byte(fmt.Sprint("update user ", ID)))
@@ -56,7 +56,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/users/delete/")
 	if err != nil {
-		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		errors.HTTPErrors(http.StatusNotFound, w, r)
 		return
 	}
 	w.Write([]byte(fmt.Sprint("delete user ", ID)))
