@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"forum/api/security"
 	"log"
 	"net/http"
 )
@@ -36,8 +37,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			w.Write([]byte("user not authorized(from middleware.CheckUserAuth)"))
 			return
 		}
-		_ = cookie
-		//TODO: validate sessionID with database
+		security.ValidateSession(cookie.Value)
 		next(w, r)
 	}
 }

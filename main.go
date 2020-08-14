@@ -8,6 +8,7 @@ import (
 
 func main() {
 	api.Run()
+
 	// db, err := database.Connect()
 	// if err != nil {
 	// 	panic(err)

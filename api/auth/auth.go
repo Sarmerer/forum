@@ -30,7 +30,6 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 //SignUp authorizes new user
 func SignUp(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("here..")
 	db, _ := database.Connect()
 	um, _ := models.NewUserModel(db)
 	// Parse and decode the request body into a new `Credentials` instance
