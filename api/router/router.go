@@ -3,13 +3,19 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 )
+
+type Request struct {
+	Vars map[string]string
+	http.Request
+}
 
 type Route struct {
 	handler func(http.ResponseWriter, *http.Request)
 	method  string
-	name    string
+	pattern string
 }
 
 // Router serves http
@@ -19,44 +25,56 @@ type Router struct {
 
 // NewRouter creates instance of Router
 func NewRouter() *Router {
-	router := new(Router)
-	//router.handlers = make(map[string]func(http.ResponseWriter, *http.Request))
-	return router
+	return new(Router)
 }
 
 // ServeHTTP is called for every connection
-func (s *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	for _, route := range s.routes {
-		if strings.HasPrefix(r.URL.Path, route.name) && r.Method == route.method {
-			route.handler(w, r)
-		}
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	matcher := r.Match(req)
+	if matcher != nil {
+		matcher.handler(w, req)
 	}
 	bad(w)
 }
 
-func (r *Router) HandlerFunc(path, method string, f http.HandlerFunc) {
-	r.routes = append(r.routes, &Route{f, method, path})
+func (r *Router) HandleFunc(path, method string, f http.HandlerFunc) {
+	r.routes = append(r.routes, &Route{f, method, fmt.Sprint("^", path, "$")})
 }
 
-// // GET sets get handler
-// func (s *Router) GET(path string, f http.HandlerFunc) {
-// 	s.handlers[key("GET", path)] = f
-// }
+func (r *Router) Match(req *http.Request) *Route {
+	for _, route := range r.routes {
+		if route.Match(req) {
+			return route
+		}
+	}
+	return nil
+}
 
-// // POST sets post handler
-// func (s *Router) POST(path string, f http.HandlerFunc) {
-// 	s.handlers[key("POST", path)] = f
-// }
+func (r *Route) Match(req *http.Request) bool {
+	if req.Method != r.method {
+		return false
+	}
+	oIndex := strings.Index(r.pattern, "{")
+	eIndex := strings.Index(r.pattern, "}")
+	var varNmae string
+	if (oIndex >= 0 && eIndex >= 0) && (oIndex < eIndex) {
+		varName = r.pattern[oIndex+1 : eIndex]
+	}
+	pattern := strings.Split(r.pattern, "/")
+	request := strings.Split(req.URL.Path, "/")
+	if len(pattern) != len(request) {
+		return false
+	}
+	matched, _ := regexp.MatchString(r.pattern, req.URL.Path)
+	if matched {
+		return true
+	}
+	return false
+}
 
-// // DELETE sets delete handler
-// func (s *Router) DELETE(path string, f http.HandlerFunc) {
-// 	s.handlers[key("DELETE", path)] = f
-// }
+func (r *Request) Clone(req *http.Request) {
 
-// // PUT sets put handler
-// func (s *Router) PUT(path string, f http.HandlerFunc) {
-// 	s.handlers[key("PUT", path)] = f
-// }
+}
 
 func key(method, path string) string {
 	return fmt.Sprintf("%s:%s", method, path)
