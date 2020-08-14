@@ -13,6 +13,10 @@ import (
 )
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("get all users"))
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
 	db, _ := database.Connect()
 	um, _ := models.NewUserModel(db)
 	var user entities.User
@@ -26,17 +30,27 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	fmt.Println(user)
-	w.Write([]byte(fmt.Sprint(user)))
+	w.Write([]byte(fmt.Sprint("get user ", ID)))
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("create user"))
+	w.Write([]byte(fmt.Sprint("create user")))
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("update user"))
+	ID, err := utils.ParseURL(r.URL.Path, "/users/update/")
+	if err != nil {
+		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		return
+	}
+	w.Write([]byte(fmt.Sprint("update user ", ID)))
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("delete user"))
+	ID, err := utils.ParseURL(r.URL.Path, "/users/delete/")
+	if err != nil {
+		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
+		return
+	}
+	w.Write([]byte(fmt.Sprint("delete user ", ID)))
 }
