@@ -12,11 +12,22 @@ import (
 	"net/http"
 )
 
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	db, _ := database.Connect()
+	um, _ := models.NewUserModel(db)
+	users, err := um.FindAll()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(users)
+	w.Write([]byte(fmt.Sprint(users)))
+}
+
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	db, _ := database.Connect()
 	um, _ := models.NewUserModel(db)
 	var user entities.User
-	ID, err := utils.ParseURL(r.URL.Path, "/user/")
+	ID, err := utils.ParseURL(r.URL.Path, "/users/")
 	if err != nil {
 		errors.HTTPErrorsHandler(http.StatusNotFound, w, r)
 		return
@@ -27,17 +38,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(user)
 	w.Write([]byte(fmt.Sprint("get user ", ID)))
-}
-
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-	db, _ := database.Connect()
-	um, _ := models.NewUserModel(db)
-	users, err := um.FindAll()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(users)
-	w.Write([]byte(fmt.Sprint(users)))
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {

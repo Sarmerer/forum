@@ -2,11 +2,16 @@ package main
 
 import (
 	"forum/api"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 	api.Run()
-	// db, _ := database.Connect()
+	// db, err := database.Connect()
+	// if err != nil {
+	// 	panic(err)
+	// }
 	// um, _ := models.NewUserModel(db)
 	// users, err := um.FindAll()
 	// if err != nil {
