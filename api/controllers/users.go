@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 
 	"forum/api/entities"
-	"forum/api/errors"
 	"forum/api/models"
+	"forum/api/response"
 	"forum/api/utils"
 	"forum/database"
 
@@ -17,7 +18,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	um, _ := models.NewUserModel(db)
 	users, err := um.FindAll()
 	if err != nil {
-		panic(err)
+		response.Error(w, http.StatusInternalServerError, errors.New("Inernal server error"))
 	}
 	fmt.Println(users)
 	w.Write([]byte(fmt.Sprint(users)))
@@ -29,7 +30,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user entities.User
 	ID, err := utils.ParseURL(r.URL.Path, "/users/")
 	if err != nil {
-		errors.HTTPErrors(http.StatusNotFound, w, r)
+		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
 		return
 	}
 	user, err = um.Find(int(ID.(int64)))
@@ -47,7 +48,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/users/update/")
 	if err != nil {
-		errors.HTTPErrors(http.StatusNotFound, w, r)
+		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
 		return
 	}
 	w.Write([]byte(fmt.Sprint("update user ", ID)))
@@ -56,7 +57,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/users/delete/")
 	if err != nil {
-		errors.HTTPErrors(http.StatusNotFound, w, r)
+		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
 		return
 	}
 	w.Write([]byte(fmt.Sprint("delete user ", ID)))

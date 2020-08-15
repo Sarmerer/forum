@@ -2,9 +2,10 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"forum/api/entities"
-	"forum/api/errors"
 	"forum/api/models"
+	"forum/api/response"
 	"forum/api/security"
 	"forum/database"
 	"net/http"
@@ -29,7 +30,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		cookie = generateCookie()
 		http.SetCookie(w, cookie)
 	} else {
-		w.Write([]byte("Wrong login or password"))
+		response.Error(w, http.StatusBadRequest, errors.New("Wrong login or password"))
 	}
 }
 
@@ -38,11 +39,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil {
-		errors.HTTPErrors(http.StatusInternalServerError, w, r)
+		response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 		return
 	}
 	if umErr != nil {
-		errors.HTTPErrors(http.StatusInternalServerError, w, r)
+		response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 		return
 	}
 	// Parse and decode the request body into a new `Credentials` instance
@@ -50,7 +51,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(creds)
 	if err != nil {
 		// If there is something wrong with the request body, return a 400 status
-		errors.HTTPErrors(http.StatusBadRequest, w, r)
+		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
 		return
 	}
 	// Salt and hash the password using the bcrypt algorithm
@@ -68,7 +69,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// Next, insert the username, along with the hashed password into the database
 	if !um.Create(&user) {
 		// If there is any issue with inserting into the database, return a 500 error
-		w.WriteHeader(http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 		return
 	}
 	// We reach this point if the credentials we correctly stored in the database, and the default status of 200 is sent back

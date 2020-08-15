@@ -8,7 +8,6 @@ $(document).ready(function() {
 			data: form.serialize(), // serializes the form's elements.
 			success: function(data) {
 				if (data.length > 0) {
-					
 				}
 			}
 		});

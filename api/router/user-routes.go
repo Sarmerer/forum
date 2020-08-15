@@ -1,4 +1,4 @@
-package routes
+package router
 
 import (
 	"forum/api/controllers"
@@ -7,7 +7,7 @@ import (
 
 var userRoutes = []Route{
 	{"/", controllers.RootHandler, http.MethodGet, false},
-	{"/home", controllers.HomeHandler, http.MethodGet, false},
+	{"/home", controllers.GetHome, http.MethodGet, false},
 
 	{"/users", controllers.GetUsers, http.MethodGet, false},
 	{"/users/", controllers.GetUser, http.MethodGet, false},

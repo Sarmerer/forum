@@ -1,7 +1,8 @@
 package middleware
 
 import (
-	"forum/api/errors"
+	"errors"
+	"forum/api/response"
 	"forum/api/security"
 	"log"
 	"net/http"
@@ -14,7 +15,7 @@ func Logger(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func JSON(next http.HandlerFunc) http.HandlerFunc {
+func SetJSONType(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		next(w, r)
@@ -24,7 +25,7 @@ func JSON(next http.HandlerFunc) http.HandlerFunc {
 func AllowedMethods(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
-			w.Write([]byte("405 Wrong Method(message from middleware.AllowedMethods)"))
+			response.Error(w, http.StatusMethodNotAllowed, errors.New("Wrong Method"))
 			return
 		}
 		next(w, r)
@@ -40,11 +41,11 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		sessionExists, err := security.ValidateSession(cookie.Value)
 		if err != nil {
-			errors.JSONErrors("Internal server error", http.StatusInternalServerError, w, r)
+			response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 			return
 		}
 		if !sessionExists {
-			errors.JSONErrors("user not authorized(from middleware.CheckUserAuth)", http.StatusUnauthorized, w, r)
+			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized(from middleware.CheckUserAuth)"))
 			return
 		}
 		next(w, r)

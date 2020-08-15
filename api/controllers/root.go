@@ -1,8 +1,9 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
-	"forum/api/errors"
+	"forum/api/response"
 	"forum/config"
 	"log"
 	"net/http"
@@ -13,7 +14,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	} else {
-		errors.HTTPErrors(http.StatusNotFound, w, r)
+		response.Error(w, http.StatusNotFound, errors.New("Not found"))
 	}
 }
 
