@@ -65,20 +65,23 @@ func (um *UserModel) Find(id int) (entities.User, error) {
 }
 
 //Create adds a new user to the database
-func (um *UserModel) Create(user *entities.User) bool {
+func (um *UserModel) Create(user *entities.User) (bool, string) {
 	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return false
+		return false, "internal server error"
 	}
 	res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(timeLayout), time.Now().Format(timeLayout), user.SessionID, user.Role)
 	if err != nil {
-		return false
+		return false, err.Error()
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false
+		return false, "internal server error"
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return true, ""
+	}
+	return false, "internal server error"
 }
 
 //Delete deletes user from the database

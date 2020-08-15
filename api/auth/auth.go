@@ -20,6 +20,7 @@ type Credentials struct {
 	Email    string `json:"user_email" db:"user_email"`
 }
 
+//SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("sessionID")
 	if r.FormValue("password") == "admin" && r.FormValue("login") == "root" {
@@ -67,9 +68,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Role:      0,
 	}
 	// Next, insert the username, along with the hashed password into the database
-	if !um.Create(&user) {
+	created, errText := um.Create(&user)
+	//TO-DO: improve error check
+	if !created {
 		// If there is any issue with inserting into the database, return a 500 error
-		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
+		response.Error(w, http.StatusInternalServerError, errors.New(errText))
 		return
 	}
 	// We reach this point if the credentials we correctly stored in the database, and the default status of 200 is sent back
