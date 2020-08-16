@@ -25,7 +25,7 @@ func SetJSONType(next http.HandlerFunc) http.HandlerFunc {
 func AllowedMethods(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
-			response.Error(w, http.StatusMethodNotAllowed, errors.New("Wrong Method"))
+			response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong Method"))
 			return
 		}
 		next(w, r)
@@ -36,16 +36,16 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("sessionID")
 		if err == http.ErrNoCookie {
-			w.Write([]byte("user not authorized(from middleware.CheckUserAuth)"))
+			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
 		sessionExists, err := security.ValidateSession(cookie.Value)
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
+			response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
 			return
 		}
 		if !sessionExists {
-			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized(from middleware.CheckUserAuth)"))
+			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
 		next(w, r)

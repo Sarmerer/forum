@@ -14,7 +14,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	} else {
-		response.Error(w, http.StatusNotFound, errors.New("Not found"))
+		response.Error(w, http.StatusNotFound, errors.New("not found"))
 	}
 }
 

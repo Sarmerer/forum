@@ -18,7 +18,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	um, _ := models.NewUserModel(db)
 	users, err := um.FindAll()
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("Inernal server error"))
+		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
 	}
 	fmt.Println(users)
 	w.Write([]byte(fmt.Sprint(users)))
@@ -30,7 +30,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user entities.User
 	ID, err := utils.ParseURL(r.URL.Path, "/users/")
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
+		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
 	user, err = um.Find(int(ID.(int64)))
@@ -48,7 +48,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/users/update/")
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
+		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
 	w.Write([]byte(fmt.Sprint("update user ", ID)))
@@ -57,7 +57,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.ParseURL(r.URL.Path, "/users/delete/")
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, errors.New("Bad request"))
+		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
 	w.Write([]byte(fmt.Sprint("delete user ", ID)))
