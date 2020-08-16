@@ -1,26 +1,20 @@
 import React from 'react';
-import axios from 'axios';
-import logo from './logo.svg';
 import './App.css';
 
-const api = axios.create({
-  baseURL:""
-})
-
 function App() {
-	return (
-		<div className='App'>
-			<header className='App-header'>
-				<img src={logo} className='App-logo' alt='logo' />
-				<p>
-					Edit <code>src/App.tsx</code> and save to reload.
-				</p>
-				<a className='App-link' href='https://reactjs.org' target='_blank' rel='noopener noreferrer'>
-					Learn React
-				</a>
-			</header>
-		</div>
-	);
+	const [ item, setItem ] = React.useState([]);
+	React.useEffect(() => {
+		// POST request using fetch inside useEffect React hook
+		const requestOptions = {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ title: 'React Hooks POST Request Example' })
+		};
+		fetch('https://localhost:4433/signin', requestOptions).then((response) => response.json()).then((data) => setItem(data));
+
+		// empty dependency array means this effect will only run once (like componentDidMount in classes)
+	}, []);
+	return <h1>{item}</h1>;
 }
 
 export default App;
