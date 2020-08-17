@@ -3,26 +3,28 @@ package response
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 )
 
-type JSONError struct {
-	Error  string
-	Status int
+type response struct {
+	Status  string      `json:"status"`
+	Code    int         `json:"code"`
+	Message interface{} `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 func Error(w http.ResponseWriter, errorCode int, err error) {
 	if err != nil {
 		w.WriteHeader(errorCode)
-		JSON(w, err.Error(), errorCode)
+		JSON(w, "error", errorCode, err.Error(), nil)
 	}
 }
 
-func JSON(w http.ResponseWriter, err string, errCode int) {
-	b, marshalErr := json.Marshal(JSONError{Error: fmt.Sprint(err), Status: errCode})
+func JSON(w http.ResponseWriter, status string, code int, message, data interface{}) {
+	b, marshalErr := json.Marshal(response{status, code, message, data})
 	if marshalErr != nil {
-		b = []byte("internal server error.")
+		w.WriteHeader(http.StatusInternalServerError)
+		b = []byte(`{"Error":"internal server error", "Status":500}`)
 	}
 	w.Write(b)
 }

@@ -19,25 +19,23 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.InternalError(w)
 	}
-	fmt.Println(users)
-	w.Write([]byte(fmt.Sprint(users)))
+	response.JSON(w, "success", 200, nil, users)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	db, _ := database.Connect()
 	um, _ := models.NewUserModel(db)
 	var user entities.User
-	ID, err := utils.ParseURL(r.URL.Path, "/users/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/users/")
 	if err != nil {
 		response.BadRequest(w)
 		return
 	}
-	user, err = um.Find(int(ID.(int64)))
+	user, err = um.Find(ID)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(user)
-	w.Write([]byte(fmt.Sprint("get user ", ID)))
+	response.JSON(w, "success", 200, nil, user)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +43,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURL(r.URL.Path, "/users/update/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/users/update/")
 	if err != nil {
 		response.BadRequest(w)
 		return
@@ -54,7 +52,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURL(r.URL.Path, "/users/delete/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/users/delete/")
 	if err != nil {
 		response.BadRequest(w)
 		return

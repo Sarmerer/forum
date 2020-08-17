@@ -47,7 +47,7 @@ func (um *UserModel) FindAll() ([]entities.User, error) {
 }
 
 //Find returns a specific user from the database
-func (um *UserModel) Find(id int) (entities.User, error) {
+func (um *UserModel) Find(id int64) (entities.User, error) {
 	var user entities.User
 	rows, err := um.DB.Query("SELECT * FROM users WHERE user_id = ?", id)
 	if err != nil {

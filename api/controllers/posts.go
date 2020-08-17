@@ -12,7 +12,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURL(r.URL.Path, "/posts/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/posts/")
 	if err != nil {
 		response.BadRequest(w)
 		return
@@ -25,7 +25,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURL(r.URL.Path, "/posts/update/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/posts/update/")
 	if err != nil {
 		response.BadRequest(w)
 		return
@@ -34,7 +34,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURL(r.URL.Path, "/posts/delete/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/posts/delete/")
 	if err != nil {
 		response.BadRequest(w)
 		return

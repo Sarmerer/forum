@@ -11,8 +11,8 @@ import (
 	"net/http"
 )
 
-// Credentials struct models the structure of a user, both in the request body, and in the DB
-type Credentials struct {
+// credentials struct models the structure of a user, both in the request body, and in the DB
+type credentials struct {
 	Password string `json:"user_password" db:"user_password"`
 	Username string `json:"user_name" db:"user_name"`
 	Email    string `json:"user_email" db:"user_email"`
@@ -43,7 +43,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Parse and decode the request body into a new `Credentials` instance
-	creds := &Credentials{}
+	creds := &credentials{}
 	decodeErr := json.NewDecoder(r.Body).Decode(creds)
 	if decodeErr != nil {
 		// If there is something wrong with the request body, return a 400 status
