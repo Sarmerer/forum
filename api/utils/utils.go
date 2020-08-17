@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -14,8 +15,11 @@ func ServeTemplate(path, layout string, w http.ResponseWriter, r *http.Request) 
 }
 
 func ParseURLInt(path, prefix string) (int64, error) {
-	if strings.HasPrefix(path, prefix) {
-		return strconv.ParseInt(strings.TrimPrefix(path, prefix), 10, 64)
+	u, err := url.Parse(path)
+	if err != nil {
+		return 0, errors.New(fmt.Sprint(path, http.StatusInternalServerError))
 	}
-	return 0, errors.New(fmt.Sprint(path, http.StatusNotFound))
+	u.RawQuery = ""
+	return strconv.ParseInt(strings.TrimPrefix(u.String(), prefix), 10, 64)
+
 }

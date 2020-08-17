@@ -3,13 +3,13 @@ package auth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
 	"forum/api/security"
 	"forum/config"
 	"forum/database"
+	"log"
 	"net/http"
 )
 
@@ -22,29 +22,42 @@ type credentials struct {
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	login := r.FormValue("login")
-	password := r.FormValue("password")
-	fmt.Println(login, password)
-	if login == "admin" && password == "root" {
-		cookie, err := r.Cookie("sessionID")
-		if err != http.ErrNoCookie {
-			response.InternalError(w)
-		}
-		cookie = generateCookie()
-		http.SetCookie(w, cookie)
-	} else {
-		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
+	db, dbErr := database.Connect()
+	um, umErr := models.NewUserModel(db)
+	if dbErr != nil || umErr != nil {
+		log.Println("Failed to connect to the database")
+		response.InternalError(w)
+		return
 	}
+	creds := &credentials{}
+	creds.Username = r.FormValue("login")
+	creds.Password = r.FormValue("password")
+	user, err := um.FindByNameOrEmail(creds.Username)
+	if err != nil {
+		log.Println("Could not find user ", creds.Username)
+		response.InternalError(w)
+		return
+	}
+	err = security.VerifyPassword(user.Password, creds.Password)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
+		return
+	}
+	cookie, cookieErr := r.Cookie("sessionID")
+	if cookieErr != http.ErrNoCookie && cookieErr != nil {
+		log.Println("Failed to generate cookie: ", cookieErr)
+		response.InternalError(w)
+		return
+	}
+	cookie = generateCookie()
+	http.SetCookie(w, cookie)
+	user.SessionID = cookie.Value
+	um.Update(&user)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, "user is logged in", nil)
 }
 
 //SignUp authorizes new user
 func SignUp(w http.ResponseWriter, r *http.Request) {
-	db, dbErr := database.Connect()
-	um, umErr := models.NewUserModel(db)
-	if dbErr != nil || umErr != nil {
-		response.InternalError(w)
-		return
-	}
 	// Parse and decode the request body into a new `Credentials` instance
 	creds := &credentials{}
 	decodeErr := json.NewDecoder(r.Body).Decode(creds)
@@ -60,6 +73,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.InternalError(w)
 		return
 	}
+	db, dbErr := database.Connect()
+	um, umErr := models.NewUserModel(db)
+	if dbErr != nil || umErr != nil {
+		response.InternalError(w)
+		return
+	}
 	user := entities.User{
 		Name:      creds.Username,
 		Password:  string(hashedPassword),
@@ -69,11 +88,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Role:      0,
 	}
 	// Next, insert the username, along with the hashed password into the database
-	created, errText := um.Create(&user)
+	created, err := um.Create(&user)
 	//TO-DO: improve error check
 	if !created {
 		// If there is any issue with inserting into the database, return a 500 error
-		response.Error(w, http.StatusInternalServerError, errors.New(errText))
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been created", nil)

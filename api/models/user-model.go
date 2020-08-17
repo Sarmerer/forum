@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"forum/api/entities"
 	"time"
 )
@@ -65,27 +66,27 @@ func (um *UserModel) Find(id int64) (entities.User, error) {
 }
 
 //Create adds a new user to the database
-func (um *UserModel) Create(user *entities.User) (bool, string) {
+func (um *UserModel) Create(user *entities.User) (bool, error) {
 	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return false, "Internal server error"
+		return false, errors.New("internal server error")
 	}
 	res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(timeLayout), time.Now().Format(timeLayout), user.SessionID, user.Role)
 	if err != nil {
-		return false, err.Error()
+		return false, err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false, "Internal server error"
+		return false, errors.New("internal server error")
 	}
 	if rowsAffected > 0 {
-		return true, ""
+		return true, nil
 	}
-	return false, "Internal server error"
+	return false, errors.New("internal server error")
 }
 
 //Delete deletes user from the database
-func (um *UserModel) Delete(id int) bool {
+func (um *UserModel) Delete(id int64) bool {
 	res, err := um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
 	if err != nil {
 		return false
@@ -123,4 +124,22 @@ func (um *UserModel) Validate(id string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+//FindByNameOrEmail finds a user by name or email
+func (um *UserModel) FindByNameOrEmail(login string) (entities.User, error) {
+	var user entities.User
+	rows, err := um.DB.Query("SELECT * FROM users WHERE user_name = ? OR user_email = ?", login, login)
+	if err != nil {
+		return user, err
+	}
+	for rows.Next() {
+		var created, lastOnline string
+		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
+		date, _ := time.Parse(timeLayout, created)
+		user.Created = date
+		date, _ = time.Parse(timeLayout, lastOnline)
+		user.LastOnline = date
+	}
+	return user, nil
 }

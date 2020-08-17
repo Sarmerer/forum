@@ -1,7 +1,2 @@
-PUT https://localhost:4433/users/update/1 HTTP/1.1
-Cookie: sessionID=sessionid12345
-Content-Type: application/json
-
-{
-    "user_name":"newName"
-}
+PUT https://localhost:4433/users/update/5?Name=Erzhan HTTP/1.1
+Cookie: sessionID=14703973-08af-46af-96a1-b458340a5b2c
