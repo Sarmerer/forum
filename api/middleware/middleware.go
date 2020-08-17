@@ -4,6 +4,7 @@ import (
 	"errors"
 	"forum/api/response"
 	"forum/api/security"
+	"forum/config"
 	"log"
 	"net/http"
 )
@@ -50,7 +51,7 @@ func AllowedMethods(method string, next http.HandlerFunc) http.HandlerFunc {
 
 func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("sessionID")
+		cookie, err := r.Cookie(config.SessionCookieName)
 		if err == http.ErrNoCookie {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return

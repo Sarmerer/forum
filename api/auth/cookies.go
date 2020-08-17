@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"forum/config"
 	"net/http"
 	"time"
 
@@ -9,5 +10,5 @@ import (
 )
 
 func generateCookie() *http.Cookie {
-	return &http.Cookie{Name: "sessionID", Value: fmt.Sprint(uuid.NewV4()), Expires: time.Now().Add(14 * 24 * time.Hour), HttpOnly: true}
+	return &http.Cookie{Name: config.SessionCookieName, Value: fmt.Sprint(uuid.NewV4()), Expires: time.Now().Add(config.CookieExpiration), HttpOnly: true}
 }

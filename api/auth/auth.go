@@ -15,8 +15,8 @@ import (
 
 // credentials struct models the structure of a user, both in the request body, and in the DB
 type credentials struct {
-	Password string `json:"user_password" db:"user_password"`
 	Username string `json:"user_name" db:"user_name"`
+	Password string `json:"user_password" db:"user_password"`
 	Email    string `json:"user_email" db:"user_email"`
 }
 
@@ -29,9 +29,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.InternalError(w)
 		return
 	}
-	creds := &credentials{}
-	creds.Username = r.FormValue("login")
-	creds.Password = r.FormValue("password")
+	creds := &credentials{Username: r.FormValue("login"), Password: r.FormValue("password")}
 	user, err := um.FindByNameOrEmail(creds.Username)
 	if err != nil {
 		log.Println("Could not find user ", creds.Username)
@@ -43,7 +41,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
-	cookie, cookieErr := r.Cookie("sessionID")
+	cookie, cookieErr := r.Cookie(config.SessionCookieName)
 	if cookieErr != http.ErrNoCookie && cookieErr != nil {
 		log.Println("Failed to generate cookie: ", cookieErr)
 		response.InternalError(w)
@@ -100,7 +98,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("sessionID")
+	cookie, err := r.Cookie(config.SessionCookieName)
 	if err == http.ErrNoCookie {
 		return
 	}
