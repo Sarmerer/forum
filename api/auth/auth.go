@@ -3,18 +3,18 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
 	"forum/api/security"
+	"forum/config"
 	"forum/database"
 	"net/http"
-
-	uuid "github.com/satori/go.uuid"
 )
 
-// Credentials struct models the structure of a user, both in the request body, and in the DB
-type Credentials struct {
+// credentials struct models the structure of a user, both in the request body, and in the DB
+type credentials struct {
 	Password string `json:"user_password" db:"user_password"`
 	Username string `json:"user_name" db:"user_name"`
 	Email    string `json:"user_email" db:"user_email"`
@@ -22,11 +22,13 @@ type Credentials struct {
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("sessionID")
-	if r.FormValue("password") == "admin" && r.FormValue("login") == "root" {
-		if err == http.ErrNoCookie {
-			err = nil
-			cookie = &http.Cookie{Name: "sessionID", Value: ""}
+	login := r.FormValue("login")
+	password := r.FormValue("password")
+	fmt.Println(login, password)
+	if login == "admin" && password == "root" {
+		cookie, err := r.Cookie("sessionID")
+		if err != http.ErrNoCookie {
+			response.InternalError(w)
 		}
 		cookie = generateCookie()
 		http.SetCookie(w, cookie)
@@ -40,21 +42,24 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil || umErr != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
+		response.InternalError(w)
 		return
 	}
 	// Parse and decode the request body into a new `Credentials` instance
-	creds := &Credentials{}
-	err := json.NewDecoder(r.Body).Decode(creds)
-	if err != nil {
+	creds := &credentials{}
+	decodeErr := json.NewDecoder(r.Body).Decode(creds)
+	if decodeErr != nil {
 		// If there is something wrong with the request body, return a 400 status
-		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
+		response.BadRequest(w)
 		return
 	}
 	// Salt and hash the password using the bcrypt algorithm
 	// The second argument is the cost of hashing, which we arbitrarily set as 8 (this value can be more or less, depending on the computing power you wish to utilize)
-	hashedPassword, err := security.Hash(creds.Password)
-
+	hashedPassword, hashErr := security.Hash(creds.Password)
+	if hashErr != nil {
+		response.InternalError(w)
+		return
+	}
 	user := entities.User{
 		Name:      creds.Username,
 		Password:  string(hashedPassword),
@@ -71,6 +76,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New(errText))
 		return
 	}
+	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been created", nil)
 	// We reach this point if the credentials we correctly stored in the database, and the default status of 200 is sent back
 }
 
@@ -79,7 +85,6 @@ func SignOut(w http.ResponseWriter, r *http.Request) {
 	if err == http.ErrNoCookie {
 		return
 	}
-	delete(activeSessions, uuid.FromStringOrNil(cookie.Value))
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
 }

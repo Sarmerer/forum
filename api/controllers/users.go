@@ -9,6 +9,7 @@ import (
 	"forum/api/models"
 	"forum/api/response"
 	"forum/api/utils"
+	"forum/config"
 	"forum/database"
 
 	"net/http"
@@ -19,27 +20,25 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	um, _ := models.NewUserModel(db)
 	users, err := um.FindAll()
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
+		response.InternalError(w)
 	}
-	fmt.Println(users)
-	w.Write([]byte(fmt.Sprint("users", users)))
+	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, users)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	db, _ := database.Connect()
 	um, _ := models.NewUserModel(db)
 	var user entities.User
-	ID, err := utils.ParseURL(r.URL.Path, "/users/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/users/")
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
+		response.BadRequest(w)
 		return
 	}
-	user, err = um.Find(int(ID.(int64)))
+	user, err = um.Find(ID)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(user)
-	w.Write([]byte(fmt.Sprint("get user ", ID)))
+	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -69,14 +68,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 		return
 	}
-	w.Write([]byte(fmt.Sprint("update user ", user)))
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("update user ", user), nil)
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURL(r.URL.Path, "/users/delete/")
+	ID, err := utils.ParseURLInt(r.URL.Path, "/users/delete/")
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
+		response.BadRequest(w)
 		return
 	}
-	w.Write([]byte(fmt.Sprint("delete user ", ID)))
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("delete user ", ID), nil)
 }

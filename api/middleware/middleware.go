@@ -8,6 +8,21 @@ import (
 	"net/http"
 )
 
+func CORS(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, PATCH, DELETE")
+		//CORS handler
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(204)
+			return
+		}
+		next(w, r)
+	}
+}
+
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s%s %s", r.Method, r.Host, r.RequestURI, r.Proto)
@@ -17,7 +32,8 @@ func Logger(next http.HandlerFunc) http.HandlerFunc {
 
 func SetJSONType(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		next(w, r)
 	}
 }
@@ -25,7 +41,7 @@ func SetJSONType(next http.HandlerFunc) http.HandlerFunc {
 func AllowedMethods(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
-			response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong Method"))
+			response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
 			return
 		}
 		next(w, r)
@@ -41,7 +57,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		sessionExists, err := security.ValidateSession(cookie.Value)
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
+			response.InternalError(w)
 			return
 		}
 		if !sessionExists {
