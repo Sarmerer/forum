@@ -39,11 +39,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
 	um, umErr := models.NewUserModel(db)
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
-		return
-	}
-	if umErr != nil {
+	if dbErr != nil || umErr != nil {
 		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
 		return
 	}
