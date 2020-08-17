@@ -14,6 +14,7 @@ type response struct {
 	Data    interface{} `json:"data"`
 }
 
+//JSON function takes
 func JSON(w http.ResponseWriter, status string, code int, message, data interface{}) {
 	b, marshalErr := json.Marshal(response{status, code, message, data})
 	if marshalErr != nil {
@@ -23,11 +24,9 @@ func JSON(w http.ResponseWriter, status string, code int, message, data interfac
 	w.Write(b)
 }
 
-func Error(w http.ResponseWriter, errorCode int, err error) {
-	if err != nil {
-		w.WriteHeader(errorCode)
-		JSON(w, config.StatusError, errorCode, err.Error(), nil)
-	}
+func Error(w http.ResponseWriter, httpStatus int, err error) {
+	w.WriteHeader(httpStatus)
+	JSON(w, config.StatusError, httpStatus, err.Error(), nil)
 }
 
 func InternalError(w http.ResponseWriter) {
