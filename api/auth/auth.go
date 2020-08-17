@@ -3,10 +3,12 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
 	"forum/api/security"
+	"forum/config"
 	"forum/database"
 	"net/http"
 )
@@ -22,6 +24,7 @@ type credentials struct {
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	login := r.FormValue("login")
 	password := r.FormValue("password")
+	fmt.Println(login, password)
 	if login == "admin" && password == "root" {
 		cookie, err := r.Cookie("sessionID")
 		if err != http.ErrNoCookie {
@@ -73,6 +76,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New(errText))
 		return
 	}
+	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been created", nil)
 	// We reach this point if the credentials we correctly stored in the database, and the default status of 200 is sent back
 }
 

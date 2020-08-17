@@ -7,6 +7,7 @@ import (
 	"forum/api/models"
 	"forum/api/response"
 	"forum/api/utils"
+	"forum/config"
 	"forum/database"
 
 	"net/http"
@@ -19,7 +20,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.InternalError(w)
 	}
-	response.JSON(w, "success", 200, nil, users)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, users)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	response.JSON(w, "success", 200, nil, user)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +49,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(w)
 		return
 	}
-	w.Write([]byte(fmt.Sprint("update user ", ID)))
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("update user ", ID), nil)
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -57,5 +58,5 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(w)
 		return
 	}
-	w.Write([]byte(fmt.Sprint("delete user ", ID)))
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("delete user ", ID), nil)
 }
