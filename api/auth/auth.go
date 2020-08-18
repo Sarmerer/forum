@@ -6,7 +6,6 @@ import (
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
-	"forum/api/security"
 	"forum/config"
 	"forum/database"
 	"log"
@@ -25,19 +24,17 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil || umErr != nil {
-		log.Println("Failed to connect to the database")
 		response.InternalError(w)
 		return
 	}
 	creds := &credentials{Username: r.FormValue("login"), Password: r.FormValue("password")}
-	user, err := um.FindByNameOrEmail(creds.Username)
-	if err != nil {
-		log.Println("Could not find user ", creds.Username)
+	user, uErr := um.FindByNameOrEmail(creds.Username)
+	if uErr != nil {
 		response.InternalError(w)
 		return
 	}
-	err = security.VerifyPassword(user.Password, creds.Password)
-	if err != nil {
+	passErr := verifyPassword(user.Password, creds.Password)
+	if passErr != nil {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
@@ -66,7 +63,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	// Salt and hash the password using the bcrypt algorithm
 	// The second argument is the cost of hashing, which we arbitrarily set as 8 (this value can be more or less, depending on the computing power you wish to utilize)
-	hashedPassword, hashErr := security.Hash(creds.Password)
+	hashedPassword, hashErr := hash(creds.Password)
 	if hashErr != nil {
 		response.InternalError(w)
 		return

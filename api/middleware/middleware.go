@@ -3,14 +3,15 @@ package middleware
 import (
 	"errors"
 	"forum/api/response"
-	"forum/api/security"
+	"forum/api/session"
 	"forum/config"
 	"log"
 	"net/http"
 )
 
-func CORS(next http.HandlerFunc) http.HandlerFunc {
+func SetupHeaders(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
@@ -20,6 +21,7 @@ func CORS(next http.HandlerFunc) http.HandlerFunc {
 			w.WriteHeader(204)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		next(w, r)
 	}
 }
@@ -27,14 +29,6 @@ func CORS(next http.HandlerFunc) http.HandlerFunc {
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s%s %s", r.Method, r.Host, r.RequestURI, r.Proto)
-		next(w, r)
-	}
-}
-
-func SetJSONType(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		next(w, r)
 	}
 }
@@ -56,7 +50,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		sessionExists, err := security.ValidateSession(cookie.Value)
+		sessionExists, err := session.Validate(cookie.Value)
 		if err != nil {
 			response.InternalError(w)
 			return

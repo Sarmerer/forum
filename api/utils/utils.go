@@ -21,5 +21,4 @@ func ParseURLInt(path, prefix string) (int64, error) {
 	}
 	u.RawQuery = ""
 	return strconv.ParseInt(strings.TrimPrefix(u.String(), prefix), 10, 64)
-
 }

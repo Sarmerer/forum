@@ -27,11 +27,9 @@ func setupRoutes(mux *http.ServeMux) {
 		if route.RequresAuth {
 			mux.HandleFunc(route.URI,
 				middleware.Logger(
-					middleware.CORS(
-						middleware.SetJSONType(
-							middleware.AllowedMethods(
-								route.Method, middleware.CheckUserAuth(route.Handler),
-							),
+					middleware.SetupHeaders(
+						middleware.AllowedMethods(
+							route.Method, middleware.CheckUserAuth(route.Handler),
 						),
 					),
 				),
@@ -39,11 +37,9 @@ func setupRoutes(mux *http.ServeMux) {
 		} else {
 			mux.HandleFunc(route.URI,
 				middleware.Logger(
-					middleware.CORS(
-						middleware.SetJSONType(
-							middleware.AllowedMethods(
-								route.Method, route.Handler,
-							),
+					middleware.SetupHeaders(
+						middleware.AllowedMethods(
+							route.Method, route.Handler,
 						),
 					),
 				),
