@@ -5,6 +5,8 @@ import (
 	"errors"
 	"forum/api/entities"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -21,16 +23,14 @@ func NewUserModel(db *sql.DB) (*UserModel, error) {
 		return nil, err
 	}
 	statement.Exec()
-	return &UserModel{
-		DB: db,
-	}, nil
+	return &UserModel{db}, nil
 }
 
 //FindAll returns all users in the database
 func (um *UserModel) FindAll() ([]entities.User, error) {
-	rows, e := um.DB.Query("SELECT * FROM users")
-	if e != nil {
-		return nil, e
+	rows, queryErr := um.DB.Query("SELECT * FROM users")
+	if queryErr != nil {
+		return nil, queryErr
 	}
 	var users []entities.User
 
@@ -38,9 +38,15 @@ func (um *UserModel) FindAll() ([]entities.User, error) {
 		var user entities.User
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, _ := time.Parse(timeLayout, created)
+		date, dateErr := time.Parse(timeLayout, created)
+		if dateErr != nil {
+			return users, dateErr
+		}
 		user.Created = date
-		date, _ = time.Parse(timeLayout, lastOnline)
+		date, dateErr = time.Parse(timeLayout, lastOnline)
+		if dateErr != nil {
+			return users, dateErr
+		}
 		user.LastOnline = date
 		users = append(users, user)
 	}
@@ -57,32 +63,57 @@ func (um *UserModel) Find(id int64) (entities.User, error) {
 	for rows.Next() {
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, _ := time.Parse(timeLayout, created)
+		date, err := time.Parse(timeLayout, created)
+		if err != nil {
+			return user, err
+		}
 		user.Created = date
-		date, _ = time.Parse(timeLayout, lastOnline)
+		date, err = time.Parse(timeLayout, lastOnline)
+		if err != nil {
+			return user, err
+		}
 		user.LastOnline = date
 	}
 	return user, nil
 }
 
 //Create adds a new user to the database
-func (um *UserModel) Create(user *entities.User) (bool, error) {
+func (um *UserModel) Create(user *entities.User) error {
 	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return false, errors.New("internal server error")
+		return errors.New("unable to create new user account")
 	}
-	res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(timeLayout), time.Now().Format(timeLayout), user.SessionID, user.Role)
-	if err != nil {
-		return false, err
+	var created, lastOnline string
+	nameErr := um.DB.QueryRow("SELECT * FROM users WHERE user_name = $1", user.Name).Scan(
+		&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role,
+	)
+	emailErr := um.DB.QueryRow("SELECT * FROM users WHERE user_email = $1", user.Email).Scan(
+		&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role,
+	)
+	switch {
+	case nameErr != sql.ErrNoRows && nameErr != nil || emailErr != sql.ErrNoRows && emailErr != nil:
+		return errors.New("unable to create your account")
+	case nameErr == sql.ErrNoRows && emailErr == sql.ErrNoRows:
+		res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(timeLayout), time.Now().Format(timeLayout), user.SessionID, user.Role)
+		if err != nil {
+			return errors.New("unable to create new user account")
+		}
+		rowsAffected, err := res.RowsAffected()
+		if err != nil {
+			return errors.New("unable to create new user account")
+		}
+		if rowsAffected > 0 {
+			return nil
+		}
+		return nil
+	case nameErr != sql.ErrNoRows && emailErr == sql.ErrNoRows:
+		return errors.New("name not unique")
+	case emailErr != sql.ErrNoRows && nameErr == sql.ErrNoRows:
+		return errors.New("email not unique")
+	case nameErr == nil && emailErr == nil:
+		return errors.New("both not unique")
 	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return false, errors.New("internal server error")
-	}
-	if rowsAffected > 0 {
-		return true, nil
-	}
-	return false, errors.New("internal server error")
+	return errors.New("unable to create new user account")
 }
 
 //Delete deletes user from the database
@@ -149,8 +180,8 @@ func (um *UserModel) UpdateRole(userID, role int) bool {
 	return rowsAffected > 0
 }
 
-//Validate checks if the user is logged in using session id
-func (um *UserModel) Validate(id string) (bool, error) {
+//ValidateSession checks if the user is logged in using session id
+func (um *UserModel) ValidateSession(id string) (bool, error) {
 	err := um.DB.QueryRow("SELECT user_name FROM users WHERE user_session_id = ?", id).Scan(&id)
 	if err == sql.ErrNoRows {
 		return false, nil

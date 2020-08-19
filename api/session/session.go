@@ -16,6 +16,7 @@ func Destroy() {
 //which will mean that user is authorized
 func Validate(sessionID string) (bool, error) {
 	db, dbErr := database.Connect()
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil {
 		return false, dbErr
@@ -23,5 +24,5 @@ func Validate(sessionID string) (bool, error) {
 	if umErr != nil {
 		return false, umErr
 	}
-	return um.Validate(sessionID)
+	return um.ValidateSession(sessionID)
 }
