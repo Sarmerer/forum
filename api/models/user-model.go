@@ -5,6 +5,8 @@ import (
 	"errors"
 	"forum/api/entities"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -57,32 +59,42 @@ func (um *UserModel) Find(id int64) (entities.User, error) {
 	for rows.Next() {
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, _ := time.Parse(timeLayout, created)
+		date, err := time.Parse(timeLayout, created)
+		if err != nil {
+			return user, err
+		}
 		user.Created = date
-		date, _ = time.Parse(timeLayout, lastOnline)
+		date, err = time.Parse(timeLayout, lastOnline)
+		if err != nil {
+			return user, err
+		}
 		user.LastOnline = date
 	}
 	return user, nil
 }
 
 //Create adds a new user to the database
-func (um *UserModel) Create(user *entities.User) (bool, error) {
+func (um *UserModel) Create(user *entities.User) error {
 	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return false, errors.New("internal server error")
+		return errors.New("internal server error")
 	}
 	res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(timeLayout), time.Now().Format(timeLayout), user.SessionID, user.Role)
-	if err != nil {
-		return false, err
+	if err.Error() == "UNIQUE constraint failed: users.user_email" {
+		return errors.New("email is not unique")
+	} else if err.Error() == "UNIQUE constraint failed: users.user_name" {
+		return errors.New("login is not unique")
+	} else {
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false, errors.New("internal server error")
+		return errors.New("internal server error")
 	}
 	if rowsAffected > 0 {
-		return true, nil
+		return nil
 	}
-	return false, errors.New("internal server error")
+	return errors.New("internal server error")
 }
 
 //Delete deletes user from the database

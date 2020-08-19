@@ -18,6 +18,7 @@ import (
 //GetUsers gets all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	db, _ := database.Connect()
+	defer db.Close()
 	um, _ := models.NewUserModel(db)
 	users, err := um.FindAll()
 	if err != nil {
@@ -29,6 +30,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 //GetUser gets a specified user from the database
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	db, _ := database.Connect()
+	defer db.Close()
 	um, _ := models.NewUserModel(db)
 	var user entities.User
 	ID, err := utils.ParseURLInt(r.URL.Path, "/users/")
@@ -46,6 +48,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 //UpdateUser updates info about the user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil || umErr != nil {
 		log.Println("Failed to connect to the database")
@@ -85,6 +88,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db, dbErr := database.Connect()
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil || umErr != nil {
 		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))

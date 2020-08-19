@@ -23,11 +23,18 @@ type credentials struct {
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
 	um, umErr := models.NewUserModel(db)
+	defer db.Close()
 	if dbErr != nil || umErr != nil {
 		response.InternalError(w)
 		return
 	}
-	creds := &credentials{Username: r.FormValue("login"), Password: r.FormValue("password")}
+	login := r.FormValue("login")
+	password := r.FormValue("password")
+	if login == "" || password == "" {
+		response.BadRequest(w)
+		return
+	}
+	creds := &credentials{Username: login, Password: password}
 	user, uErr := um.FindByNameOrEmail(creds.Username)
 	if uErr != nil {
 		response.InternalError(w)
@@ -69,6 +76,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db, dbErr := database.Connect()
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if dbErr != nil || umErr != nil {
 		response.InternalError(w)
@@ -83,11 +91,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Role:      0,
 	}
 	// Next, insert the username, along with the hashed password into the database
-	created, err := um.Create(&user)
+	createErr := um.Create(&user)
 	//TO-DO: improve error check
-	if !created {
+	if createErr != nil {
 		// If there is any issue with inserting into the database, return a 500 error
-		response.Error(w, http.StatusInternalServerError, err)
+		response.Error(w, http.StatusInternalServerError, createErr)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been created", nil)
