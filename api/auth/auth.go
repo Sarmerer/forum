@@ -53,16 +53,12 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 
 //SignUp authorizes new user
 func SignUp(w http.ResponseWriter, r *http.Request) {
-	// Parse and decode the request body into a new `Credentials` instance
 	creds := &credentials{}
 	decodeErr := json.NewDecoder(r.Body).Decode(creds)
 	if decodeErr != nil {
-		// If there is something wrong with the request body, return a 400 status
 		response.BadRequest(w)
 		return
 	}
-	// Salt and hash the password using the bcrypt algorithm
-	// The second argument is the cost of hashing, which we arbitrarily set as 8 (this value can be more or less, depending on the computing power you wish to utilize)
 	hashedPassword, hashErr := hash(creds.Password)
 	if hashErr != nil {
 		response.InternalError(w)
@@ -82,16 +78,13 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		SessionID: "",
 		Role:      0,
 	}
-	// Next, insert the username, along with the hashed password into the database
 	created, err := um.Create(&user)
 	//TO-DO: improve error check
 	if !created {
-		// If there is any issue with inserting into the database, return a 500 error
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been created", nil)
-	// We reach this point if the credentials we correctly stored in the database, and the default status of 200 is sent back
 }
 
 func SignOut(w http.ResponseWriter, r *http.Request) {

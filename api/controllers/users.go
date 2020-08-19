@@ -58,9 +58,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(w)
 		return
 	}
-	user := &entities.User{
+	updatedUser := &entities.User{
 		ID:   int(ID),
-		Name: r.FormValue("Name"),
+		Name: r.FormValue("name"),
 	}
 	// err := json.NewDecoder(r.Body).Decode(user)
 	// if err != nil {
@@ -68,13 +68,13 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// 	response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 	// 	return
 	// }
-	updated := um.Update(user)
+	updated := um.Update(updatedUser)
 	if !updated {
-		log.Println("Failed to update user ", user.Name)
+		log.Println("Failed to update user ", updatedUser.Name)
 		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
 		return
 	}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("update user ", user), nil)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("update user ", updatedUser), nil)
 }
 
 //DeleteUser deletes a user from the database

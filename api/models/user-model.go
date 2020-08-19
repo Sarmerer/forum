@@ -100,11 +100,45 @@ func (um *UserModel) Delete(id int64) bool {
 
 //Update updates existing user in the database
 func (um *UserModel) Update(user *entities.User) bool {
-	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_password = ?, user_email = ?, user_nickname = ?, user_created = ?, user_last_online = ?, user_session_id = ?, user_role = ? WHERE user_id = ?")
+	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ? WHERE user_id = ?")
 	if err != nil {
 		return false
 	}
-	res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, user.Created.Format(timeLayout), user.LastOnline.Format(timeLayout), user.SessionID, user.Role, user.ID)
+	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(timeLayout), user.Role, user.ID)
+	if err != nil {
+		return false
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false
+	}
+	return rowsAffected > 0
+}
+
+//UpdateSession updates user session in the database
+func (um *UserModel) UpdateSession(userID int, session string) bool {
+	statement, err := um.DB.Prepare("UPDATE users SET user_session_id = ? WHERE user_id = ?")
+	if err != nil {
+		return false
+	}
+	res, err := statement.Exec(session, userID)
+	if err != nil {
+		return false
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false
+	}
+	return rowsAffected > 0
+}
+
+//UpdateRole updates user role in the database
+func (um *UserModel) UpdateRole(userID, role int) bool {
+	statement, err := um.DB.Prepare("UPDATE users SET user_role = ? WHERE user_id = ?")
+	if err != nil {
+		return false
+	}
+	res, err := statement.Exec(role, userID)
 	if err != nil {
 		return false
 	}
@@ -126,7 +160,7 @@ func (um *UserModel) Validate(id string) (bool, error) {
 	return true, nil
 }
 
-//FindByNameOrEmail finds a user by name or email
+//FindByNameOrEmail finds a user by name or email in the database
 func (um *UserModel) FindByNameOrEmail(login string) (entities.User, error) {
 	var user entities.User
 	rows, err := um.DB.Query("SELECT * FROM users WHERE user_name = ? OR user_email = ?", login, login)
