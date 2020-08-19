@@ -23,16 +23,14 @@ func NewUserModel(db *sql.DB) (*UserModel, error) {
 		return nil, err
 	}
 	statement.Exec()
-	return &UserModel{
-		DB: db,
-	}, nil
+	return &UserModel{db}, nil
 }
 
 //FindAll returns all users in the database
 func (um *UserModel) FindAll() ([]entities.User, error) {
-	rows, e := um.DB.Query("SELECT * FROM users")
-	if e != nil {
-		return nil, e
+	rows, queryErr := um.DB.Query("SELECT * FROM users")
+	if queryErr != nil {
+		return nil, queryErr
 	}
 	var users []entities.User
 
@@ -40,9 +38,15 @@ func (um *UserModel) FindAll() ([]entities.User, error) {
 		var user entities.User
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, _ := time.Parse(timeLayout, created)
+		date, dateErr := time.Parse(timeLayout, created)
+		if dateErr != nil {
+			return users, dateErr
+		}
 		user.Created = date
-		date, _ = time.Parse(timeLayout, lastOnline)
+		date, dateErr = time.Parse(timeLayout, lastOnline)
+		if dateErr != nil {
+			return users, dateErr
+		}
 		user.LastOnline = date
 		users = append(users, user)
 	}
@@ -84,7 +88,7 @@ func (um *UserModel) Create(user *entities.User) error {
 		return errors.New("email is not unique")
 	} else if err.Error() == "UNIQUE constraint failed: users.user_name" {
 		return errors.New("login is not unique")
-	} else {
+	} else if err != nil {
 		return err
 	}
 	rowsAffected, err := res.RowsAffected()
