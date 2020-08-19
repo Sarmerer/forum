@@ -24,5 +24,5 @@ func Validate(sessionID string) (bool, error) {
 	if umErr != nil {
 		return false, umErr
 	}
-	return um.Validate(sessionID)
+	return um.ValidateSession(sessionID)
 }
