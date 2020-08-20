@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"forum/api/entities"
+	"forum/config"
 	"time"
 )
 
@@ -44,7 +45,7 @@ func (um *PostReplyModel) FindAll() ([]entities.PostReply, error) {
 		var reply entities.PostReply
 		var replyDate string
 		rows.Scan(&reply.ID, &reply.Content, &replyDate, &reply.Post, &reply.By)
-		date, _ := time.Parse(timeLayout, replyDate)
+		date, _ := time.Parse(config.TimeLayout, replyDate)
 		reply.Date = date
 		replies = append(replies, reply)
 	}
@@ -61,7 +62,7 @@ func (um *PostReplyModel) Find(id int) (entities.PostReply, error) {
 	for rows.Next() {
 		var replyDate string
 		rows.Scan(&reply.ID, &reply.Content, &replyDate, &reply.Post, &reply.By)
-		date, _ := time.Parse(timeLayout, replyDate)
+		date, _ := time.Parse(config.TimeLayout, replyDate)
 		reply.Date = date
 	}
 	return reply, nil
@@ -73,7 +74,7 @@ func (um *PostReplyModel) Create(reply *entities.PostReply) (bool, string) {
 	if err != nil {
 		return false, "Internal server error"
 	}
-	res, err := statement.Exec(reply.Content, time.Now().Format(timeLayout), reply.Post, reply.By)
+	res, err := statement.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By)
 	if err != nil {
 		return false, err.Error()
 	}
@@ -106,7 +107,7 @@ func (um *PostReplyModel) Update(reply *entities.PostReply) bool {
 	if err != nil {
 		return false
 	}
-	res, err := statement.Exec(reply.Content, time.Now().Format(timeLayout), reply.Post, reply.By, reply.ID)
+	res, err := statement.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By, reply.ID)
 	if err != nil {
 		return false
 	}

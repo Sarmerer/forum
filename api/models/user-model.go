@@ -4,12 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"forum/api/entities"
+	"forum/config"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
-
-const timeLayout = "2006-01-02 15:04:05"
 
 //UserModel helps performing CRUD operations
 type UserModel struct {
@@ -38,12 +37,12 @@ func (um *UserModel) FindAll() ([]entities.User, error) {
 		var user entities.User
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, dateErr := time.Parse(timeLayout, created)
+		date, dateErr := time.Parse(config.TimeLayout, created)
 		if dateErr != nil {
 			return users, dateErr
 		}
 		user.Created = date
-		date, dateErr = time.Parse(timeLayout, lastOnline)
+		date, dateErr = time.Parse(config.TimeLayout, lastOnline)
 		if dateErr != nil {
 			return users, dateErr
 		}
@@ -63,12 +62,12 @@ func (um *UserModel) Find(id int64) (entities.User, error) {
 	for rows.Next() {
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, err := time.Parse(timeLayout, created)
+		date, err := time.Parse(config.TimeLayout, created)
 		if err != nil {
 			return user, err
 		}
 		user.Created = date
-		date, err = time.Parse(timeLayout, lastOnline)
+		date, err = time.Parse(config.TimeLayout, lastOnline)
 		if err != nil {
 			return user, err
 		}
@@ -83,18 +82,14 @@ func (um *UserModel) Create(user *entities.User) error {
 	if err != nil {
 		return errors.New("unable to create new user account")
 	}
-	var created, lastOnline string
-	nameErr := um.DB.QueryRow("SELECT * FROM users WHERE user_name = $1", user.Name).Scan(
-		&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role,
-	)
-	emailErr := um.DB.QueryRow("SELECT * FROM users WHERE user_email = $1", user.Email).Scan(
-		&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role,
-	)
-	switch {
-	case nameErr != sql.ErrNoRows && nameErr != nil || emailErr != sql.ErrNoRows && emailErr != nil:
-		return errors.New("unable to create your account")
-	case nameErr == sql.ErrNoRows && emailErr == sql.ErrNoRows:
-		res, err := statement.Exec(user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(timeLayout), time.Now().Format(timeLayout), user.SessionID, user.Role)
+	nameErr := um.DB.QueryRow("SELECT user_name FROM users WHERE user_name = ?", user.Name).Scan(&user.Name)
+	emailErr := um.DB.QueryRow("SELECT user_email FROM users WHERE user_email = ?", user.Email).Scan(&user.Email)
+	if nameErr != sql.ErrNoRows && nameErr != nil || emailErr != sql.ErrNoRows && emailErr != nil {
+		return errors.New("unable to create new user account")
+	} else if nameErr == sql.ErrNoRows && emailErr == sql.ErrNoRows {
+		res, err := statement.Exec(
+			user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), user.SessionID, user.Role,
+		)
 		if err != nil {
 			return errors.New("unable to create new user account")
 		}
@@ -105,28 +100,30 @@ func (um *UserModel) Create(user *entities.User) error {
 		if rowsAffected > 0 {
 			return nil
 		}
-		return nil
-	case nameErr != sql.ErrNoRows && emailErr == sql.ErrNoRows:
+	} else if nameErr != sql.ErrNoRows && emailErr == sql.ErrNoRows {
 		return errors.New("name not unique")
-	case emailErr != sql.ErrNoRows && nameErr == sql.ErrNoRows:
+	} else if emailErr != sql.ErrNoRows && nameErr == sql.ErrNoRows {
 		return errors.New("email not unique")
-	case nameErr == nil && emailErr == nil:
+	} else if nameErr == nil && emailErr == nil {
 		return errors.New("both not unique")
 	}
 	return errors.New("unable to create new user account")
 }
 
 //Delete deletes user from the database
-func (um *UserModel) Delete(id int64) bool {
+func (um *UserModel) Delete(id int64) error {
 	res, err := um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
 	if err != nil {
-		return false
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("unable to delete account")
 }
 
 //Update updates existing user in the database
@@ -135,7 +132,7 @@ func (um *UserModel) Update(user *entities.User) bool {
 	if err != nil {
 		return false
 	}
-	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(timeLayout), user.Role, user.ID)
+	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(config.TimeLayout), user.Role, user.ID)
 	if err != nil {
 		return false
 	}
@@ -201,9 +198,9 @@ func (um *UserModel) FindByNameOrEmail(login string) (entities.User, error) {
 	for rows.Next() {
 		var created, lastOnline string
 		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, _ := time.Parse(timeLayout, created)
+		date, _ := time.Parse(config.TimeLayout, created)
 		user.Created = date
-		date, _ = time.Parse(timeLayout, lastOnline)
+		date, _ = time.Parse(config.TimeLayout, lastOnline)
 		user.LastOnline = date
 	}
 	return user, nil

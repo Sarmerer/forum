@@ -94,9 +94,10 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
 		return
 	}
-	if !um.Delete(ID) {
+	deleteErr := um.Delete(ID)
+	if deleteErr != nil {
 		// If there is any issue with deleting a user, return a 500 error
-		response.Error(w, http.StatusInternalServerError, errors.New("Internal server error"))
+		response.Error(w, http.StatusInternalServerError, deleteErr)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("delete user ", ID), nil)

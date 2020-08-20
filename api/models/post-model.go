@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"forum/api/entities"
+	"forum/config"
 	"time"
 )
 
@@ -48,9 +49,9 @@ func (um *PostModel) FindAll() ([]entities.Post, error) {
 		var post entities.Post
 		var created, updated string
 		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Likes, &post.Dislikes)
-		date, _ := time.Parse(timeLayout, created)
+		date, _ := time.Parse(config.TimeLayout, created)
 		post.Created = date
-		date, _ = time.Parse(timeLayout, updated)
+		date, _ = time.Parse(config.TimeLayout, updated)
 		posts = append(posts, post)
 	}
 	return posts, nil
@@ -66,9 +67,9 @@ func (um *PostModel) Find(id int) (entities.Post, error) {
 	for rows.Next() {
 		var created, updated string
 		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Likes, &post.Dislikes)
-		date, _ := time.Parse(timeLayout, created)
+		date, _ := time.Parse(config.TimeLayout, created)
 		post.Created = date
-		date, _ = time.Parse(timeLayout, updated)
+		date, _ = time.Parse(config.TimeLayout, updated)
 		post.Updated = date
 	}
 	return post, nil
@@ -80,7 +81,7 @@ func (um *PostModel) Create(post *entities.Post) (bool, string) {
 	if err != nil {
 		return false, "Internal server error"
 	}
-	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, time.Now().Format(timeLayout), time.Now().Format(timeLayout), post.Likes, post.Dislikes)
+	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Likes, post.Dislikes)
 	if err != nil {
 		return false, err.Error()
 	}
@@ -113,7 +114,7 @@ func (um *PostModel) Update(post *entities.Post) bool {
 	if err != nil {
 		return false
 	}
-	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, post.Created.Format(timeLayout), post.Updated.Format(timeLayout), post.Likes, post.Dislikes, post.ID)
+	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, post.Created.Format(config.TimeLayout), post.Updated.Format(config.TimeLayout), post.Likes, post.Dislikes, post.ID)
 	if err != nil {
 		return false
 	}
