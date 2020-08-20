@@ -1,1 +1,1 @@
-GET https://localhost:4433/users/delet HTTP/1.1
+GET https://localhost:4433/users HTTP/1.1

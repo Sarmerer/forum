@@ -4,6 +4,7 @@ import (
 	"errors"
 	"forum/api/response"
 	"forum/api/session"
+	"forum/api/utils"
 	"forum/config"
 	"log"
 	"net/http"
@@ -28,7 +29,22 @@ func SetupHeaders(next http.HandlerFunc) http.HandlerFunc {
 
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s%s %s", r.Method, r.Host, r.RequestURI, r.Proto)
+		var method string
+		switch r.Method {
+		case http.MethodGet:
+			method = utils.GET(r.Method)
+		case http.MethodPost:
+			method = utils.POST(r.Method)
+		case http.MethodPut:
+			method = utils.PUT(r.Method)
+		case http.MethodDelete:
+			method = utils.DELETE(r.Method)
+		case http.MethodOptions:
+			method = utils.OPTIONS(r.Method)
+		default:
+			method = utils.Default(r.Method)
+		}
+		log.Printf("\t%s |%s %s", r.Host, method, r.URL.Path)
 		next(w, r)
 	}
 }
