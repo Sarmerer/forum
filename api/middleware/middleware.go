@@ -29,22 +29,7 @@ func SetupHeaders(next http.HandlerFunc) http.HandlerFunc {
 
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var method string
-		switch r.Method {
-		case http.MethodGet:
-			method = utils.GET(r.Method)
-		case http.MethodPost:
-			method = utils.POST(r.Method)
-		case http.MethodPut:
-			method = utils.PUT(r.Method)
-		case http.MethodDelete:
-			method = utils.DELETE(r.Method)
-		case http.MethodOptions:
-			method = utils.OPTIONS(r.Method)
-		default:
-			method = utils.Default(r.Method)
-		}
-		log.Printf("\t%s |%s %s", r.Host, method, r.URL.Path)
+		log.Printf("\t%s |%s %s", r.Host, utils.Paint(r.Method), r.URL.Path)
 		next(w, r)
 	}
 }
