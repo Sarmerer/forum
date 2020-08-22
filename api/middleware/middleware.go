@@ -3,9 +3,7 @@ package middleware
 import (
 	"errors"
 	"forum/api/response"
-	"forum/api/session"
 	"forum/api/utils"
-	"forum/config"
 	"log"
 	"net/http"
 )
@@ -38,26 +36,6 @@ func AllowedMethods(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != method {
 			response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
-			return
-		}
-		next(w, r)
-	}
-}
-
-func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie(config.SessionCookieName)
-		if err == http.ErrNoCookie {
-			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
-			return
-		}
-		sessionExists, err := session.Validate(cookie.Value)
-		if err != nil {
-			response.InternalError(w)
-			return
-		}
-		if !sessionExists {
-			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
 		next(w, r)

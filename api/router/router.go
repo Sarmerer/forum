@@ -28,8 +28,10 @@ func setupRoutes(mux *http.ServeMux) {
 			mux.HandleFunc(route.URI,
 				middleware.Logger(
 					middleware.SetupHeaders(
-						middleware.AllowedMethods(
-							route.Method, middleware.CheckUserAuth(route.Handler),
+						middleware.CheckAPIKey(
+							middleware.AllowedMethods(
+								route.Method, middleware.CheckUserAuth(route.Handler),
+							),
 						),
 					),
 				),
@@ -38,8 +40,10 @@ func setupRoutes(mux *http.ServeMux) {
 			mux.HandleFunc(route.URI,
 				middleware.Logger(
 					middleware.SetupHeaders(
-						middleware.AllowedMethods(
-							route.Method, route.Handler,
+						middleware.CheckAPIKey(
+							middleware.AllowedMethods(
+								route.Method, route.Handler,
+							),
 						),
 					),
 				),

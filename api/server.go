@@ -11,7 +11,7 @@ import (
 
 func Run() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	fmt.Printf("\nListening https://localgost:%d\n", config.APIPort)
+	fmt.Printf("\nListening https://localhost:%d\n", config.APIPort)
 	if err := utils.LoadEnv(".env"); err != nil {
 		log.Fatal("Could not launch the server. Error:", err)
 	}
