@@ -1,9 +1,0 @@
-{
-    "rest-client.environmentVariables": {
-        "development": {
-            "API_KEY": "cde33ca4-19e3-43e5-bef5-7965928c6a30",
-            "baseURL": "https://localhost:4433"
-        },
-        "production": {}
-    }
-}
