@@ -5,7 +5,8 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-# ---> SSL
+# ---> security purposes
 /ssl
+.env
 # ---> node
 /node_modules

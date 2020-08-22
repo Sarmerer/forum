@@ -1,8 +1,6 @@
 package main
 
-import (
-	"forum/api"
-)
+import "forum/api"
 
 func main() {
 	api.Run()
