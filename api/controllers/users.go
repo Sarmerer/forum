@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
-	"forum/api/utils"
 	"forum/config"
 	"forum/database"
 
@@ -29,18 +29,29 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 //GetUser gets a specified user from the database
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	db, _ := database.Connect()
-	defer db.Close()
-	um, _ := models.NewUserModel(db)
-	var user entities.User
-	ID, err := utils.ParseURLInt(r.URL.Path, "/users/")
+	db, err := database.Connect()
 	if err != nil {
-		response.BadRequest(w)
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
+	defer db.Close()
+	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	um, err := models.NewUserModel(db)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	var user entities.User
 	user, err = um.Find(ID)
 	if err != nil {
-		panic(err)
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
+		}
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
 }
@@ -55,10 +66,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
 		return
 	}
-	ID, parseErr := utils.ParseURLInt(r.URL.Path, "/users/update/")
-	if parseErr != nil {
-		log.Println("Failed to parse, ", parseErr)
-		response.BadRequest(w)
+	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	updatedUser := &entities.User{
@@ -71,10 +81,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// 	response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 	// 	return
 	// }
-	updated := um.Update(updatedUser)
-	if !updated {
+	if updateErr := um.Update(updatedUser); updateErr != nil {
 		log.Println("Failed to update user ", updatedUser.Name)
-		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
+		response.Error(w, http.StatusInternalServerError, updateErr)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("update user ", updatedUser), nil)
@@ -82,9 +91,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 //DeleteUser deletes a user from the database
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := utils.ParseURLInt(r.URL.Path, "/users/delete/")
+	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
 	if err != nil {
-		response.BadRequest(w)
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	db, dbErr := database.Connect()

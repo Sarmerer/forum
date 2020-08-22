@@ -1,1 +1,1 @@
-GET {{baseURL}}/users?API_KEY={{API_KEY}} HTTP/1.1
+GET {{baseURL}}/api/users?API_KEY={{API_KEY}} HTTP/1.1

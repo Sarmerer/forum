@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+type MyMux http.ServeMux
 type Route struct {
 	URI         string
 	Handler     func(http.ResponseWriter, *http.Request)
@@ -12,46 +13,34 @@ type Route struct {
 	RequresAuth bool
 }
 
-func New() *http.ServeMux {
-	mux := http.NewServeMux()
-	setupFileServers(mux)
+var baseWithAuth = []middleware.Middlewares{
+	middleware.Logger,
+	middleware.SetHeaders,
+	middleware.CheckAPIKey,
+	middleware.CheckUserAuth,
+}
+
+var base = []middleware.Middlewares{
+	middleware.Logger,
+	middleware.SetHeaders,
+	middleware.CheckAPIKey,
+}
+
+func New() *Router {
+	mux := NewRouter()
 	setupRoutes(mux)
 	return mux
 }
 
-func setupRoutes(mux *http.ServeMux) {
+func setupRoutes(mux *Router) {
 	routes := authRoutes
 	routes = append(routes, userRoutes...)
 	routes = append(routes, postRoutes...)
 	for _, route := range routes {
 		if route.RequresAuth {
-			mux.HandleFunc(route.URI,
-				middleware.Logger(
-					middleware.SetupHeaders(
-						middleware.CheckAPIKey(
-							middleware.AllowedMethods(
-								route.Method, middleware.CheckUserAuth(route.Handler),
-							),
-						),
-					),
-				),
-			)
+			mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, baseWithAuth...))
 		} else {
-			mux.HandleFunc(route.URI,
-				middleware.Logger(
-					middleware.SetupHeaders(
-						middleware.CheckAPIKey(
-							middleware.AllowedMethods(
-								route.Method, route.Handler,
-							),
-						),
-					),
-				),
-			)
+			mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, base...))
 		}
 	}
-}
-
-func setupFileServers(mux *http.ServeMux) {
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
 }

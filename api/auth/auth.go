@@ -54,7 +54,10 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	cookie = generateCookie()
 	http.SetCookie(w, cookie)
 	user.SessionID = cookie.Value
-	um.Update(&user)
+	if updateErr := um.Update(&user); updateErr != nil {
+		response.Error(w, http.StatusInternalServerError, updateErr)
+		return
+	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user is logged in", nil)
 }
 

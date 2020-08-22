@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func SetupHeaders(next http.HandlerFunc) http.HandlerFunc {
+func SetHeaders(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")

@@ -127,20 +127,23 @@ func (um *UserModel) Delete(id int64) error {
 }
 
 //Update updates existing user in the database
-func (um *UserModel) Update(user *entities.User) bool {
-	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ? WHERE user_id = ?")
+func (um *UserModel) Update(user *entities.User) error {
+	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ?, user_role = ? WHERE user_id = ?")
 	if err != nil {
-		return false
+		return err
 	}
 	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(config.TimeLayout), user.Role, user.ID)
 	if err != nil {
-		return false
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("failed to update the user")
 }
 
 //UpdateSession updates user session in the database

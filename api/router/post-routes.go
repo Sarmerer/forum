@@ -6,9 +6,9 @@ import (
 )
 
 var postRoutes = []Route{
-	{"/posts", controllers.GetPosts, http.MethodGet, false},
-	{"/posts/", controllers.GetPost, http.MethodGet, false},
-	{"/posts/create", controllers.CreatePost, http.MethodPost, true},
-	{"/posts/update/", controllers.UpdatePost, http.MethodPut, true},
-	{"/posts/delete/", controllers.DeletePost, http.MethodDelete, true},
+	{"/api/posts", controllers.GetPosts, http.MethodGet, false},
+	{"/api/posts/", controllers.GetPost, http.MethodGet, false},
+	{"/api/posts/create", controllers.CreatePost, http.MethodPost, true},
+	{"/api/posts/update/", controllers.UpdatePost, http.MethodPut, true},
+	{"/api/posts/delete/", controllers.DeletePost, http.MethodDelete, true},
 }

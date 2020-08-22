@@ -6,10 +6,8 @@ import (
 )
 
 var userRoutes = []Route{
-	{"/", controllers.GetHome, http.MethodGet, false},
-
-	{"/users", controllers.GetUsers, http.MethodGet, false},
-	{"/users/", controllers.GetUser, http.MethodGet, false},
-	{"/users/delete/", controllers.DeleteUser, http.MethodDelete, true},
-	{"/users/update/", controllers.UpdateUser, http.MethodPut, true},
+	{"/api/user", controllers.GetUser, http.MethodGet, true},
+	{"/api/users", controllers.GetUsers, http.MethodGet, false},
+	{"/api/users/delete", controllers.DeleteUser, http.MethodDelete, true},
+	{"/api/users/update", controllers.UpdateUser, http.MethodPut, true},
 }
