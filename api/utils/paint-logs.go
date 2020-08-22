@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	get     = color("\033[1;44;30m%s\033[0m")
-	post    = color("\033[1;42;30m%s\033[0m")
-	put     = color("\033[1;45;30m%s\033[0m")
-	delete  = color("\033[1;101;30m%s\033[0m")
-	options = color("\033[1;103;30m%s\033[0m")
-	def     = color("\033[1;45;30m%s\033[0m")
+	get     = color("\033[1;44m%s\033[0m")
+	post    = color("\033[1;42m%s\033[0m")
+	put     = color("\033[1;45m%s\033[0m")
+	delete  = color("\033[1;101m%s\033[0m")
+	options = color("\033[1;103m%s\033[0m")
+	def     = color("\033[1;45m%s\033[0m")
 )
 
 func Paint(method string) string {
