@@ -13,6 +13,7 @@ import (
 func CheckAPIKey(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := r.FormValue("API_KEY")
+		fmt.Println(key)
 		if key == "" || key != os.Getenv("API_KEY") {
 			response.Error(w, http.StatusForbidden, errors.New("cannot access API without a valid API key"))
 			return
