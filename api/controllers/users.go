@@ -72,7 +72,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updatedUser := &entities.User{
-		ID:   int(ID),
+		ID:   ID,
 		Name: r.FormValue("name"),
 	}
 	// err := json.NewDecoder(r.Body).Decode(user)

@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"encoding/json"
 	"errors"
+	"fmt"
 	"forum/api/cache"
 	"forum/api/entities"
 	"forum/api/models"
@@ -12,13 +12,6 @@ import (
 	"log"
 	"net/http"
 )
-
-// credentials struct models the structure of a user, both in the request body, and in the DB
-type credentials struct {
-	Username string `json:"user_name" db:"user_name"`
-	Password string `json:"user_password" db:"user_password"`
-	Email    string `json:"user_email" db:"user_email"`
-}
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
@@ -35,13 +28,12 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(w)
 		return
 	}
-	creds := &credentials{Username: login, Password: password}
-	user, uErr := um.FindByNameOrEmail(creds.Username)
+	user, uErr := um.FindByNameOrEmail(login)
 	if uErr != nil {
 		response.InternalError(w)
 		return
 	}
-	passErr := verifyPassword(user.Password, creds.Password)
+	passErr := verifyPassword(user.Password, password)
 	if passErr != nil {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
@@ -54,19 +46,20 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie = generateCookie()
 	http.SetCookie(w, cookie)
-	cache.Sessions.Set(cookie.Value, cookie.Value, 0)
-	response.JSON(w, config.StatusSuccess, http.StatusOK, "user is logged in", nil)
+	cache.Sessions.Set(cookie.Value, cache.Session{SessionID: cookie.Value, Belongs: user.ID}, 0)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)
 }
 
 //SignUp authorizes new user
 func SignUp(w http.ResponseWriter, r *http.Request) {
-	creds := &credentials{}
-	decodeErr := json.NewDecoder(r.Body).Decode(creds)
-	if decodeErr != nil {
+	login := r.FormValue("login")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	if login == "" || password == "" || email == "" {
 		response.BadRequest(w)
 		return
 	}
-	hashedPassword, hashErr := hash(creds.Password)
+	hashedPassword, hashErr := hash(password)
 	if hashErr != nil {
 		response.InternalError(w)
 		return
@@ -79,10 +72,10 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := entities.User{
-		Name:      creds.Username,
+		Name:      login,
 		Password:  string(hashedPassword),
-		Email:     creds.Email,
-		Nickname:  creds.Username,
+		Email:     email,
+		Nickname:  password,
 		SessionID: "",
 		Role:      0,
 	}
@@ -104,4 +97,5 @@ func SignOut(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
+	cache.Sessions.Delete(cookie.Value)
 }

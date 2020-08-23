@@ -22,6 +22,11 @@ type Item struct {
 	Expiration int64
 }
 
+type Session struct {
+	SessionID string
+	Belongs   int64
+}
+
 func NewManager(defaultExpiration, cleanupInterval time.Duration) *Cache {
 	items := make(map[string]Item)
 	cache := Cache{

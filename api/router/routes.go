@@ -34,9 +34,7 @@ func New() *mux.Router {
 }
 
 func setupRoutes(mux *mux.Router) {
-	routes := authRoutes
-	routes = append(routes, userRoutes...)
-	routes = append(routes, postRoutes...)
+	routes := apiRoutes
 	for _, route := range routes {
 		if route.RequresAuth {
 			mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, baseWithAuth...))

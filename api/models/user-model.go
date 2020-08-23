@@ -146,26 +146,6 @@ func (um *UserModel) Update(user *entities.User) error {
 	return errors.New("failed to update the user")
 }
 
-//UpdateSession updates user session in the database
-func (um *UserModel) UpdateSession(u *entities.User) error {
-	statement, err := um.DB.Prepare("UPDATE users SET user_session_id = ? WHERE user_id = ?")
-	if err != nil {
-		return err
-	}
-	res, err := statement.Exec(u.SessionID, u.ID)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected > 0 {
-		return nil
-	}
-	return errors.New("failed to update session")
-}
-
 //UpdateRole updates user role in the database
 func (um *UserModel) UpdateRole(userID, role int) error {
 	statement, err := um.DB.Prepare("UPDATE users SET user_role = ? WHERE user_id = ?")
@@ -184,17 +164,6 @@ func (um *UserModel) UpdateRole(userID, role int) error {
 		return nil
 	}
 	return errors.New("failed to update role")
-}
-
-//ValidateSession checks if the user is logged in using session id
-func (um *UserModel) ValidateSession(id string) error {
-	err := um.DB.QueryRow("SELECT user_name FROM users WHERE user_session_id = ?", id).Scan(&id)
-	if err == sql.ErrNoRows {
-		return errors.New("session not found")
-	} else if err != nil {
-		return err
-	}
-	return nil
 }
 
 //FindByNameOrEmail finds a user by name or email in the database
