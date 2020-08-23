@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 
+	"forum/api/cache"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
@@ -93,19 +94,30 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
 	db, dbErr := database.Connect()
 	defer db.Close()
 	um, umErr := models.NewUserModel(db)
-	if dbErr != nil || umErr != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("internal server error"))
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
-	deleteErr := um.Delete(ID)
-	if deleteErr != nil {
-		// If there is any issue with deleting a user, return a 500 error
+	if umErr != nil {
+		response.Error(w, http.StatusInternalServerError, umErr)
+		return
+	}
+	cookie, cookieErr := r.Cookie(config.SessionCookieName)
+	if cookieErr != nil {
+		response.Error(w, http.StatusInternalServerError, cookieErr)
+		return
+	}
+	if cacheErr := cache.Sessions.Delete(cookie.Value); cacheErr != nil {
+		response.Error(w, http.StatusInternalServerError, cacheErr)
+		return
+	}
+	if deleteErr := um.Delete(ID); deleteErr != nil {
 		response.Error(w, http.StatusInternalServerError, deleteErr)
 		return
 	}

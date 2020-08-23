@@ -53,7 +53,7 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 		} else {
-			response.InternalError(w)
+			response.Error(w, http.StatusForbidden, errors.New("user not authorized"))
 			return
 		}
 		next(w, r)
