@@ -1,2 +1,2 @@
-DELETE https://localhost:4433/api/user/delete?ID=6&API_KEY={{API_KEY}} HTTP/1.1
-Cookie: sessionID=f14d9e6b-af48-4172-a70a-d2f5547821b3
+DELETE https://localhost:4433/api/user/delete?ID=4&API_KEY={{API_KEY}} HTTP/1.1
+Cookie: sessionID=951cb08d-4d0d-4293-a8e0-426cbfce33b0

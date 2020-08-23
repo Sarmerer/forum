@@ -1,1 +1,1 @@
-POST https://localhost:4433/api/signup?login=test1&password=test&email=test1@mail.ru&API_KEY={{API_KEY}} HTTP/1.1
+POST https://localhost:4433/api/signup?login=admin&password=admin&email=admin&API_KEY={{API_KEY}} HTTP/1.1

@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"errors"
-	"forum/api/response"
 	"forum/api/utils"
 	"log"
 	"net/http"
@@ -28,16 +26,6 @@ func SetHeaders(next http.HandlerFunc) http.HandlerFunc {
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("\t%s |%s %s", r.Host, utils.Paint(r.Method), r.URL.Path)
-		next(w, r)
-	}
-}
-
-func AllowedMethods(method string, next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != method {
-			response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
-			return
-		}
 		next(w, r)
 	}
 }

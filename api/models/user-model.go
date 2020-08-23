@@ -5,6 +5,7 @@ import (
 	"errors"
 	"forum/api/entities"
 	"forum/config"
+	"forum/database"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -16,13 +17,17 @@ type UserModel struct {
 }
 
 //NewUserModel creates an instance of UserModel
-func NewUserModel(db *sql.DB) (*UserModel, error) {
+func NewUserModel() (*sql.DB, *UserModel, error) {
+	db, dbErr := database.Connect()
+	if dbErr != nil {
+		return nil, nil, dbErr
+	}
 	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, user_name TEXT, user_password	BLOB, user_email TEXT, user_nickname	TEXT, user_created	TEXT, user_last_online	TEXT, user_session_id TEXT, user_role INTEGER)")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	statement.Exec()
-	return &UserModel{db}, nil
+	return db, &UserModel{db}, nil
 }
 
 //FindAll returns all users in the database
@@ -166,9 +171,8 @@ func (um *UserModel) UpdateRole(userID, role int) error {
 	return errors.New("failed to update role")
 }
 
-func (um *UserModel) GetRole(id int64) (int, error) {
-	var role int
-	err := um.DB.QueryRow("SELECT user_role FROM users WHERE user_id = ?", id).Scan(&role)
+func (um *UserModel) GetRole(id int64) (role int, err error) {
+	err = um.DB.QueryRow("SELECT user_role FROM users WHERE user_id = ?", id).Scan(&role)
 	if err == sql.ErrNoRows {
 		return 0, errors.New("counld not find user with such ID")
 	} else if err != nil {

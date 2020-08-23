@@ -8,18 +8,16 @@ import (
 	"forum/api/models"
 	"forum/api/response"
 	"forum/config"
-	"forum/database"
 	"log"
 	"net/http"
 )
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	db, dbErr := database.Connect()
-	um, umErr := models.NewUserModel(db)
+	db, um, umErr := models.NewUserModel()
 	defer db.Close()
-	if dbErr != nil || umErr != nil {
-		response.InternalError(w)
+	if umErr != nil {
+		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
 	login := r.FormValue("login")
@@ -64,11 +62,10 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.InternalError(w)
 		return
 	}
-	db, dbErr := database.Connect()
+	db, um, umErr := models.NewUserModel()
 	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if dbErr != nil || umErr != nil {
-		response.InternalError(w)
+	if umErr != nil {
+		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
 	user := entities.User{
