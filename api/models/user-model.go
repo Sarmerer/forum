@@ -166,6 +166,17 @@ func (um *UserModel) UpdateRole(userID, role int) error {
 	return errors.New("failed to update role")
 }
 
+func (um *UserModel) GetRole(id int64) (int, error) {
+	var role int
+	err := um.DB.QueryRow("SELECT user_role FROM users WHERE user_id = ?", id).Scan(&role)
+	if err == sql.ErrNoRows {
+		return 0, errors.New("counld not find user with such ID")
+	} else if err != nil {
+		return 0, err
+	}
+	return role, nil
+}
+
 //FindByNameOrEmail finds a user by name or email in the database
 func (um *UserModel) FindByNameOrEmail(login string) (entities.User, error) {
 	var user entities.User

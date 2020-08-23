@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"forum/api/cache"
 	"forum/config"
 	"net/http"
 	"time"
@@ -11,7 +12,13 @@ import (
 )
 
 func generateCookie() *http.Cookie {
-	return &http.Cookie{Name: config.SessionCookieName, Value: fmt.Sprint(uuid.NewV4()), Expires: time.Now().Add(config.CookieExpiration), HttpOnly: true}
+	for {
+		newUUID := fmt.Sprint(uuid.NewV4())
+		if _, found := cache.Sessions.Get(newUUID); !found {
+			return &http.Cookie{Name: config.SessionCookieName, Value: newUUID, Expires: time.Now().Add(config.CookieExpiration), HttpOnly: true}
+
+		}
+	}
 }
 
 //hash hashes the password

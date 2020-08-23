@@ -48,7 +48,12 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusInternalServerError, cookieErr)
 		}
 		if item, sessionExists := cache.Sessions.Get(cookie.Value); sessionExists {
-			if item.Belongs != ID {
+			moderator, modErr := checkUserRole(item.Belongs)
+			if modErr != nil {
+				response.Error(w, http.StatusInternalServerError, modErr)
+				return
+			}
+			if item.Belongs != ID && !moderator {
 				response.Error(w, http.StatusForbidden, errors.New("you can not delete someone else's account"))
 				return
 			}

@@ -1,1 +1,2 @@
-PUT https://localhost:4433/api/users/update?ID=9&Name=Erzhan&API_KEY={{API_KEY}} HTTP/1.1
+PUT https://localhost:4433/api/user/update?ID=1&Name=Erzhan&API_KEY={{API_KEY}} HTTP/1.1
+Cookie: sessionID=b6b6c242-c5a5-4be3-a890-ab3776571155
