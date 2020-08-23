@@ -17,7 +17,7 @@ type Cache struct {
 }
 
 type Item struct {
-	Value      interface{}
+	Value      *Session
 	Created    time.Time
 	Expiration int64
 }
@@ -40,7 +40,7 @@ func NewManager(defaultExpiration, cleanupInterval time.Duration) *Cache {
 	return &cache
 }
 
-func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
+func (c *Cache) Set(key string, value *Session, duration time.Duration) {
 	var expiration int64
 	if duration == 0 {
 		duration = c.defaultExpiration
@@ -58,7 +58,7 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 	fmt.Println(key)
 }
 
-func (c *Cache) Get(key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (*Session, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	item, found := c.items[key]

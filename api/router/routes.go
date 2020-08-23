@@ -1,45 +1,124 @@
 package router
 
 import (
-	"forum/api/middleware"
-	"forum/api/router/mux"
+	"forum/api/auth"
+	"forum/api/controllers"
 	"net/http"
 )
 
-type MyMux http.ServeMux
-type Route struct {
-	URI         string
-	Handler     func(http.ResponseWriter, *http.Request)
-	Method      string
-	RequresAuth bool
+type route struct {
+	URI      string
+	Handler  func(http.ResponseWriter, *http.Request)
+	Method   string
+	MinRole  int
+	SelfOnly bool
+	NeedAuth bool
 }
 
-var base = []middleware.Middlewares{
-	middleware.CheckAPIKey,
-	middleware.SetHeaders,
-	middleware.Logger,
-}
-
-var baseWithAuth = []middleware.Middlewares{
-	middleware.CheckUserAuth,
-	middleware.CheckAPIKey,
-	middleware.SetHeaders,
-	middleware.Logger,
-}
-
-func New() *mux.Router {
-	mux := mux.NewRouter()
-	setupRoutes(mux)
-	return mux
-}
-
-func setupRoutes(mux *mux.Router) {
-	routes := apiRoutes
-	for _, route := range routes {
-		if route.RequresAuth {
-			mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, baseWithAuth...))
-		} else {
-			mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, base...))
-		}
-	}
+var apiRoutes = []route{
+	//######################################################################
+	//############################Auth routes###############################
+	//######################################################################
+	{
+		URI:      "/api/signin",
+		Handler:  auth.SignIn,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/signup",
+		Handler:  auth.SignUp,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/signout",
+		Handler:  auth.SignOut,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: true,
+		NeedAuth: true,
+	},
+	//######################################################################
+	//###########################Users routes###############################
+	//######################################################################
+	{
+		URI:      "/api/user",
+		Handler:  controllers.GetUser,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/users",
+		Handler:  controllers.GetUsers,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/user/update",
+		Handler:  controllers.UpdateUser,
+		Method:   http.MethodPut,
+		MinRole:  0,
+		SelfOnly: true,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/user/delete",
+		Handler:  controllers.DeleteUser,
+		Method:   http.MethodDelete,
+		MinRole:  0,
+		SelfOnly: true,
+		NeedAuth: true,
+	},
+	//######################################################################
+	//###########################Posts routes###############################
+	//######################################################################
+	{
+		URI:      "/api/post",
+		Handler:  controllers.GetPosts,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/posts",
+		Handler:  controllers.GetPost,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/post/create",
+		Handler:  controllers.CreatePost,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/post/update",
+		Handler:  controllers.UpdatePost,
+		Method:   http.MethodPut,
+		MinRole:  0,
+		SelfOnly: true,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/post/delete",
+		Handler:  controllers.DeletePost,
+		Method:   http.MethodDelete,
+		MinRole:  0,
+		SelfOnly: true,
+		NeedAuth: true,
+	},
 }

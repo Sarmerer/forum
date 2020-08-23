@@ -11,14 +11,16 @@ import (
 	"time"
 )
 
-func Run() {
+func Init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	fmt.Printf("\nListening https://localhost:%d\n", config.APIPort)
 	if err := utils.LoadEnv(".env"); err != nil {
 		log.Fatal("Could not launch the server. Error:", err)
 	}
-	cache.Sessions = cache.NewManager(14*24*time.Hour, 30*time.Minute)
-	fmt.Println(cache.Sessions)
+	cache.Sessions = cache.NewManager(14*24*time.Hour, 2*time.Hour)
+}
+
+func Run() {
+	fmt.Printf("\nListening https://localhost:%d\n", config.APIPort)
 	mux := router.New()
 	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
 }

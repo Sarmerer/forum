@@ -46,7 +46,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie = generateCookie()
 	http.SetCookie(w, cookie)
-	cache.Sessions.Set(cookie.Value, cache.Session{SessionID: cookie.Value, Belongs: user.ID}, 0)
+	cache.Sessions.Set(cookie.Value, &cache.Session{SessionID: cookie.Value, Belongs: user.ID}, 0)
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)
 }
 

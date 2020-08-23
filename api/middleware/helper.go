@@ -13,7 +13,7 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 		return h
 	}
 	wrapped := h
-	for i := len(m) - 1; i >= 0; i-- {
+	for i := 0; i <= len(m)-1; i++ {
 		wrapped = m[i](wrapped)
 	}
 	return wrapped

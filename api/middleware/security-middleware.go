@@ -7,6 +7,7 @@ import (
 	"forum/config"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func CheckAPIKey(next http.HandlerFunc) http.HandlerFunc {
@@ -29,6 +30,30 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		if _, exists := cache.Sessions.Get(cookie.Value); !exists {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
+			return
+		}
+		next(w, r)
+	}
+}
+
+func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, err)
+			return
+		}
+		cookie, cookieErr := r.Cookie(config.SessionCookieName)
+		if cookieErr != nil {
+			response.Error(w, http.StatusInternalServerError, cookieErr)
+		}
+		if item, sessionExists := cache.Sessions.Get(cookie.Value); sessionExists {
+			if item.Belongs != ID {
+				response.Error(w, http.StatusForbidden, errors.New("you can not delete someone else's account"))
+				return
+			}
+		} else {
+			response.InternalError(w)
 			return
 		}
 		next(w, r)
