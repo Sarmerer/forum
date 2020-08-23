@@ -6,28 +6,44 @@ import (
 )
 
 var (
-	get     = color("\033[1;44m%s\033[0m")
-	post    = color("\033[1;42m%s\033[0m")
-	put     = color("\033[1;45m%s\033[0m")
-	delete  = color("\033[1;101m%s\033[0m")
-	options = color("\033[1;103m%s\033[0m")
-	def     = color("\033[1;45m%s\033[0m")
+	green   = color("\033[97;42m%s\033[0m")
+	white   = color("\033[90;47m%s\033[0m")
+	yellow  = color("\033[90;43m%s\033[0m")
+	red     = color("\033[97;41m%s\033[0m")
+	blue    = color("\033[97;44m%s\033[0m")
+	magenta = color("\033[97;45m%s\033[0m")
+	cyan    = color("\033[97;46m%s\033[0m")
 )
 
-func Paint(method string) string {
+func PaintMethod(method string) string {
 	switch method {
 	case http.MethodGet:
-		return get(method)
+		return blue(method + "    ")
 	case http.MethodPost:
-		return post(method)
+		return green(method + "   ")
 	case http.MethodPut:
-		return put(method)
+		return magenta(method + "     ")
 	case http.MethodDelete:
-		return delete(method)
+		return red(method + " ")
 	case http.MethodOptions:
-		return options(method)
+		return yellow(method)
 	default:
-		return def(method)
+		return white(method)
+	}
+}
+
+func PaintStatus(code int) string {
+	switch {
+	case code >= 0 && code < 300:
+		return green(code)
+	case code >= 300 && code < 400:
+		return magenta(code)
+	case code >= 400 && code < 500:
+		return yellow(code)
+	case code >= 500:
+		return red(code)
+	default:
+		return white(code)
 	}
 }
 

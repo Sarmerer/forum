@@ -1,8 +1,0 @@
-POST https://localhost:4433/signup HTTP/1.1
-Content-Type: application/json
-
-{
-    "user_name":"lala11",
-    "user_password":"",
-    "user_email":"gmail11"
-}
