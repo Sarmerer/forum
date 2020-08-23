@@ -2,7 +2,6 @@ package response
 
 import (
 	"encoding/json"
-	"errors"
 	"forum/config"
 	"net/http"
 )
@@ -27,12 +26,4 @@ func JSON(w http.ResponseWriter, status string, code int, message, data interfac
 func Error(w http.ResponseWriter, httpStatus int, err error) {
 	w.WriteHeader(httpStatus)
 	JSON(w, config.StatusError, httpStatus, err.Error(), nil)
-}
-
-func InternalError(w http.ResponseWriter) {
-	Error(w, http.StatusInternalServerError, errors.New("internal server error"))
-}
-
-func BadRequest(w http.ResponseWriter) {
-	Error(w, http.StatusBadRequest, errors.New("bad request"))
 }

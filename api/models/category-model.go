@@ -2,7 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"forum/api/entities"
+	"forum/database"
 )
 
 //CategoryModel helps performing CRUD operations
@@ -11,7 +13,11 @@ type CategoryModel struct {
 }
 
 //NewCategoryModel creates an instance of CategoryModel
-func NewCategoryModel(db *sql.DB) (*CategoryModel, error) {
+func NewCategoryModel() (*CategoryModel, error) {
+	db, dbErr := database.Connect()
+	if dbErr != nil {
+		return nil, dbErr
+	}
 	statement, err := db.Prepare(`CREATE TABLE IF NOT EXISTS "categories" (
 	"category_id"	INTEGER,
 	"category_name"	TEXT UNIQUE,
@@ -22,9 +28,7 @@ func NewCategoryModel(db *sql.DB) (*CategoryModel, error) {
 		return nil, err
 	}
 	statement.Exec()
-	return &CategoryModel{
-		DB: db,
-	}, nil
+	return &CategoryModel{db}, nil
 }
 
 //FindAll returns all categories in the database
@@ -57,51 +61,57 @@ func (um *CategoryModel) Find(id int) (entities.Category, error) {
 }
 
 //Create adds a new category to the database
-func (um *CategoryModel) Create(category *entities.Category) (bool, string) {
+func (um *CategoryModel) Create(category *entities.Category) error {
 	statement, err := um.DB.Prepare("INSERT INTO categories (category_name, category_description) VALUES (?, ?)")
 	if err != nil {
-		return false, "Internal server error"
+		return err
 	}
 	res, err := statement.Exec(category.Name, category.Description)
 	if err != nil {
-		return false, err.Error()
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false, "Internal server error"
+		return err
 	}
 	if rowsAffected > 0 {
-		return true, ""
+		return nil
 	}
-	return false, "Internal server error"
-}
-
-//Delete deletes category from the database
-func (um *CategoryModel) Delete(id int) bool {
-	res, err := um.DB.Exec("DELETE FROM categories WHERE category_id = ?", id)
-	if err != nil {
-		return false
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return false
-	}
-	return rowsAffected > 0
+	return errors.New("could not create new category")
 }
 
 //Update updates existing category in the database
-func (um *CategoryModel) Update(category *entities.Category) bool {
+func (um *CategoryModel) Update(category *entities.Category) error {
 	statement, err := um.DB.Prepare("UPDATE categories SET category_name = ?, category_description = ? WHERE category_id = ?")
 	if err != nil {
-		return false
+		return err
 	}
 	res, err := statement.Exec(category.Name, category.Description, category.ID)
 	if err != nil {
-		return false
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("could not update the category")
+}
+
+//Delete deletes category from the database
+func (um *CategoryModel) Delete(id int) error {
+	res, err := um.DB.Exec("DELETE FROM categories WHERE category_id = ?", id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("could not delete the category")
 }

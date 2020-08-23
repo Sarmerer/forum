@@ -17,17 +17,17 @@ type UserModel struct {
 }
 
 //NewUserModel creates an instance of UserModel
-func NewUserModel() (*sql.DB, *UserModel, error) {
+func NewUserModel() (*UserModel, error) {
 	db, dbErr := database.Connect()
 	if dbErr != nil {
-		return nil, nil, dbErr
+		return nil, dbErr
 	}
 	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, user_name TEXT, user_password	BLOB, user_email TEXT, user_nickname	TEXT, user_created	TEXT, user_last_online	TEXT, user_session_id TEXT, user_role INTEGER)")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	statement.Exec()
-	return db, &UserModel{db}, nil
+	return &UserModel{db}, nil
 }
 
 //FindAll returns all users in the database

@@ -1,0 +1,2 @@
+GET {{baseURL}}/api/post?ID=1&API_KEY={{API_KEY}} HTTP/1.1
+Cookie: sessionID=31ca3b82-26cc-4a18-883a-3a5754bebd8d

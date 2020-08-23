@@ -1,0 +1,2 @@
+DELETE {{baseURL}}/api/post/delete?ID=3&API_KEY={{API_KEY}}
+Cookie: sessionID=c291b03c-5f15-4ce3-9abe-08b3d6230cc3

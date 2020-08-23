@@ -22,7 +22,7 @@ func PaintMethod(method string) string {
 	case http.MethodPost:
 		return green(method + "   ")
 	case http.MethodPut:
-		return magenta(method + "     ")
+		return magenta(method + "    ")
 	case http.MethodDelete:
 		return red(method + " ")
 	case http.MethodOptions:

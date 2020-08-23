@@ -21,7 +21,7 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 }
 
 func checkUserRole(id int64) (bool, error) {
-	_, um, umErr := models.NewUserModel()
+	um, umErr := models.NewUserModel()
 	if umErr != nil {
 		return false, umErr
 	}

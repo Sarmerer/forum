@@ -12,7 +12,6 @@ import (
 )
 
 func Init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if err := utils.LoadEnv(".env"); err != nil {
 		log.Fatal("Could not launch the server. Error:", err)
 	}

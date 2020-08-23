@@ -14,17 +14,17 @@ func New() *mux.Router {
 func setupRoutes(mux *mux.Router) {
 	routes := apiRoutes
 	for _, route := range routes {
-		base := []middleware.Middlewares{
+		sequence := []middleware.Middlewares{
 			middleware.Logger,
 			middleware.SetHeaders,
 			middleware.CheckAPIKey,
 		}
 		if route.NeedAuth {
-			base = append(base, middleware.CheckUserAuth)
+			sequence = append(sequence, middleware.CheckUserAuth)
 		}
 		if route.SelfOnly {
-			base = append(base, middleware.SelfActionOnly)
+			sequence = append(sequence, middleware.SelfActionOnly)
 		}
-		mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, base...))
+		mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, sequence...))
 	}
 }

@@ -17,8 +17,8 @@ import (
 
 //GetUsers gets all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	db, um, umErr := models.NewUserModel()
-	defer db.Close()
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -38,14 +38,13 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	db, um, umErr := models.NewUserModel()
-	defer db.Close()
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
-	var user entities.User
-	user, err = um.Find(ID)
+	user, err := um.Find(ID)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -55,8 +54,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 //UpdateUser updates info about the user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	db, um, umErr := models.NewUserModel()
-	defer db.Close()
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -85,8 +84,8 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
-	db, um, umErr := models.NewUserModel()
-	defer db.Close()
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return

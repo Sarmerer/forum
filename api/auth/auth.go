@@ -14,8 +14,8 @@ import (
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	db, um, umErr := models.NewUserModel()
-	defer db.Close()
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -23,12 +23,12 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	login := r.FormValue("login")
 	password := r.FormValue("password")
 	if login == "" || password == "" {
-		response.BadRequest(w)
+		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
 	user, uErr := um.FindByNameOrEmail(login)
 	if uErr != nil {
-		response.InternalError(w)
+		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
 		return
 	}
 	passErr := verifyPassword(user.Password, password)
@@ -39,7 +39,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	cookie, cookieErr := r.Cookie(config.SessionCookieName)
 	if cookieErr != http.ErrNoCookie && cookieErr != nil {
 		log.Println("Failed to generate cookie: ", cookieErr)
-		response.InternalError(w)
+		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
 		return
 	}
 	cookie = generateCookie()
@@ -54,16 +54,16 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 	if login == "" || password == "" || email == "" {
-		response.BadRequest(w)
+		response.Error(w, http.StatusBadRequest, errors.New("empty login, email or password"))
 		return
 	}
 	hashedPassword, hashErr := hash(password)
 	if hashErr != nil {
-		response.InternalError(w)
+		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
 		return
 	}
-	db, um, umErr := models.NewUserModel()
-	defer db.Close()
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return

@@ -4,8 +4,8 @@ import "time"
 
 //Post struct contains info about post
 type Post struct {
-	ID       int
-	By       int
+	ID       int64
+	By       int64
 	Category int
 	Name     string
 	Content  string

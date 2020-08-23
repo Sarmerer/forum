@@ -83,7 +83,7 @@ var apiRoutes = []route{
 	//######################################################################
 	{
 		URI:      "/api/post",
-		Handler:  controllers.GetPosts,
+		Handler:  controllers.GetPost,
 		Method:   http.MethodGet,
 		MinRole:  0,
 		SelfOnly: false,
@@ -91,7 +91,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/posts",
-		Handler:  controllers.GetPost,
+		Handler:  controllers.GetPosts,
 		Method:   http.MethodGet,
 		MinRole:  0,
 		SelfOnly: false,
