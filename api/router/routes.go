@@ -2,6 +2,7 @@ package router
 
 import (
 	"forum/api/middleware"
+	"forum/api/router/mux"
 	"net/http"
 )
 
@@ -13,26 +14,26 @@ type Route struct {
 	RequresAuth bool
 }
 
-var baseWithAuth = []middleware.Middlewares{
-	middleware.Logger,
-	middleware.SetHeaders,
-	middleware.CheckAPIKey,
-	middleware.CheckUserAuth,
-}
-
 var base = []middleware.Middlewares{
-	middleware.Logger,
-	middleware.SetHeaders,
 	middleware.CheckAPIKey,
+	middleware.SetHeaders,
+	middleware.Logger,
 }
 
-func New() *Router {
-	mux := NewRouter()
+var baseWithAuth = []middleware.Middlewares{
+	middleware.CheckUserAuth,
+	middleware.CheckAPIKey,
+	middleware.SetHeaders,
+	middleware.Logger,
+}
+
+func New() *mux.Router {
+	mux := mux.NewRouter()
 	setupRoutes(mux)
 	return mux
 }
 
-func setupRoutes(mux *Router) {
+func setupRoutes(mux *mux.Router) {
 	routes := authRoutes
 	routes = append(routes, userRoutes...)
 	routes = append(routes, postRoutes...)

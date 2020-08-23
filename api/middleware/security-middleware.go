@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"errors"
+	"forum/api/cache"
 	"forum/api/response"
-	"forum/api/session"
 	"forum/config"
 	"net/http"
 	"os"
@@ -27,12 +27,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		sessionExists, err := session.Validate(cookie.Value)
-		if err != nil {
-			response.InternalError(w)
-			return
-		}
-		if !sessionExists {
+		if _, exists := cache.Sessions.Get(cookie.Value); !exists {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}

@@ -128,11 +128,11 @@ func (um *UserModel) Delete(id int64) error {
 
 //Update updates existing user in the database
 func (um *UserModel) Update(user *entities.User) error {
-	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ?, user_role = ? WHERE user_id = ?")
+	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ? WHERE user_id = ?")
 	if err != nil {
 		return err
 	}
-	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(config.TimeLayout), user.Role, user.ID)
+	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(config.TimeLayout), user.ID)
 	if err != nil {
 		return err
 	}
@@ -147,48 +147,54 @@ func (um *UserModel) Update(user *entities.User) error {
 }
 
 //UpdateSession updates user session in the database
-func (um *UserModel) UpdateSession(userID int, session string) bool {
+func (um *UserModel) UpdateSession(u *entities.User) error {
 	statement, err := um.DB.Prepare("UPDATE users SET user_session_id = ? WHERE user_id = ?")
 	if err != nil {
-		return false
+		return err
 	}
-	res, err := statement.Exec(session, userID)
+	res, err := statement.Exec(u.SessionID, u.ID)
 	if err != nil {
-		return false
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("failed to update session")
 }
 
 //UpdateRole updates user role in the database
-func (um *UserModel) UpdateRole(userID, role int) bool {
+func (um *UserModel) UpdateRole(userID, role int) error {
 	statement, err := um.DB.Prepare("UPDATE users SET user_role = ? WHERE user_id = ?")
 	if err != nil {
-		return false
+		return err
 	}
 	res, err := statement.Exec(role, userID)
 	if err != nil {
-		return false
+		return err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("failed to update role")
 }
 
 //ValidateSession checks if the user is logged in using session id
-func (um *UserModel) ValidateSession(id string) (bool, error) {
+func (um *UserModel) ValidateSession(id string) error {
 	err := um.DB.QueryRow("SELECT user_name FROM users WHERE user_session_id = ?", id).Scan(&id)
 	if err == sql.ErrNoRows {
-		return false, nil
+		return errors.New("session not found")
 	} else if err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 //FindByNameOrEmail finds a user by name or email in the database

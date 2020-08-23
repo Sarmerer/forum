@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"forum/api/cache"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
@@ -53,11 +54,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie = generateCookie()
 	http.SetCookie(w, cookie)
-	user.SessionID = cookie.Value
-	if updateErr := um.Update(&user); updateErr != nil {
-		response.Error(w, http.StatusInternalServerError, updateErr)
-		return
-	}
+	cache.Sessions.Set(cookie.Value, cookie.Value, 0)
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user is logged in", nil)
 }
 
