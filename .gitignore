@@ -3,6 +3,6 @@
 # ---> security purposes
 /ssl
 .env
-/environments/*
+/environments
 # ---> node
 /node_modules
