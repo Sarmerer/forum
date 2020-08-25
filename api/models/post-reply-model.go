@@ -14,23 +14,7 @@ type PostReplyModel struct {
 
 //NewPostReplyModel creates an instance of PostReplyModel
 func NewPostReplyModel(db *sql.DB) (*PostReplyModel, error) {
-	statement, err := db.Prepare(`CREATE TABLE IF NOT EXISTS "replies" (
-	"reply_id"	INTEGER,
-	"reply_content"	TEXT,
-	"reply_date"	TEXT,
-	"reply_post"	INTEGER,
-	"reply_by"	INTEGER,
-	FOREIGN KEY("reply_by") REFERENCES "users"("user_id"),
-	FOREIGN KEY("reply_post") REFERENCES "posts"("post_id"),
-	PRIMARY KEY("reply_id" AUTOINCREMENT)
-)`)
-	if err != nil {
-		return nil, err
-	}
-	statement.Exec()
-	return &PostReplyModel{
-		DB: db,
-	}, nil
+	return &PostReplyModel{db}, nil
 }
 
 //FindAll returns all replies in the database

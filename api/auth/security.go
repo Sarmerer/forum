@@ -16,7 +16,7 @@ func generateCookie() *http.Cookie {
 	for {
 		newUUID := fmt.Sprint(uuid.NewV4())
 		if _, found := cache.Sessions.Get(newUUID); !found {
-			return &http.Cookie{Name: config.SessionCookieName, Value: newUUID, Expires: time.Now().Add(config.CookieExpiration), HttpOnly: true}
+			return &http.Cookie{Name: config.SessionCookieName, Value: newUUID, Expires: time.Now().Add(config.SessionExpiration), HttpOnly: true}
 		}
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"forum/api/cache"
+	"forum/api/database"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
@@ -17,8 +18,13 @@ import (
 
 //GetUsers gets all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -38,8 +44,13 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -54,8 +65,13 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 //UpdateUser updates info about the user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -84,8 +100,13 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return

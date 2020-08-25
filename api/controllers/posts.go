@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"forum/api/database"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
@@ -14,8 +15,13 @@ import (
 )
 
 func GetPosts(w http.ResponseWriter, r *http.Request) {
-	pm, pmErr := models.NewPostModel()
-	defer pm.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
@@ -34,8 +40,13 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
-	pm, pmErr := models.NewPostModel()
-	defer pm.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
@@ -59,8 +70,13 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	uid := r.Context().Value("uid").(uint64)
-	pm, pmErr := models.NewPostModel()
-	defer pm.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
@@ -91,8 +107,13 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	pm, pmErr := models.NewPostModel()
-	defer pm.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
@@ -121,8 +142,13 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
-	pm, pmErr := models.NewPostModel()
-	defer pm.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return

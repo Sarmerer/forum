@@ -12,22 +12,7 @@ type PostReactionModel struct {
 
 //NewPostReactionModel creates an instance of PostReactionModel
 func NewPostReactionModel(db *sql.DB) (*PostReactionModel, error) {
-	statement, err := db.Prepare(`CREATE TABLE IF NOT EXISTS "posts_reaction" (
-	"post_reaction_id"	INTEGER,
-	"post_id"	INTEGER,
-	"user_id"	INTEGER,
-	"reaction"	INTEGER,
-	FOREIGN KEY("post_id") REFERENCES "posts"("post_id"),
-	FOREIGN KEY("user_id") REFERENCES "users"("user_id"),
-	PRIMARY KEY("post_reaction_id" AUTOINCREMENT)
-)`)
-	if err != nil {
-		return nil, err
-	}
-	statement.Exec()
-	return &PostReactionModel{
-		DB: db,
-	}, nil
+	return &PostReactionModel{db}, nil
 }
 
 //FindAll returns all reactions in the database

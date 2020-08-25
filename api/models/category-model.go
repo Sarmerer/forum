@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"forum/api/entities"
-	"forum/database"
 )
 
 //CategoryModel helps performing CRUD operations
@@ -13,21 +12,7 @@ type CategoryModel struct {
 }
 
 //NewCategoryModel creates an instance of CategoryModel
-func NewCategoryModel() (*CategoryModel, error) {
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		return nil, dbErr
-	}
-	statement, err := db.Prepare(`CREATE TABLE IF NOT EXISTS "categories" (
-	"category_id"	INTEGER,
-	"category_name"	TEXT UNIQUE,
-	"category_description"	TEXT,
-	PRIMARY KEY("category_id")
-)`)
-	if err != nil {
-		return nil, err
-	}
-	statement.Exec()
+func NewCategoryModel(db *sql.DB) (*CategoryModel, error) {
 	return &CategoryModel{db}, nil
 }
 

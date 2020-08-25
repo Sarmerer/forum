@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"forum/api/cache"
+	"forum/api/database"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
@@ -20,8 +21,13 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
@@ -40,7 +46,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	if cookieErr == http.ErrNoCookie {
 		cookie = generateCookie()
 	} else {
-		cookie.Expires = time.Now().Add(config.CookieExpiration)
+		cookie.Expires = time.Now().Add(config.SessionExpiration)
 	}
 	http.SetCookie(w, cookie)
 	cache.Sessions.Set(cookie.Value, &cache.Session{SessionID: cookie.Value, Belongs: user.ID}, 0)
@@ -61,8 +67,13 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
 		return
 	}
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
+		return
+	}
+	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"forum/api/entities"
 	"forum/config"
-	"forum/database"
 	"time"
 )
 
@@ -15,28 +14,7 @@ type PostModel struct {
 }
 
 //NewPostModel creates an instance of PostModel
-func NewPostModel() (*PostModel, error) {
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		return nil, dbErr
-	}
-	statement, err := db.Prepare(`CREATE TABLE IF NOT EXISTS "posts" (
-	"post_id"	INTEGER,
-	"post_by"	INTEGER,
-	"post_category"	INTEGER,
-	"post_name"	TEXT,
-	"post_content"	TEXT,
-	"post_created"	TEXT,
-	"post_updated"	TEXT,
-	"post_rating"	INTEGER,
-	FOREIGN KEY("post_by") REFERENCES "users"("user_id"),
-	FOREIGN KEY("post_category") REFERENCES "categories"("category_id"),
-	PRIMARY KEY("post_id" AUTOINCREMENT))`,
-	)
-	if err != nil {
-		return nil, err
-	}
-	statement.Exec()
+func NewPostModel(db *sql.DB) (*PostModel, error) {
 	return &PostModel{db}, nil
 }
 
