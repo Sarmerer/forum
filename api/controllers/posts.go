@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"forum/api/cache"
 	"forum/api/entities"
 	"forum/api/models"
 	"forum/api/response"
@@ -49,22 +49,16 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
-	name := r.FormValue("description")
-	content := r.FormValue("content")
-	cookie, cookieErr := r.Cookie(config.SessionCookieName)
-	if cookieErr != nil {
-		response.Error(w, http.StatusUnauthorized, cookieErr)
+	input := struct {
+		Description string `json:"description"`
+		Content     string `json:"content"`
+	}{}
+	jErr := json.NewDecoder(r.Body).Decode(&input)
+	if jErr != nil {
+		response.Error(w, http.StatusBadRequest, jErr)
 		return
 	}
-	session, exists := cache.Sessions.Get(cookie.Value)
-	if !exists {
-		response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
-		return
-	}
-	if name == "" || content == "" {
-		response.Error(w, http.StatusBadRequest, errors.New("empty description or content"))
-		return
-	}
+	uid := r.Context().Value("uid").(uint64)
 	pm, pmErr := models.NewPostModel()
 	defer pm.DB.Close()
 	if pmErr != nil {
@@ -72,14 +66,13 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	post := entities.Post{
-		Name:     name,
-		Content:  content,
-		By:       session.Belongs,
+		Name:     input.Description,
+		Content:  input.Content,
+		By:       uid,
 		Category: 0,
 		Created:  time.Now(),
 		Updated:  time.Now(),
-		Likes:    0,
-		Dislikes: 0,
+		Rating:   0,
 	}
 	// Next, insert the username, along with the hashed password into the database
 	createErr := pm.Create(&post)
@@ -105,6 +98,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updatePost, findErr := pm.Find(ID)
+	updatePost.Updated = time.Now()
 	if findErr != nil {
 		response.Error(w, http.StatusInternalServerError, findErr)
 	}

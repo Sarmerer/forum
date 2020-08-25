@@ -9,11 +9,12 @@ var ()
 const (
 	DbDriver   = "sqlite3"
 	DbURL      = "./database/forum.db"
-	APIPort  = 4433
+	APIPort    = 4433
 	TimeLayout = "2006-01-02 15:04:05"
 
 	//---> Cookies
-	SessionCookieName = "sessionID"
+	SessionCookieName = "session"
+	SessionExpiration = 14 * 24 * time.Hour
 	CookieExpiration  = 14 * 24 * time.Hour
 
 	//---> Statuses

@@ -33,7 +33,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 //GetUser gets a specified user from the database
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+	ID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -60,7 +60,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
-	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+	ID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -79,7 +79,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 //DeleteUser deletes a user from the database
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+	ID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return

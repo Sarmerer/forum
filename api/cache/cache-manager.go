@@ -24,7 +24,7 @@ type Item struct {
 
 type Session struct {
 	SessionID string
-	Belongs   int64
+	Belongs   uint64
 }
 
 func NewManager(defaultExpiration, cleanupInterval time.Duration) *Cache {

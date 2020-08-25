@@ -5,14 +5,13 @@ import "time"
 //Post struct contains info about post
 type Post struct {
 	ID       int64
-	By       int64
+	By       uint64
 	Category int
 	Name     string
 	Content  string
 	Created  time.Time
 	Updated  time.Time
-	Likes    int
-	Dislikes int
+	Rating   int
 }
 
 //PostReply struct contains info about a reply to a post

@@ -1,1 +1,0 @@
-GET {{baseURL}}/api/posts?API_KEY={{API_KEY}} HTTP/1.1

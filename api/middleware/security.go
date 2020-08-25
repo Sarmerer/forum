@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"forum/api/cache"
 	"forum/api/response"
@@ -28,17 +29,19 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		if _, exists := cache.Sessions.Get(cookie.Value); !exists {
+		session, exists := cache.Sessions.Get(cookie.Value)
+		if !exists {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		next(w, r)
+		ctx := context.WithValue(r.Context(), "uid", session.Belongs)
+		next(w, r.WithContext(ctx))
 	}
 }
 
 func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
+		uid, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, err)
 			return
@@ -47,13 +50,13 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 		if cookieErr != nil {
 			response.Error(w, http.StatusInternalServerError, cookieErr)
 		}
-		if item, sessionExists := cache.Sessions.Get(cookie.Value); sessionExists {
-			moderator, modErr := checkUserRole(item.Belongs)
+		if session, exists := cache.Sessions.Get(cookie.Value); exists {
+			moderator, modErr := checkUserRole(session.Belongs)
 			if modErr != nil {
 				response.Error(w, http.StatusInternalServerError, modErr)
 				return
 			}
-			if item.Belongs != ID && !moderator {
+			if session.Belongs != uid && !moderator {
 				response.Error(w, http.StatusForbidden, errors.New("you can not delete someone else's account"))
 				return
 			}

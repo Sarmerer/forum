@@ -1,0 +1,26 @@
+### Get all posts
+GET {{baseURL}}/api/posts
+    ?API_KEY={{API_KEY}}
+
+### Get post
+
+GET {{baseURL}}/api/post
+    ?ID=2
+    &API_KEY={{API_KEY}}
+
+### Create post
+
+POST {{baseURL}}/api/post/create
+    ?API_KEY={{API_KEY}}
+Content-Type: application/json
+
+{
+    "description":"post test",
+    "content":"sone content"
+}
+
+### Delete post
+
+DELETE {{baseURL}}/api/post/delete
+    ?ID=5
+    &API_KEY={{API_KEY}}

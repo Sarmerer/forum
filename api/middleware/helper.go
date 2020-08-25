@@ -20,7 +20,7 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 	return wrapped
 }
 
-func checkUserRole(id int64) (bool, error) {
+func checkUserRole(id uint64) (bool, error) {
 	um, umErr := models.NewUserModel()
 	if umErr != nil {
 		return false, umErr

@@ -8,22 +8,22 @@ import (
 	"forum/api/models"
 	"forum/api/response"
 	"forum/config"
-	"log"
 	"net/http"
+	"time"
 )
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
-	um, umErr := models.NewUserModel()
-	defer um.DB.Close()
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
-		return
-	}
 	login := r.FormValue("login")
 	password := r.FormValue("password")
 	if login == "" || password == "" {
 		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
+		return
+	}
+	um, umErr := models.NewUserModel()
+	defer um.DB.Close()
+	if umErr != nil {
+		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
 	user, uErr := um.FindByNameOrEmail(login)
@@ -37,12 +37,11 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cookie, cookieErr := r.Cookie(config.SessionCookieName)
-	if cookieErr != http.ErrNoCookie && cookieErr != nil {
-		log.Println("Failed to generate cookie: ", cookieErr)
-		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
-		return
+	if cookieErr == http.ErrNoCookie {
+		cookie = generateCookie()
+	} else {
+		cookie.Expires = time.Now().Add(config.CookieExpiration)
 	}
-	cookie = generateCookie()
 	http.SetCookie(w, cookie)
 	cache.Sessions.Set(cookie.Value, &cache.Session{SessionID: cookie.Value, Belongs: user.ID}, 0)
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)

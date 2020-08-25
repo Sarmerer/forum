@@ -28,8 +28,7 @@ func NewPostModel() (*PostModel, error) {
 	"post_content"	TEXT,
 	"post_created"	TEXT,
 	"post_updated"	TEXT,
-	"post_likes"	INTEGER,
-	"post_dislikes"	INTEGER,
+	"post_rating"	INTEGER,
 	FOREIGN KEY("post_by") REFERENCES "users"("user_id"),
 	FOREIGN KEY("post_category") REFERENCES "categories"("category_id"),
 	PRIMARY KEY("post_id" AUTOINCREMENT))`,
@@ -52,7 +51,7 @@ func (um *PostModel) FindAll() ([]entities.Post, error) {
 	for rows.Next() {
 		var post entities.Post
 		var created, updated string
-		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Likes, &post.Dislikes)
+		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
 		date, _ := time.Parse(config.TimeLayout, created)
 		post.Created = date
 		date, _ = time.Parse(config.TimeLayout, updated)
@@ -70,7 +69,7 @@ func (um *PostModel) Find(id int64) (*entities.Post, error) {
 	}
 	for rows.Next() {
 		var created, updated string
-		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Likes, &post.Dislikes)
+		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
 		date, _ := time.Parse(config.TimeLayout, created)
 		post.Created = date
 		date, _ = time.Parse(config.TimeLayout, updated)
@@ -81,11 +80,11 @@ func (um *PostModel) Find(id int64) (*entities.Post, error) {
 
 //Create adds a new post to the database
 func (um *PostModel) Create(post *entities.Post) error {
-	statement, err := um.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_likes, post_dislikes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+	statement, err := um.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
-	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Likes, post.Dislikes)
+	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating)
 	if err != nil {
 		return err
 	}
@@ -101,11 +100,11 @@ func (um *PostModel) Create(post *entities.Post) error {
 
 //Update updates existing post in the database
 func (um *PostModel) Update(post *entities.Post) error {
-	statement, err := um.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_likes = ?, post_dislikes = ? WHERE post_id = ?")
+	statement, err := um.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_rating = ? = ? WHERE post_id = ?")
 	if err != nil {
 		return err
 	}
-	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, post.Created.Format(config.TimeLayout), post.Updated.Format(config.TimeLayout), post.Likes, post.Dislikes, post.ID)
+	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, post.Created.Format(config.TimeLayout), post.Updated.Format(config.TimeLayout), post.Rating, post.ID)
 	if err != nil {
 		return err
 	}

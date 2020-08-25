@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"forum/api/entities"
+	"forum/api/utils/channel"
 	"forum/config"
 	"forum/database"
 	"time"
@@ -22,43 +23,64 @@ func NewUserModel() (*UserModel, error) {
 	if dbErr != nil {
 		return nil, dbErr
 	}
-	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, user_name TEXT, user_password	BLOB, user_email TEXT, user_nickname	TEXT, user_created	TEXT, user_last_online	TEXT, user_session_id TEXT, user_role INTEGER)")
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS "users" (
+		"user_id" INTEGER PRIMARY KEY,
+		"user_name" TEXT,
+		"user_password"	BLOB,
+		"user_email" TEXT,
+		"user_nickname"	TEXT,
+		"user_created" TEXT,
+		"user_last_online" TEXT
+		"user_session_id" TEXT,
+		"user_role INTEGER
+		)`,
+	)
 	if err != nil {
 		return nil, err
 	}
-	statement.Exec()
 	return &UserModel{db}, nil
 }
 
 //FindAll returns all users in the database
-func (um *UserModel) FindAll() ([]entities.User, error) {
-	rows, queryErr := um.DB.Query("SELECT * FROM users")
-	if queryErr != nil {
-		return nil, queryErr
-	}
-	var users []entities.User
-
-	for rows.Next() {
-		var user entities.User
-		var created, lastOnline string
-		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
-		date, dateErr := time.Parse(config.TimeLayout, created)
-		if dateErr != nil {
-			return users, dateErr
+func (um *UserModel) FindAll() (users []entities.User, err error) {
+	var rows *sql.Rows
+	done := make(chan bool)
+	go func(ch chan<- bool) {
+		defer close(ch)
+		rows, err = um.DB.Query("SELECT * FROM users")
+		if err != nil {
+			ch <- false
+			return
 		}
-		user.Created = date
-		date, dateErr = time.Parse(config.TimeLayout, lastOnline)
-		if dateErr != nil {
-			return users, dateErr
+		for rows.Next() {
+			var date time.Time
+			var user entities.User
+			var created, lastOnline string
+			rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
+			date, err := time.Parse(config.TimeLayout, created)
+			if err != nil {
+				ch <- false
+				return
+			}
+			user.Created = date
+			date, err = time.Parse(config.TimeLayout, lastOnline)
+			if err != nil {
+				ch <- false
+				return
+			}
+			user.LastOnline = date
+			users = append(users, user)
 		}
-		user.LastOnline = date
-		users = append(users, user)
+		ch <- true
+	}(done)
+	if channel.OK(done) {
+		return users, nil
 	}
-	return users, nil
+	return nil, err
 }
 
 //Find returns a specific user from the database
-func (um *UserModel) Find(id int64) (entities.User, error) {
+func (um *UserModel) Find(id uint64) (entities.User, error) {
 	var user entities.User
 	rows, err := um.DB.Query("SELECT * FROM users WHERE user_id = ?", id)
 	if err != nil {
@@ -116,19 +138,29 @@ func (um *UserModel) Create(user *entities.User) error {
 }
 
 //Delete deletes user from the database
-func (um *UserModel) Delete(id int64) error {
-	res, err := um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected > 0 {
+func (um *UserModel) Delete(id uint64) error {
+	var err error
+	var response sql.Result
+	var rowsAffected int64
+	done := make(chan bool)
+	go func(ch chan<- bool) {
+		defer close(ch)
+		response, err = um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
+		if err != nil {
+			ch <- false
+			return
+		}
+		if rowsAffected, err = response.RowsAffected(); rowsAffected > 0 && err == nil {
+			ch <- true
+		} else {
+			ch <- false
+			return
+		}
+	}(done)
+	if channel.OK(done) {
 		return nil
 	}
-	return errors.New("unable to delete account")
+	return err
 }
 
 //Update updates existing user in the database
@@ -149,36 +181,6 @@ func (um *UserModel) Update(user *entities.User) error {
 		return nil
 	}
 	return errors.New("failed to update the user")
-}
-
-//UpdateRole updates user role in the database
-func (um *UserModel) UpdateRole(userID, role int) error {
-	statement, err := um.DB.Prepare("UPDATE users SET user_role = ? WHERE user_id = ?")
-	if err != nil {
-		return err
-	}
-	res, err := statement.Exec(role, userID)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected > 0 {
-		return nil
-	}
-	return errors.New("failed to update role")
-}
-
-func (um *UserModel) GetRole(id int64) (role int, err error) {
-	err = um.DB.QueryRow("SELECT user_role FROM users WHERE user_id = ?", id).Scan(&role)
-	if err == sql.ErrNoRows {
-		return 0, errors.New("counld not find user with such ID")
-	} else if err != nil {
-		return 0, err
-	}
-	return role, nil
 }
 
 //FindByNameOrEmail finds a user by name or email in the database

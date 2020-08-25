@@ -1,2 +1,0 @@
-PUT {{baseURL}}/api/post/update?ID=1&description=updated-name&API_KEY={{API_KEY}} HTTP/1.1
-Cookie: sessionID=a26583f1-502d-48ac-a2b9-08f35c5a3c8c
