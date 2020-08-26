@@ -1,10 +1,11 @@
 package sessions
 
 import (
+	"fmt"
+	"forum/api/logger"
 	models "forum/api/models/user"
 	"forum/config"
 	"forum/database"
-	"log"
 	"time"
 )
 
@@ -16,20 +17,22 @@ func StartGC() {
 func GarbageCollector() {
 	for {
 		<-time.After(config.GCInterval)
-		start := time.Now()
 		counter := 0
+		start := time.Now()
 		db, dbErr := database.Connect()
 		if dbErr != nil {
-			log.Fatal("Garbage collector could not start. Error: ", dbErr)
+			logger.ServerLogs("Garbage collector", "", dbErr)
+			return
 		}
 		um, umErr := models.NewUserModel(db)
 		if umErr != nil {
-			log.Fatal("Garbage collector could not start. Error: ", umErr)
+			logger.ServerLogs("Garbage collector", "", umErr)
 			return
 		}
 		users, uErr := um.FindAll()
 		if uErr != nil {
-			log.Fatal("Garbage collector could not start. Error: ", uErr)
+			logger.ServerLogs("Garbage collector", "", uErr)
+			return
 		}
 		for _, user := range users {
 			if time.Now().After(user.LastOnline.Add(config.SessionExpiration)) {
@@ -37,6 +40,6 @@ func GarbageCollector() {
 				counter++
 			}
 		}
-		log.Printf("Garbage collector has destroyed expired sessions. Time took: %s, sessions closed: %v", time.Since(start), counter)
+		logger.ServerLogs("Garbage collector", fmt.Sprintf("closed %v sessions. Took %s", counter, time.Since(start)), nil)
 	}
 }

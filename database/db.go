@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"forum/config"
-	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,35 +18,27 @@ func Connect() (*sql.DB, error) {
 
 func CheckIntegrity() (err error) {
 	var db *sql.DB
-	var execResult sql.Result
-	var rowsAffected int64
 	db, err = Connect()
 	if err != nil {
-		return err
+		return
 	}
-	execResult, err = db.Exec(`CREATE TABLE IF NOT EXISTS "users" (
-		"user_id" INTEGER PRIMARY KEY,
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "users" (
+		"user_id" INTEGER,
 		"user_name" TEXT,
 		"user_password"	BLOB,
 		"user_email" TEXT,
 		"user_nickname"	TEXT,
 		"user_created" TEXT,
-		"user_last_online" TEXT
+		"user_last_online" TEXT,
 		"user_session_id" TEXT,
-		"user_role" INTEGER)`,
+		"user_role" INTEGER,
+		PRIMARY KEY("user_id" AUTOINCREMENT))`,
 	)
 	if err != nil {
-		return err
-	}
-	rowsAffected, err = execResult.RowsAffected()
-	if rowsAffected > 0 {
-		log.Println(`Recreated "users" table`)
-	}
-	if err != nil {
-		return err
+		return
 	}
 
-	execResult, err = db.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
 		"post_id"	INTEGER,
 		"post_by"	INTEGER,
 		"post_category"	INTEGER,
@@ -61,33 +52,19 @@ func CheckIntegrity() (err error) {
 		PRIMARY KEY("post_id" AUTOINCREMENT))`,
 	)
 	if err != nil {
-		return err
-	}
-	rowsAffected, err = execResult.RowsAffected()
-	if rowsAffected > 0 {
-		log.Println(`Recreated "posts" table`)
-	}
-	if err != nil {
-		return err
+		return
 	}
 
-	execResult, err = db.Exec(`CREATE TABLE IF NOT EXISTS "categories" (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "categories" (
 		"category_id"	INTEGER,
 		"category_name"	TEXT UNIQUE,
 		"category_description"	TEXT,
-		PRIMARY KEY("category_id"))`)
+		PRIMARY KEY("category_id" AUTOINCREMENT))`)
 	if err != nil {
-		return err
-	}
-	rowsAffected, err = execResult.RowsAffected()
-	if rowsAffected > 0 {
-		log.Println(`Recreated "categories" table`)
-	}
-	if err != nil {
-		return err
+		return
 	}
 
-	execResult, err = db.Exec(`CREATE TABLE IF NOT EXISTS "posts_reaction" (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "posts_reaction" (
 		"post_reaction_id"	INTEGER,
 		"post_id"	INTEGER,
 		"user_id"	INTEGER,
@@ -97,17 +74,10 @@ func CheckIntegrity() (err error) {
 		PRIMARY KEY("post_reaction_id" AUTOINCREMENT))`,
 	)
 	if err != nil {
-		return err
-	}
-	rowsAffected, err = execResult.RowsAffected()
-	if rowsAffected > 0 {
-		log.Println(`Recreated "reactions" table`)
-	}
-	if err != nil {
-		return err
+		return
 	}
 
-	execResult, err = db.Exec(`CREATE TABLE IF NOT EXISTS "replies" (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "replies" (
 		"reply_id"	INTEGER,
 		"reply_content"	TEXT,
 		"reply_date"	TEXT,
@@ -118,14 +88,7 @@ func CheckIntegrity() (err error) {
 		PRIMARY KEY("reply_id" AUTOINCREMENT))`,
 	)
 	if err != nil {
-		return err
+		return
 	}
-	rowsAffected, err = execResult.RowsAffected()
-	if rowsAffected > 0 {
-		log.Println(`Recreated "replies" table`)
-	}
-	if err != nil {
-		return err
-	}
-	return nil
+	return
 }

@@ -22,9 +22,10 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 	return wrapped
 }
 
-func checkUserRole(id uint64) (role int, err error) {
+func checkUserRole(id uint64) (role, status int, err error) {
 	var db *sql.DB
 	var um *models.UserModel
+	status = http.StatusInternalServerError
 	db, err = database.Connect()
 	defer db.Close()
 	if err != nil {
@@ -34,7 +35,7 @@ func checkUserRole(id uint64) (role int, err error) {
 	if err != nil {
 		return
 	}
-	if role, err = um.GetRole(id); err != nil {
+	if role, status, err = um.GetRole(id); err != nil {
 		return
 	}
 	return

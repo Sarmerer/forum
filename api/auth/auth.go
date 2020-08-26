@@ -30,9 +30,9 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
-	user, uErr := um.FindByNameOrEmail(login)
+	user, status, uErr := um.FindByNameOrEmail(login)
 	if uErr != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
+		response.Error(w, status, uErr)
 		return
 	}
 	passErr := verifyPassword(user.Password, password)
@@ -87,12 +87,9 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		SessionID: "",
 		Role:      0,
 	}
-	// Next, insert the username, along with the hashed password into the database
-	createErr := um.Create(&user)
-	//TO-DO: improve error check
+	status, createErr := um.Create(&user)
 	if createErr != nil {
-		// If there is any issue with inserting into the database, return a 500 error
-		response.Error(w, http.StatusInternalServerError, createErr)
+		response.Error(w, status, createErr)
 		return
 	}
 	response.Success(w, "user has been created", nil)

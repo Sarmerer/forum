@@ -1,8 +1,9 @@
 package middleware
 
 import (
+	"fmt"
+	"forum/api/logger"
 	"forum/api/utils"
-	"log"
 	"net/http"
 	"time"
 )
@@ -22,6 +23,6 @@ func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rec := statusRecorder{w, 200, time.Now()}
 		next(&rec, r)
-		log.Printf("|%s|\t%10s|\t%s |%s %s", utils.PaintStatus(rec.status), time.Since(rec.elapsed), r.Host, utils.PaintMethod(r.Method), r.URL.Path)
+		logger.HTTPLogs(utils.PaintStatus(rec.status), fmt.Sprint(time.Since(rec.elapsed)), r.Host, utils.PaintMethod(r.Method), r.URL.Path)
 	}
 }

@@ -56,9 +56,9 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
-		role, modErr := checkUserRole(queryUID)
+		role, status, modErr := checkUserRole(queryUID)
 		if modErr != nil {
-			response.Error(w, http.StatusInternalServerError, modErr)
+			response.Error(w, status, modErr)
 			return
 		}
 		requestorUID := r.Context().Value("uid").(uint64)
