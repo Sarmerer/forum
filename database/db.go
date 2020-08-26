@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"forum/config"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 //Connect connects to the database

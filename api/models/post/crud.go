@@ -3,10 +3,21 @@ package models
 import (
 	"database/sql"
 	"errors"
-	"forum/api/entities"
 	"forum/config"
 	"time"
 )
+
+//Post struct contains info about post
+type Post struct {
+	ID       int64
+	By       uint64
+	Category int
+	Name     string
+	Content  string
+	Created  time.Time
+	Updated  time.Time
+	Rating   int
+}
 
 //PostModel helps performing CRUD operations
 type PostModel struct {
@@ -19,15 +30,15 @@ func NewPostModel(db *sql.DB) (*PostModel, error) {
 }
 
 //FindAll returns all posts in the database
-func (um *PostModel) FindAll() ([]entities.Post, error) {
+func (um *PostModel) FindAll() ([]Post, error) {
 	rows, e := um.DB.Query("SELECT * FROM posts")
 	if e != nil {
 		return nil, e
 	}
-	var posts []entities.Post
+	var posts []Post
 
 	for rows.Next() {
-		var post entities.Post
+		var post Post
 		var created, updated string
 		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
 		date, _ := time.Parse(config.TimeLayout, created)
@@ -39,8 +50,8 @@ func (um *PostModel) FindAll() ([]entities.Post, error) {
 }
 
 //Find returns a specific post from the database
-func (um *PostModel) Find(id int64) (*entities.Post, error) {
-	var post entities.Post
+func (um *PostModel) Find(id int64) (*Post, error) {
+	var post Post
 	rows, err := um.DB.Query("SELECT * FROM posts WHERE post_id = ?", id)
 	if err != nil {
 		return &post, err
@@ -57,7 +68,7 @@ func (um *PostModel) Find(id int64) (*entities.Post, error) {
 }
 
 //Create adds a new post to the database
-func (um *PostModel) Create(post *entities.Post) error {
+func (um *PostModel) Create(post *Post) error {
 	statement, err := um.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
@@ -77,7 +88,7 @@ func (um *PostModel) Create(post *entities.Post) error {
 }
 
 //Update updates existing post in the database
-func (um *PostModel) Update(post *entities.Post) error {
+func (um *PostModel) Update(post *Post) error {
 	statement, err := um.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_rating = ? = ? WHERE post_id = ?")
 	if err != nil {
 		return err

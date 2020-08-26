@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"forum/api/database"
-	"forum/api/entities"
-	"forum/api/models"
+	models "forum/api/models/post"
 	"forum/api/response"
 	"forum/config"
+	"forum/database"
 	"net/http"
 	"strconv"
 	"time"
@@ -81,7 +80,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
 	}
-	post := entities.Post{
+	post := models.Post{
 		Name:     input.Description,
 		Content:  input.Content,
 		By:       uid,

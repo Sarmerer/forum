@@ -2,8 +2,15 @@ package models
 
 import (
 	"database/sql"
-	"forum/api/entities"
 )
+
+//PostReaction struct contains info about a reaction to a post
+type PostReaction struct {
+	ID       int
+	PostID   int
+	UserID   int
+	Reaction int
+}
 
 //PostReactionModel helps performing CRUD operations
 type PostReactionModel struct {
@@ -16,15 +23,15 @@ func NewPostReactionModel(db *sql.DB) (*PostReactionModel, error) {
 }
 
 //FindAll returns all reactions in the database
-func (um *PostReactionModel) FindAll() ([]entities.PostReaction, error) {
+func (um *PostReactionModel) FindAll() ([]PostReaction, error) {
 	rows, e := um.DB.Query("SELECT * FROM posts_reaction")
 	if e != nil {
 		return nil, e
 	}
-	var reactions []entities.PostReaction
+	var reactions []PostReaction
 
 	for rows.Next() {
-		var reaction entities.PostReaction
+		var reaction PostReaction
 		rows.Scan(&reaction.ID, &reaction.PostID, &reaction.UserID, &reaction.Reaction)
 		reactions = append(reactions, reaction)
 	}
@@ -32,8 +39,8 @@ func (um *PostReactionModel) FindAll() ([]entities.PostReaction, error) {
 }
 
 //Find returns a specific reaction from the database
-func (um *PostReactionModel) Find(id int) (entities.PostReaction, error) {
-	var reaction entities.PostReaction
+func (um *PostReactionModel) Find(id int) (PostReaction, error) {
+	var reaction PostReaction
 	rows, err := um.DB.Query("SELECT * FROM posts_reaction WHERE reaction_id = ?", id)
 	if err != nil {
 		return reaction, err
@@ -45,7 +52,7 @@ func (um *PostReactionModel) Find(id int) (entities.PostReaction, error) {
 }
 
 //Create adds a new reaction to the database
-func (um *PostReactionModel) Create(reaction *entities.PostReaction) (bool, string) {
+func (um *PostReactionModel) Create(reaction *PostReaction) (bool, string) {
 	statement, err := um.DB.Prepare("INSERT INTO posts_reaction (post_id, user_id, reaction) VALUES (?, ?, ?)")
 	if err != nil {
 		return false, "Internal server error"
@@ -78,7 +85,7 @@ func (um *PostReactionModel) Delete(id int) bool {
 }
 
 //Update updates existing reaction in the database
-func (um *PostReactionModel) Update(reaction *entities.PostReaction) bool {
+func (um *PostReactionModel) Update(reaction *PostReaction) bool {
 	statement, err := um.DB.Prepare("UPDATE posts_reaction SET post_id = ?, user_id = ?, reaction = ? WHERE reaction_id = ?")
 	if err != nil {
 		return false

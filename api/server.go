@@ -2,38 +2,31 @@ package api
 
 import (
 	"fmt"
-	"forum/api/cache"
-	"forum/api/database"
+	"forum/api/logger"
 	"forum/api/router"
+	"forum/api/sessions"
 	"forum/api/utils"
 	"forum/config"
+	"forum/database"
 	"log"
 	"net/http"
-	"os"
-	"time"
 )
 
 func Init() {
 	log.Println("Starting server...")
 
-	if err := utils.LoadEnv(".env"); err != nil {
-		log.Printf("Environment:\t|%s|\tError: %s\n", utils.Red("FAIL"), err)
-		os.Exit(1)
-	}
-	log.Printf("Environment:\t|%s|\n", utils.Green("OK"))
+	err := utils.LoadEnv(".env")
+	logger.InitLogs("Environment", err)
 
-	cache.Sessions = cache.NewManager(14*24*time.Hour, 2*time.Hour)
-	log.Printf("Sessions manager:\t|%s|\n", utils.Green("OK"))
+	sessions.StartGC()
+	logger.InitLogs("Garbage collector", nil)
 
-	if err := database.CheckIntegrity(); err != nil {
-		log.Printf("Database integrity:\t|%s|\tError: %s\n", utils.Red("FAIL"), err)
-		os.Exit(1)
-	}
-	log.Printf("Databse integrity:\t|%s|\n", utils.Green("OK"))
+	err = database.CheckIntegrity()
+	logger.InitLogs("Database integrity", err)
 }
 
 func Run() {
-	log.Printf("Listening https://localhost:%d\n", config.APIPort)
 	mux := router.New()
+	log.Printf("Listening https://localhost:%d\n", config.APIPort)
 	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
 }

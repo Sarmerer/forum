@@ -27,3 +27,8 @@ func Error(w http.ResponseWriter, httpStatus int, err error) {
 	w.WriteHeader(httpStatus)
 	JSON(w, config.StatusError, httpStatus, err.Error(), nil)
 }
+
+func Success(w http.ResponseWriter, message, data interface{}) {
+	w.WriteHeader(http.StatusOK)
+	JSON(w, config.StatusSuccess, http.StatusOK, message, data)
+}

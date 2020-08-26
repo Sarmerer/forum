@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"forum/api/database"
-	"forum/api/models"
+	"database/sql"
+	models "forum/api/models/user"
+	"forum/database"
 	"net/http"
 )
 
@@ -21,20 +22,20 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 	return wrapped
 }
 
-func checkUserRole(id uint64) (bool, error) {
-	db, dbErr := database.Connect()
+func checkUserRole(id uint64) (role int, err error) {
+	var db *sql.DB
+	var um *models.UserModel
+	db, err = database.Connect()
 	defer db.Close()
-	if dbErr != nil {
-		return false, dbErr
+	if err != nil {
+		return
 	}
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		return false, umErr
+	um, err = models.NewUserModel(db)
+	if err != nil {
+		return
 	}
-	if role, grErr := um.GetRole(id); umErr != nil {
-		return false, grErr
-	} else if role > 0 {
-		return true, nil
+	if role, err = um.GetRole(id); err != nil {
+		return
 	}
-	return false, nil
+	return
 }

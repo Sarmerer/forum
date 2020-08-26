@@ -3,8 +3,14 @@ package models
 import (
 	"database/sql"
 	"errors"
-	"forum/api/entities"
 )
+
+//Category struct contains info about category
+type Category struct {
+	ID          int
+	Name        string
+	Description string
+}
 
 //CategoryModel helps performing CRUD operations
 type CategoryModel struct {
@@ -17,15 +23,15 @@ func NewCategoryModel(db *sql.DB) (*CategoryModel, error) {
 }
 
 //FindAll returns all categories in the database
-func (um *CategoryModel) FindAll() ([]entities.Category, error) {
+func (um *CategoryModel) FindAll() ([]Category, error) {
 	rows, e := um.DB.Query("SELECT * FROM categories")
 	if e != nil {
 		return nil, e
 	}
-	var categories []entities.Category
+	var categories []Category
 
 	for rows.Next() {
-		var category entities.Category
+		var category Category
 		rows.Scan(&category.ID, &category.Name, &category.Description)
 		categories = append(categories, category)
 	}
@@ -33,8 +39,8 @@ func (um *CategoryModel) FindAll() ([]entities.Category, error) {
 }
 
 //Find returns a specific category from the database
-func (um *CategoryModel) Find(id int) (entities.Category, error) {
-	var category entities.Category
+func (um *CategoryModel) Find(id int) (Category, error) {
+	var category Category
 	rows, err := um.DB.Query("SELECT * FROM categories WHERE category_id = ?", id)
 	if err != nil {
 		return category, err
@@ -46,7 +52,7 @@ func (um *CategoryModel) Find(id int) (entities.Category, error) {
 }
 
 //Create adds a new category to the database
-func (um *CategoryModel) Create(category *entities.Category) error {
+func (um *CategoryModel) Create(category *Category) error {
 	statement, err := um.DB.Prepare("INSERT INTO categories (category_name, category_description) VALUES (?, ?)")
 	if err != nil {
 		return err
@@ -66,7 +72,7 @@ func (um *CategoryModel) Create(category *entities.Category) error {
 }
 
 //Update updates existing category in the database
-func (um *CategoryModel) Update(category *entities.Category) error {
+func (um *CategoryModel) Update(category *Category) error {
 	statement, err := um.DB.Prepare("UPDATE categories SET category_name = ?, category_description = ? WHERE category_id = ?")
 	if err != nil {
 		return err

@@ -3,15 +3,12 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
-	"forum/api/cache"
-	"forum/api/database"
-	"forum/api/entities"
-	"forum/api/models"
+	models "forum/api/models/user"
 	"forum/api/response"
 	"forum/config"
+	"forum/database"
 
 	"net/http"
 )
@@ -55,7 +52,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
-	user, err := um.Find(ID)
+	user, err := um.FindByID(ID)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -81,12 +78,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	updatedUser := &entities.User{
+	updatedUser := &models.User{
 		ID:   ID,
 		Name: r.FormValue("name"),
 	}
 	if updateErr := um.Update(updatedUser); updateErr != nil {
-		log.Println("Failed to update user ", updatedUser.Name)
 		response.Error(w, http.StatusInternalServerError, updateErr)
 		return
 	}
@@ -109,15 +105,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
-		return
-	}
-	cookie, cookieErr := r.Cookie(config.SessionCookieName)
-	if cookieErr != nil {
-		response.Error(w, http.StatusInternalServerError, cookieErr)
-		return
-	}
-	if cacheErr := cache.Sessions.Delete(cookie.Value); cacheErr != nil {
-		response.Error(w, http.StatusInternalServerError, cacheErr)
 		return
 	}
 	if deleteErr := um.Delete(ID); deleteErr != nil {

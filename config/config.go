@@ -8,7 +8,7 @@ var ()
 
 const (
 	DbDriver   = "sqlite3"
-	DbPath     = "./api/database/forum.db"
+	DbPath     = "./database/forum.db"
 	APIPort    = 4433
 	TimeLayout = "2006-01-02 15:04:05"
 	GCInterval = 24 * time.Hour

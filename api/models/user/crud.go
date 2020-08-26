@@ -3,13 +3,22 @@ package models
 import (
 	"database/sql"
 	"errors"
-	"forum/api/entities"
 	"forum/api/utils/channel"
 	"forum/config"
 	"time"
-
-	_ "github.com/mattn/go-sqlite3"
 )
+
+type User struct {
+	ID         uint64
+	Name       string
+	Password   string
+	Email      string
+	Nickname   string
+	Created    time.Time
+	LastOnline time.Time
+	SessionID  string
+	Role       int
+}
 
 //UserModel helps performing CRUD operations
 type UserModel struct {
@@ -22,7 +31,7 @@ func NewUserModel(db *sql.DB) (*UserModel, error) {
 }
 
 //FindAll returns all users in the database
-func (um *UserModel) FindAll() (users []entities.User, err error) {
+func (um *UserModel) FindAll() (users []User, err error) {
 	var rows *sql.Rows
 	done := make(chan bool)
 	go func(ch chan<- bool) {
@@ -34,7 +43,7 @@ func (um *UserModel) FindAll() (users []entities.User, err error) {
 		}
 		for rows.Next() {
 			var date time.Time
-			var user entities.User
+			var user User
 			var created, lastOnline string
 			rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
 			date, err := time.Parse(config.TimeLayout, created)
@@ -59,9 +68,9 @@ func (um *UserModel) FindAll() (users []entities.User, err error) {
 	return nil, err
 }
 
-//Find returns a specific user from the database
-func (um *UserModel) Find(id uint64) (entities.User, error) {
-	var user entities.User
+//FindByID returns a specific user from the database
+func (um *UserModel) FindByID(id uint64) (User, error) {
+	var user User
 	rows, err := um.DB.Query("SELECT * FROM users WHERE user_id = ?", id)
 	if err != nil {
 		return user, err
@@ -84,7 +93,7 @@ func (um *UserModel) Find(id uint64) (entities.User, error) {
 }
 
 //Create adds a new user to the database
-func (um *UserModel) Create(user *entities.User) error {
+func (um *UserModel) Create(user *User) error {
 	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return errors.New("unable to create new user account")
@@ -144,7 +153,7 @@ func (um *UserModel) Delete(id uint64) error {
 }
 
 //Update updates existing user in the database
-func (um *UserModel) Update(user *entities.User) error {
+func (um *UserModel) Update(user *User) error {
 	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ? WHERE user_id = ?")
 	if err != nil {
 		return err
@@ -164,8 +173,8 @@ func (um *UserModel) Update(user *entities.User) error {
 }
 
 //FindByNameOrEmail finds a user by name or email in the database
-func (um *UserModel) FindByNameOrEmail(login string) (entities.User, error) {
-	var user entities.User
+func (um *UserModel) FindByNameOrEmail(login string) (User, error) {
+	var user User
 	rows, err := um.DB.Query("SELECT * FROM users WHERE user_name = ? OR user_email = ?", login, login)
 	if err != nil {
 		return user, err

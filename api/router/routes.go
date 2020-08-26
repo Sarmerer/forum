@@ -40,7 +40,7 @@ var apiRoutes = []route{
 		Handler:  auth.SignOut,
 		Method:   http.MethodPost,
 		MinRole:  0,
-		SelfOnly: true,
+		SelfOnly: false,
 		NeedAuth: true,
 	},
 	//######################################################################

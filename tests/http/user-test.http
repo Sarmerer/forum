@@ -8,21 +8,25 @@ GET {{baseURL}}/api/user
     ?ID=1
     &API_KEY={{API_KEY}}
 
-### Sign in
-
-POST https://localhost:4433/api/signin  
-    ?login=admin
-    &password=admin
-    &API_KEY={{API_KEY}}
-Cookie: sessionID=6ab7cdea-1745-4272-a040-d7d0b3e1a9ed
-
 ### Sign up
 
-POST https://localhost:4433/api/signup
+POST {{baseURL}}/api/signup
     ?login=admin
     &password=admin
     &email=test
     &API_KEY={{API_KEY}}
+
+### Sign in
+
+POST {{baseURL}}/api/signin  
+    ?login=admin
+    &password=admin
+    &API_KEY={{API_KEY}}
+    
+### Sign out
+
+POST {{baseURL}}/api/signout
+    ?API_KEY={{API_KEY}}
 
 ### Update user
 

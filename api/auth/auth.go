@@ -3,12 +3,10 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"forum/api/cache"
-	"forum/api/database"
-	"forum/api/entities"
-	"forum/api/models"
+	models "forum/api/models/user"
 	"forum/api/response"
 	"forum/config"
+	"forum/database"
 	"net/http"
 	"time"
 )
@@ -48,8 +46,11 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	} else {
 		cookie.Expires = time.Now().Add(config.SessionExpiration)
 	}
+	if err := um.UpdateSession(user.ID, cookie.Value); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
 	http.SetCookie(w, cookie)
-	cache.Sessions.Set(cookie.Value, &cache.Session{SessionID: cookie.Value, Belongs: user.ID}, 0)
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)
 }
 
@@ -78,7 +79,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, umErr)
 		return
 	}
-	user := entities.User{
+	user := models.User{
 		Name:      login,
 		Password:  string(hashedPassword),
 		Email:     email,
@@ -94,15 +95,28 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, createErr)
 		return
 	}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been created", nil)
+	response.Success(w, "user has been created", nil)
 }
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie(config.SessionCookieName)
-	if err == http.ErrNoCookie {
+	db, dbErr := database.Connect()
+	defer db.Close()
+	if dbErr != nil {
+		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	um, umErr := models.NewUserModel(db)
+	if umErr != nil {
+		response.Error(w, http.StatusInternalServerError, umErr)
+		return
+	}
+	cookie, _ := r.Cookie(config.SessionCookieName)
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
-	cache.Sessions.Delete(cookie.Value)
+	uid := r.Context().Value("uid").(uint64)
+	if err := um.UpdateSession(uid, ""); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	response.Success(w, "user is logged out", nil)
 }

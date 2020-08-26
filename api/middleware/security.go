@@ -3,9 +3,10 @@ package middleware
 import (
 	"context"
 	"errors"
-	"forum/api/cache"
+	models "forum/api/models/user"
 	"forum/api/response"
 	"forum/config"
+	"forum/database"
 	"net/http"
 	"os"
 	"strconv"
@@ -29,40 +30,40 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		session, exists := cache.Sessions.Get(cookie.Value)
-		if !exists {
+		db, dbErr := database.Connect()
+		defer db.Close()
+		if dbErr != nil {
+			response.Error(w, http.StatusInternalServerError, dbErr)
+		}
+		um, umErr := models.NewUserModel(db)
+		if umErr != nil {
+			response.Error(w, http.StatusInternalServerError, umErr)
+		}
+		uid, exists := um.ValidateSession(cookie.Value)
+		if exists != nil {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		ctx := context.WithValue(r.Context(), "uid", session.Belongs)
+		ctx := context.WithValue(r.Context(), "uid", uid)
 		next(w, r.WithContext(ctx))
 	}
 }
 
 func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		uid, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
+		queryUID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
-		cookie, cookieErr := r.Cookie(config.SessionCookieName)
-		if cookieErr != nil {
-			response.Error(w, http.StatusInternalServerError, cookieErr)
-		}
-		if session, exists := cache.Sessions.Get(cookie.Value); exists {
-			moderator, modErr := checkUserRole(session.Belongs)
-			if modErr != nil {
-				response.Error(w, http.StatusInternalServerError, modErr)
-				return
-			}
-			if session.Belongs != uid && !moderator {
-				response.Error(w, http.StatusForbidden, errors.New("you can not delete someone else's account"))
-				return
-			}
-		} else {
-			response.Error(w, http.StatusForbidden, errors.New("user not authorized"))
+		role, modErr := checkUserRole(queryUID)
+		if modErr != nil {
+			response.Error(w, http.StatusInternalServerError, modErr)
 			return
+		}
+		requestorUID := r.Context().Value("uid").(uint64)
+		if queryUID != requestorUID && role > 0 {
+
 		}
 		next(w, r)
 	}

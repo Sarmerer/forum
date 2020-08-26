@@ -1,11 +1,19 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 )
 
-func (um *UserModel) ValidateSession() error {
-	return errors.New("f")
+func (um *UserModel) ValidateSession(session string) (uid uint64, err error) {
+	err = um.DB.QueryRow("SELECT user_id FROM users WHERE user_session_id = ?", session).Scan(&uid)
+	if err == sql.ErrNoRows {
+		err = errors.New("session not found")
+		return
+	} else if err != nil {
+		return
+	}
+	return
 }
 
 func (um *UserModel) UpdateSession(id uint64, newSession string) error {

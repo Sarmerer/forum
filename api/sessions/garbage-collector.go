@@ -1,9 +1,9 @@
 package sessions
 
 import (
-	"forum/api/database"
-	"forum/api/models"
+	models "forum/api/models/user"
 	"forum/config"
+	"forum/database"
 	"log"
 	"time"
 )
@@ -16,6 +16,8 @@ func StartGC() {
 func GarbageCollector() {
 	for {
 		<-time.After(config.GCInterval)
+		start := time.Now()
+		counter := 0
 		db, dbErr := database.Connect()
 		if dbErr != nil {
 			log.Fatal("Garbage collector could not start. Error: ", dbErr)
@@ -30,9 +32,11 @@ func GarbageCollector() {
 			log.Fatal("Garbage collector could not start. Error: ", uErr)
 		}
 		for _, user := range users {
-			if time.Now().After(user.LastOnline.Add(14 * 24 * time.Hour)) {
+			if time.Now().After(user.LastOnline.Add(config.SessionExpiration)) {
 				um.UpdateSession(user.ID, "")
+				counter++
 			}
 		}
+		log.Printf("Garbage collector has destroyed expired sessions. Time took: %s, sessions closed: %v", time.Since(start), counter)
 	}
 }
