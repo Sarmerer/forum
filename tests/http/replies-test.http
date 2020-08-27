@@ -1,0 +1,9 @@
+GET {{baseURL}}/api/comments
+    ?ID=1
+    &API_KEY={{API_KEY}}
+
+###
+
+POST {{baseURL}}/api/comments/add
+    ?ID=2
+    &API_KEY={{API_KEY}}

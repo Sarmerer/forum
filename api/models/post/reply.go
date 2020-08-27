@@ -2,7 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"forum/config"
+	"net/http"
 	"time"
 )
 
@@ -11,7 +13,7 @@ type PostReply struct {
 	ID      int
 	Content string
 	Date    time.Time
-	Post    int
+	Post    int64
 	By      int
 }
 
@@ -26,10 +28,13 @@ func NewPostReplyModel(db *sql.DB) (*PostReplyModel, error) {
 }
 
 //FindAll returns all replies in the database
-func (um *PostReplyModel) FindAll() ([]PostReply, error) {
-	rows, e := um.DB.Query("SELECT * FROM replies")
-	if e != nil {
-		return nil, e
+func (pr *PostReplyModel) FindAll(postID int64) ([]PostReply, error) {
+	rows, err := pr.DB.Query("SELECT * FROM replies WHERE reply_post = ?", postID)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
 	}
 	var replies []PostReply
 
@@ -45,9 +50,9 @@ func (um *PostReplyModel) FindAll() ([]PostReply, error) {
 }
 
 //Find returns a specific reply from the database
-func (um *PostReplyModel) Find(id int) (PostReply, error) {
+func (pr *PostReplyModel) Find(id int) (PostReply, error) {
 	var reply PostReply
-	rows, err := um.DB.Query("SELECT * FROM replies WHERE reply_id = ?", id)
+	rows, err := pr.DB.Query("SELECT * FROM replies WHERE reply_id = ?", id)
 	if err != nil {
 		return reply, err
 	}
@@ -61,28 +66,28 @@ func (um *PostReplyModel) Find(id int) (PostReply, error) {
 }
 
 //Create adds a new reply to the database
-func (um *PostReplyModel) Create(reply *PostReply) (bool, string) {
-	statement, err := um.DB.Prepare("INSERT INTO replies (reply_content, reply_date, reply_post, reply_by) VALUES (?, ?, ?, ?)")
+func (pr *PostReplyModel) Create(reply *PostReply) (int, error) {
+	statement, err := pr.DB.Prepare("INSERT INTO replies (reply_content, reply_date, reply_post, reply_by) VALUES (?, ?, ?, ?)")
 	if err != nil {
-		return false, "Internal server error"
+		return http.StatusInternalServerError, err
 	}
-	res, err := statement.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By)
+	res, err := statement.Exec(reply.Content, reply.Date, reply.Post, reply.By)
 	if err != nil {
-		return false, err.Error()
+		return http.StatusInternalServerError, err
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false, "Internal server error"
+		return http.StatusInternalServerError, err
 	}
 	if rowsAffected > 0 {
-		return true, ""
+		return http.StatusOK, nil
 	}
-	return false, "Internal server error"
+	return http.StatusBadRequest, errors.New("could not create the reply")
 }
 
 //Delete deletes reply from the database
-func (um *PostReplyModel) Delete(id int) bool {
-	res, err := um.DB.Exec("DELETE FROM replies WHERE reply_id = ?", id)
+func (pr *PostReplyModel) Delete(id int) bool {
+	res, err := pr.DB.Exec("DELETE FROM replies WHERE reply_id = ?", id)
 	if err != nil {
 		return false
 	}
@@ -94,8 +99,8 @@ func (um *PostReplyModel) Delete(id int) bool {
 }
 
 //Update updates existing reply in the database
-func (um *PostReplyModel) Update(reply *PostReply) bool {
-	statement, err := um.DB.Prepare("UPDATE replies SET reply_content = ?, reply_date = ?, reply_post = ?, reply_by = ? WHERE reply_id = ?")
+func (pr *PostReplyModel) Update(reply *PostReply) bool {
+	statement, err := pr.DB.Prepare("UPDATE replies SET reply_content = ?, reply_date = ?, reply_post = ?, reply_by = ? WHERE reply_id = ?")
 	if err != nil {
 		return false
 	}

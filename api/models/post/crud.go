@@ -53,9 +53,9 @@ func (pm *PostModel) FindAll() ([]Post, error) {
 //Find returns a specific post from the database
 func (pm *PostModel) FindByID(uid int64) (*Post, int, error) {
 	var post Post
-	var created, lastOnline string
+	var created, updated string
 	row := pm.DB.QueryRow("SELECT * FROM posts WHERE post_id = ?", uid)
-	err := row.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &post.Created, &post.Updated, &post.Rating)
+	err := row.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
 	if err == sql.ErrNoRows {
 		return nil, http.StatusBadRequest, errors.New("post not found")
 	}
@@ -65,7 +65,7 @@ func (pm *PostModel) FindByID(uid int64) (*Post, int, error) {
 	if post.Created, err = time.Parse(config.TimeLayout, created); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	if post.Updated, err = time.Parse(config.TimeLayout, lastOnline); err != nil {
+	if post.Updated, err = time.Parse(config.TimeLayout, updated); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	return &post, http.StatusOK, nil
@@ -118,10 +118,7 @@ func (pm *PostModel) Delete(id int64) (int, error) {
 	var rowsAffected int64
 	result, err = pm.DB.Exec("DELETE FROM posts WHERE post_id = ?", id)
 	if err == sql.ErrNoRows {
-		return http.StatusBadRequest, errors.New("user not found")
-	}
-	if err != nil {
-		return http.StatusInternalServerError, err
+		return http.StatusBadRequest, errors.New("post not found")
 	}
 	if err != nil {
 		return http.StatusInternalServerError, err

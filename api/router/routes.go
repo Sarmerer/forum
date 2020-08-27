@@ -121,4 +121,40 @@ var apiRoutes = []route{
 		SelfOnly: true,
 		NeedAuth: true,
 	},
+
+	//######################################################################
+	//###########################Comments routes###############################
+	//######################################################################
+	{
+		URI:      "/api/comments",
+		Handler:  controllers.GetReplies,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/comments/add",
+		Handler:  controllers.CreateReply,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/comments/update",
+		Handler:  controllers.UpdateReply,
+		Method:   http.MethodPut,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/comments/delete",
+		Handler:  controllers.DeleteReply,
+		Method:   http.MethodDelete,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: true,
+	},
 }

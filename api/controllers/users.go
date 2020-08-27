@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
-	"fmt"
 	"strconv"
 
 	models "forum/api/models/user"
@@ -15,110 +15,126 @@ import (
 
 //GetUsers gets all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
+	var (
+		db    *sql.DB
+		um    *models.UserModel
+		users []models.User
+		err   error
+	)
+	if db, err = database.Connect(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
+	if um, err = models.NewUserModel(db); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	users, err := um.FindAll()
-	if err != nil {
+	if users, err = um.FindAll(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, users)
-	return
 }
 
 //GetUser gets a specified user from the database
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	uid, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
-	if err != nil {
+	var (
+		uid    uint64
+		db     *sql.DB
+		um     *models.UserModel
+		user   *models.User
+		status int
+		err    error
+	)
+	if uid, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
 		response.Error(w, http.StatusBadRequest, errors.New("invalid ID"))
 		return
 	}
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
+	if db, err = database.Connect(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
+	if um, err = models.NewUserModel(db); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	user, status, err := um.FindByID(uid)
-	if err != nil {
+	if user, status, err = um.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
-	return
 }
 
 //UpdateUser updates info about the user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	name := r.FormValue("name")
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
-		return
-	}
-	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
-		return
-	}
-	ID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
-	if err != nil {
+	var (
+		name        string
+		uid         uint64
+		db          *sql.DB
+		um          *models.UserModel
+		updatedUser *models.User
+		status      int
+		err         error
+	)
+	name = r.FormValue("name")
+	if uid, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	updatedUser, status, uErr := um.FindByID(ID)
-	if uErr != nil {
-		response.Error(w, status, uErr)
+	if db, err = database.Connect(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+	if um, err = models.NewUserModel(db); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	if updatedUser, status, err = um.FindByID(uid); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 	if name != "" {
 		updatedUser.Name = name
 	}
-	if status, updateErr := um.Update(updatedUser); updateErr != nil {
-		response.Error(w, status, updateErr)
+	if status, err = um.Update(updatedUser); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been updated", nil)
-	return
 }
 
 //DeleteUser deletes a user from the database
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	ID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
-	if err != nil {
+	var (
+		uid    uint64
+		db     *sql.DB
+		um     *models.UserModel
+		status int
+		err    error
+	)
+	if uid, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
+	if db, err = database.Connect(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
+	if um, err = models.NewUserModel(db); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if status, deleteErr := um.Delete(ID); deleteErr != nil {
-		response.Error(w, status, deleteErr)
+	if _, status, err = um.FindByID(uid); err != nil {
+		response.Error(w, status, err)
 		return
 	}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("delete user ", ID), nil)
-	return
+	if status, err = um.Delete(uid); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been deleted", nil)
 }

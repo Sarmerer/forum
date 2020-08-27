@@ -22,5 +22,5 @@ Content-Type: application/json
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=7
+    ?ID=2
     &API_KEY={{API_KEY}}
