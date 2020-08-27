@@ -31,13 +31,15 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		db, dbErr := database.Connect()
-		defer db.Close()
 		if dbErr != nil {
 			response.Error(w, http.StatusInternalServerError, dbErr)
+			return
 		}
+		defer db.Close()
 		um, umErr := models.NewUserModel(db)
 		if umErr != nil {
 			response.Error(w, http.StatusInternalServerError, umErr)
+			return
 		}
 		uid, exists := um.ValidateSession(cookie.Value)
 		if exists != nil {
@@ -56,14 +58,17 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
-		role, status, modErr := checkUserRole(queryUID)
-		if modErr != nil {
-			response.Error(w, status, modErr)
-			return
-		}
 		requestorUID := r.Context().Value("uid").(uint64)
-		if queryUID != requestorUID && role > 0 {
-
+		if queryUID != requestorUID {
+			role, status, modErr := checkUserRole(requestorUID)
+			if modErr != nil {
+				response.Error(w, status, modErr)
+				return
+			}
+			if role == 0 {
+				response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
+				return
+			}
 		}
 		next(w, r)
 	}

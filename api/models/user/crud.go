@@ -79,7 +79,7 @@ func (um *UserModel) FindByID(uid uint64) (*User, int, error) {
 func (um *UserModel) Create(user *User) (int, error) {
 	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return http.StatusInternalServerError, err //errors.New("unable to create new user account")
+		return http.StatusInternalServerError, errors.New("unable to create new user account")
 	}
 	nameErr := um.DB.QueryRow("SELECT user_name FROM users WHERE user_name = ?", user.Name).Scan(&user.Name)
 	emailErr := um.DB.QueryRow("SELECT user_email FROM users WHERE user_email = ?", user.Email).Scan(&user.Email)
@@ -100,11 +100,11 @@ func (um *UserModel) Create(user *User) (int, error) {
 			return http.StatusOK, nil
 		}
 	} else if nameErr != sql.ErrNoRows && emailErr == sql.ErrNoRows {
-		return http.StatusConflict, errors.New("name not unique")
+		return http.StatusConflict, errors.New("login already taken")
 	} else if emailErr != sql.ErrNoRows && nameErr == sql.ErrNoRows {
-		return http.StatusConflict, errors.New("email not unique")
+		return http.StatusConflict, errors.New("email already taken")
 	} else if nameErr == nil && emailErr == nil {
-		return http.StatusConflict, errors.New("both not unique")
+		return http.StatusConflict, errors.New("login and email are already taken")
 	}
 	return http.StatusBadRequest, errors.New("unable to create new user account")
 }
@@ -130,16 +130,16 @@ func (um *UserModel) Update(user *User) (int, error) {
 //Delete deletes user from the database
 func (um *UserModel) Delete(id uint64) (int, error) {
 	var err error
-	var response sql.Result
+	var result sql.Result
 	var rowsAffected int64
-	response, err = um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
+	result, err = um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
 	if err == sql.ErrNoRows {
 		return http.StatusBadRequest, errors.New("user not found")
 	}
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	if rowsAffected, err = response.RowsAffected(); rowsAffected > 0 && err == nil {
+	if rowsAffected, err = result.RowsAffected(); rowsAffected > 0 && err == nil {
 		return http.StatusOK, nil
 	} else {
 		return http.StatusInternalServerError, err

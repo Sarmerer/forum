@@ -20,11 +20,11 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
@@ -52,6 +52,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)
+	return
 }
 
 //SignUp authorizes new user
@@ -69,11 +70,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
@@ -93,15 +94,16 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Success(w, "user has been created", nil)
+	return
 }
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	um, umErr := models.NewUserModel(db)
 	if umErr != nil {
 		response.Error(w, http.StatusInternalServerError, umErr)
@@ -116,4 +118,5 @@ func SignOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Success(w, "user is logged out", nil)
+	return
 }

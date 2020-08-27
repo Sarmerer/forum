@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"forum/config"
+	"net/http"
 	"time"
 )
 
@@ -30,10 +31,10 @@ func NewPostModel(db *sql.DB) (*PostModel, error) {
 }
 
 //FindAll returns all posts in the database
-func (um *PostModel) FindAll() ([]Post, error) {
-	rows, e := um.DB.Query("SELECT * FROM posts")
-	if e != nil {
-		return nil, e
+func (pm *PostModel) FindAll() ([]Post, error) {
+	rows, err := pm.DB.Query("SELECT * FROM posts")
+	if err != nil {
+		return nil, err
 	}
 	var posts []Post
 
@@ -50,26 +51,29 @@ func (um *PostModel) FindAll() ([]Post, error) {
 }
 
 //Find returns a specific post from the database
-func (um *PostModel) Find(id int64) (*Post, error) {
+func (pm *PostModel) FindByID(uid int64) (*Post, int, error) {
 	var post Post
-	rows, err := um.DB.Query("SELECT * FROM posts WHERE post_id = ?", id)
+	var created, lastOnline string
+	row := pm.DB.QueryRow("SELECT * FROM posts WHERE post_id = ?", uid)
+	err := row.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &post.Created, &post.Updated, &post.Rating)
+	if err == sql.ErrNoRows {
+		return nil, http.StatusBadRequest, errors.New("post not found")
+	}
 	if err != nil {
-		return &post, err
+		return nil, http.StatusInternalServerError, err
 	}
-	for rows.Next() {
-		var created, updated string
-		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
-		date, _ := time.Parse(config.TimeLayout, created)
-		post.Created = date
-		date, _ = time.Parse(config.TimeLayout, updated)
-		post.Updated = date
+	if post.Created, err = time.Parse(config.TimeLayout, created); err != nil {
+		return nil, http.StatusInternalServerError, err
 	}
-	return &post, nil
+	if post.Updated, err = time.Parse(config.TimeLayout, lastOnline); err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return &post, http.StatusOK, nil
 }
 
 //Create adds a new post to the database
-func (um *PostModel) Create(post *Post) error {
-	statement, err := um.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)")
+func (pm *PostModel) Create(post *Post) error {
+	statement, err := pm.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -88,8 +92,8 @@ func (um *PostModel) Create(post *Post) error {
 }
 
 //Update updates existing post in the database
-func (um *PostModel) Update(post *Post) error {
-	statement, err := um.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_rating = ? = ? WHERE post_id = ?")
+func (pm *PostModel) Update(post *Post) error {
+	statement, err := pm.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_rating = ? = ? WHERE post_id = ?")
 	if err != nil {
 		return err
 	}
@@ -108,17 +112,23 @@ func (um *PostModel) Update(post *Post) error {
 }
 
 //Delete deletes post from the database
-func (um *PostModel) Delete(id int64) error {
-	res, err := um.DB.Exec("DELETE FROM posts WHERE post_id = ?", id)
+func (pm *PostModel) Delete(id int64) (int, error) {
+	var err error
+	var result sql.Result
+	var rowsAffected int64
+	result, err = pm.DB.Exec("DELETE FROM posts WHERE post_id = ?", id)
+	if err == sql.ErrNoRows {
+		return http.StatusBadRequest, errors.New("user not found")
+	}
 	if err != nil {
-		return err
+		return http.StatusInternalServerError, err
 	}
-	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return err
+		return http.StatusInternalServerError, err
 	}
-	if rowsAffected > 0 {
-		return nil
+	if rowsAffected, err = result.RowsAffected(); rowsAffected > 0 && err == nil {
+		return http.StatusOK, nil
+	} else {
+		return http.StatusInternalServerError, err
 	}
-	return errors.New("could not delete the post")
 }

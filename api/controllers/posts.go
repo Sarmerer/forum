@@ -15,11 +15,11 @@ import (
 
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
@@ -31,31 +31,33 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, posts)
+	return
 }
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
+		response.Error(w, http.StatusBadRequest, errors.New("invalid ID"))
 		return
 	}
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
 	}
-	user, err := pm.Find(ID)
+	user, status, err := pm.FindByID(ID)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+		response.Error(w, status, err)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
+	return
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -70,11 +72,11 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	uid := r.Context().Value("uid").(uint64)
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
@@ -89,13 +91,14 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Updated:  time.Now(),
 		Rating:   0,
 	}
-	// Next, insert the username, along with the hashed password into the database
+
 	createErr := pm.Create(&post)
 	if createErr != nil {
 		response.Error(w, http.StatusInternalServerError, createErr)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "post has been created", nil)
+	return
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -107,21 +110,22 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
 	}
-	updatePost, findErr := pm.Find(ID)
-	updatePost.Updated = time.Now()
+	updatePost, status, findErr := pm.FindByID(ID)
 	if findErr != nil {
-		response.Error(w, http.StatusInternalServerError, findErr)
+		response.Error(w, status, findErr)
+		return
 	}
+	updatePost.Updated = time.Now()
 	if name != "" {
 		updatePost.Name = name
 	}
@@ -133,6 +137,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("post has been updated"), nil)
+	return
 }
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {
@@ -142,19 +147,20 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db, dbErr := database.Connect()
-	defer db.Close()
 	if dbErr != nil {
 		response.Error(w, http.StatusInternalServerError, dbErr)
 		return
 	}
+	defer db.Close()
 	pm, pmErr := models.NewPostModel(db)
 	if pmErr != nil {
 		response.Error(w, http.StatusInternalServerError, pmErr)
 		return
 	}
-	if deleteErr := pm.Delete(ID); deleteErr != nil {
-		response.Error(w, http.StatusInternalServerError, deleteErr)
+	if status, deleteErr := pm.Delete(ID); deleteErr != nil {
+		response.Error(w, status, deleteErr)
 		return
 	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("post has been deleted"), nil)
+	return
 }
