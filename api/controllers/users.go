@@ -1,14 +1,13 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 	"strconv"
 
+	"forum/api/controllers/helpers"
 	models "forum/api/models/user"
 	"forum/api/response"
 	"forum/config"
-	"forum/database"
 
 	"net/http"
 )
@@ -16,17 +15,11 @@ import (
 //GetUsers gets all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var (
-		db    *sql.DB
 		um    *models.UserModel
 		users []models.User
 		err   error
 	)
-	if db, err = database.Connect(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	defer db.Close()
-	if um, err = models.NewUserModel(db); err != nil {
+	if um, err = helpers.NewUserModel(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -34,6 +27,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
+
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, users)
 }
 
@@ -41,22 +35,17 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid    uint64
-		db     *sql.DB
 		um     *models.UserModel
 		user   *models.User
 		status int
 		err    error
 	)
-	if uid, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
-		response.Error(w, http.StatusBadRequest, errors.New("invalid ID"))
+	if uid, err = helpers.ParseID(r); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if db, err = database.Connect(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	defer db.Close()
-	if um, err = models.NewUserModel(db); err != nil {
+
+	if um, err = helpers.NewUserModel(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -64,6 +53,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
+
 	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
 }
 
@@ -72,7 +62,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		name        string
 		uid         uint64
-		db          *sql.DB
 		um          *models.UserModel
 		updatedUser *models.User
 		status      int
@@ -83,12 +72,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if db, err = database.Connect(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	defer db.Close()
-	if um, err = models.NewUserModel(db); err != nil {
+
+	if um, err = helpers.NewUserModel(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -103,6 +88,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
+
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been updated", nil)
 }
 
@@ -110,7 +96,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid    uint64
-		db     *sql.DB
 		um     *models.UserModel
 		status int
 		err    error
@@ -119,12 +104,8 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}
-	if db, err = database.Connect(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	defer db.Close()
-	if um, err = models.NewUserModel(db); err != nil {
+
+	if um, err = helpers.NewUserModel(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -136,5 +117,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
+
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been deleted", nil)
 }

@@ -7,8 +7,8 @@ import (
 //PostReaction struct contains info about a reaction to a post
 type PostReaction struct {
 	ID       int
-	PostID   int
-	UserID   int
+	PostID   uint64
+	UserID   uint64
 	Reaction int
 }
 

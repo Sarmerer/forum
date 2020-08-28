@@ -2,66 +2,77 @@ package controllers
 
 import (
 	"database/sql"
-	"errors"
+	"forum/api/controllers/helpers"
 	models "forum/api/models/post"
 	"forum/api/response"
 	"forum/database"
 	"net/http"
-	"strconv"
 	"time"
 )
 
 func GetReplies(w http.ResponseWriter, r *http.Request) {
-	var err error
-	var db *sql.DB
-	var replies []models.PostReply
-	pid, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
-	if err != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
+	var (
+		pid     uint64
+		pr      *models.PostReplyModel
+		replies []models.PostReply
+		status  int
+		err     error
+	)
+	if pid, err = helpers.ParseID(r); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	db, err = database.Connect()
-	if err != nil {
+
+	if status, err = helpers.PostExists(pid); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+
+	if pr, err = helpers.NewReplyModel(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
-	pr, err := models.NewPostReplyModel(db)
-	if err != nil {
+	if replies, err = pr.FindAll(pid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
-	replies, err = pr.FindAll(pid)
-	if err != nil {
-		if err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
-		}
-	}
+
 	response.Success(w, nil, replies)
 }
 
 func CreateReply(w http.ResponseWriter, r *http.Request) {
-	var err error
-	var db *sql.DB
-	var status int
-	pid, err := strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64)
-	if err != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
+	var (
+		pid    uint64
+		db     *sql.DB
+		pr     *models.PostReplyModel
+		author uint64
+		status int
+		err    error
+	)
+	if pid, err = helpers.ParseID(r); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
 	db, err = database.Connect()
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 	}
-	pr, err := models.NewPostReplyModel(db)
-	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if status, err = helpers.PostExists(pid); err != nil {
+		response.Error(w, status, err)
+		return
 	}
+	if pr, err = models.NewPostReplyModel(db); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	author = r.Context().Value("uid").(uint64)
 	reply := &models.PostReply{
 		Content: "test content",
 		Date:    time.Now(),
 		Post:    pid,
-		By:      0,
+		By:      author,
 	}
-	status, err = pr.Create(reply)
-	if err != nil {
+	if status, err = pr.Create(reply); err != nil {
 		response.Error(w, status, err)
 		return
 	}

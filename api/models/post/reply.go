@@ -13,8 +13,8 @@ type PostReply struct {
 	ID      int
 	Content string
 	Date    time.Time
-	Post    int64
-	By      int
+	Post    uint64
+	By      uint64
 }
 
 //PostReplyModel helps performing CRUD operations
@@ -28,7 +28,7 @@ func NewPostReplyModel(db *sql.DB) (*PostReplyModel, error) {
 }
 
 //FindAll returns all replies in the database
-func (pr *PostReplyModel) FindAll(postID int64) ([]PostReply, error) {
+func (pr *PostReplyModel) FindAll(postID uint64) ([]PostReply, error) {
 	rows, err := pr.DB.Query("SELECT * FROM replies WHERE reply_post = ?", postID)
 	if err == sql.ErrNoRows {
 		return nil, nil

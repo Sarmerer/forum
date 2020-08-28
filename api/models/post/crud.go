@@ -10,7 +10,7 @@ import (
 
 //Post struct contains info about post
 type Post struct {
-	ID       int64
+	ID       uint64
 	By       uint64
 	Category int
 	Name     string
@@ -51,10 +51,10 @@ func (pm *PostModel) FindAll() ([]Post, error) {
 }
 
 //Find returns a specific post from the database
-func (pm *PostModel) FindByID(uid int64) (*Post, int, error) {
+func (pm *PostModel) FindByID(pid uint64) (*Post, int, error) {
 	var post Post
 	var created, updated string
-	row := pm.DB.QueryRow("SELECT * FROM posts WHERE post_id = ?", uid)
+	row := pm.DB.QueryRow("SELECT * FROM posts WHERE post_id = ?", pid)
 	err := row.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
 	if err == sql.ErrNoRows {
 		return nil, http.StatusBadRequest, errors.New("post not found")
@@ -112,11 +112,11 @@ func (pm *PostModel) Update(post *Post) error {
 }
 
 //Delete deletes post from the database
-func (pm *PostModel) Delete(id int64) (int, error) {
+func (pm *PostModel) Delete(pid uint64) (int, error) {
 	var err error
 	var result sql.Result
 	var rowsAffected int64
-	result, err = pm.DB.Exec("DELETE FROM posts WHERE post_id = ?", id)
+	result, err = pm.DB.Exec("DELETE FROM posts WHERE post_id = ?", pid)
 	if err == sql.ErrNoRows {
 		return http.StatusBadRequest, errors.New("post not found")
 	}

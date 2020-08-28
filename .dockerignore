@@ -1,0 +1,7 @@
+ui/
+.git
+tests/
+.vscode
+README.md
+Dockerfile
+.VSCodeCounter
