@@ -2,8 +2,10 @@ package middleware
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	models "forum/api/models/user"
+	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
 	"forum/database"
@@ -25,24 +27,27 @@ func CheckAPIKey(next http.HandlerFunc) http.HandlerFunc {
 
 func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie(config.SessionCookieName)
-		if err == http.ErrNoCookie {
+		var (
+			cookie *http.Cookie
+			db     *sql.DB
+			um     repository.UserRepo
+			uid    uint64
+			err    error
+		)
+		if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		db, dbErr := database.Connect()
-		if dbErr != nil {
-			response.Error(w, http.StatusInternalServerError, dbErr)
+		if db, err = database.Connect(); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 		defer db.Close()
-		um, umErr := models.NewUserModel(db)
-		if umErr != nil {
-			response.Error(w, http.StatusInternalServerError, umErr)
+		if um, err = crud.NewUserModel(db); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
-		uid, exists := um.ValidateSession(cookie.Value)
-		if exists != nil {
+		if uid, err = um.ValidateSession(cookie.Value); err != nil {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}

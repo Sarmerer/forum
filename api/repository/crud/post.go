@@ -1,24 +1,13 @@
-package models
+package crud
 
 import (
 	"database/sql"
 	"errors"
+	"forum/api/models"
 	"forum/config"
 	"net/http"
 	"time"
 )
-
-//Post struct contains info about post
-type Post struct {
-	ID       uint64
-	By       uint64
-	Category int
-	Name     string
-	Content  string
-	Created  time.Time
-	Updated  time.Time
-	Rating   int
-}
 
 //PostModel helps performing CRUD operations
 type PostModel struct {
@@ -31,15 +20,15 @@ func NewPostModel(db *sql.DB) (*PostModel, error) {
 }
 
 //FindAll returns all posts in the database
-func (pm *PostModel) FindAll() ([]Post, error) {
+func (pm *PostModel) FindAll() ([]models.Post, error) {
 	rows, err := pm.DB.Query("SELECT * FROM posts")
 	if err != nil {
 		return nil, err
 	}
-	var posts []Post
+	var posts []models.Post
 
 	for rows.Next() {
-		var post Post
+		var post models.Post
 		var created, updated string
 		rows.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
 		date, _ := time.Parse(config.TimeLayout, created)
@@ -51,8 +40,8 @@ func (pm *PostModel) FindAll() ([]Post, error) {
 }
 
 //Find returns a specific post from the database
-func (pm *PostModel) FindByID(pid uint64) (*Post, int, error) {
-	var post Post
+func (pm *PostModel) FindByID(pid uint64) (*models.Post, int, error) {
+	var post models.Post
 	var created, updated string
 	row := pm.DB.QueryRow("SELECT * FROM posts WHERE post_id = ?", pid)
 	err := row.Scan(&post.ID, &post.By, &post.Category, &post.Name, &post.Content, &created, &updated, &post.Rating)
@@ -72,7 +61,7 @@ func (pm *PostModel) FindByID(pid uint64) (*Post, int, error) {
 }
 
 //Create adds a new post to the database
-func (pm *PostModel) Create(post *Post) error {
+func (pm *PostModel) Create(post *models.Post) error {
 	statement, err := pm.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
@@ -92,8 +81,8 @@ func (pm *PostModel) Create(post *Post) error {
 }
 
 //Update updates existing post in the database
-func (pm *PostModel) Update(post *Post) error {
-	statement, err := pm.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_rating = ? = ? WHERE post_id = ?")
+func (pm *PostModel) Update(post *models.Post) error {
+	statement, err := pm.DB.Prepare("UPDATE posts SET post_by = ?, post_category = ?, post_name = ?, post_content = ?, post_created = ?, post_updated = ?, post_rating = ? WHERE post_id = ?")
 	if err != nil {
 		return err
 	}

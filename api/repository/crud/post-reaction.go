@@ -1,4 +1,4 @@
-package models
+package crud
 
 import (
 	"database/sql"

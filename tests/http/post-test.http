@@ -5,7 +5,7 @@ GET {{baseURL}}/api/posts
 ### Get post
 
 GET {{baseURL}}/api/post
-    ?ID=3
+    ?ID=1
     &API_KEY={{API_KEY}}
 
 ### Create post
@@ -19,8 +19,15 @@ Content-Type: application/json
     "content":"content"
 }
 
+### Update post
+
+PUT {{baseURL}}/api/post/update
+    ?ID=2
+    &description=updated
+    &API_KEY={{API_KEY}}
+
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=4
+    ?ID=2
     &API_KEY={{API_KEY}}

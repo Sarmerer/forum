@@ -1,9 +1,12 @@
 package auth
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
-	models "forum/api/models/user"
+	"forum/api/models"
+	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
 	"forum/database"
@@ -13,50 +16,51 @@ import (
 
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
+	var (
+		um     repository.UserRepo
+		user   *models.User
+		cookie *http.Cookie
+		status int
+		err    error
+	)
 	login := r.FormValue("login")
 	password := r.FormValue("password")
 	if login == "" || password == "" {
 		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
+	if um, err = newUM(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+	}
+	if user, status, err = um.FindByNameOrEmail(login); err != nil {
+		response.Error(w, status, err)
 		return
 	}
-	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
-		return
-	}
-	user, status, uErr := um.FindByNameOrEmail(login)
-	if uErr != nil {
-		response.Error(w, status, uErr)
-		return
-	}
-	passErr := verifyPassword(user.Password, password)
-	if passErr != nil {
+	if err = verifyPassword(user.Password, password); err != nil {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
-	cookie, cookieErr := r.Cookie(config.SessionCookieName)
-	if cookieErr == http.ErrNoCookie {
+	if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
 		cookie = generateCookie()
 	} else {
 		cookie.Expires = time.Now().Add(config.SessionExpiration)
 	}
-	if err := um.UpdateSession(user.ID, cookie.Value); err != nil {
+	if err = um.UpdateSession(user.ID, cookie.Value); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	http.SetCookie(w, cookie)
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)
-	return
 }
 
 //SignUp authorizes new user
 func SignUp(w http.ResponseWriter, r *http.Request) {
+	var (
+		hashedPassword []byte
+		um             repository.UserRepo
+		status         int
+		err            error
+	)
 	login := r.FormValue("login")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
@@ -64,20 +68,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("empty login, email or password"))
 		return
 	}
-	hashedPassword, hashErr := hash(password)
-	if hashErr != nil {
-		response.Error(w, http.StatusInternalServerError, errors.New("inernal server error"))
+	if hashedPassword, err = hash(password); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
-		return
-	}
-	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
+	if um, err = newUM(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	user := models.User{
@@ -88,9 +84,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		SessionID: "",
 		Role:      0,
 	}
-	status, createErr := um.Create(&user)
-	if createErr != nil {
-		response.Error(w, status, createErr)
+	if status, err = um.Create(&user); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 	response.Success(w, "user has been created", nil)
@@ -98,25 +93,33 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
-	db, dbErr := database.Connect()
-	if dbErr != nil {
-		response.Error(w, http.StatusInternalServerError, dbErr)
-		return
+	var (
+		um  repository.UserRepo
+		uid uint64
+		err error
+	)
+	if um, err = newUM(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 	}
-	defer db.Close()
-	um, umErr := models.NewUserModel(db)
-	if umErr != nil {
-		response.Error(w, http.StatusInternalServerError, umErr)
+	uid = r.Context().Value("uid").(uint64)
+	if err = um.UpdateSession(uid, ""); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	cookie, _ := r.Cookie(config.SessionCookieName)
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
-	uid := r.Context().Value("uid").(uint64)
-	if err := um.UpdateSession(uid, ""); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	response.Success(w, "user is logged out", nil)
+	return
+}
+
+func newUM() (um *crud.UserModel, err error) {
+	var db *sql.DB
+	if db, err = database.Connect(); err != nil {
 		return
 	}
-	response.Success(w, "user is logged out", nil)
+	if um, err = crud.NewUserModel(db); err != nil {
+		return
+	}
 	return
 }

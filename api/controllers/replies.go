@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"database/sql"
-	"forum/api/controllers/helpers"
-	models "forum/api/models/post"
+	"forum/api/models"
+	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/database"
 	"net/http"
@@ -13,26 +14,26 @@ import (
 func GetReplies(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid     uint64
-		pr      *models.PostReplyModel
+		prm     repository.ReplyRepo
 		replies []models.PostReply
 		status  int
 		err     error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if status, err = helpers.PostExists(pid); err != nil {
+	if status, err = PostExists(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 
-	if pr, err = helpers.NewReplyModel(); err != nil {
+	if prm, err = newPRM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if replies, err = pr.FindAll(pid); err != nil {
+	if replies, err = prm.FindAll(pid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -43,25 +44,20 @@ func GetReplies(w http.ResponseWriter, r *http.Request) {
 func CreateReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid    uint64
-		db     *sql.DB
-		pr     *models.PostReplyModel
+		prm    repository.ReplyRepo
 		author uint64
 		status int
 		err    error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	db, err = database.Connect()
-	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-	}
-	if status, err = helpers.PostExists(pid); err != nil {
+	if status, err = PostExists(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if pr, err = models.NewPostReplyModel(db); err != nil {
+	if prm, err = newPRM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -72,7 +68,7 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		Post:    pid,
 		By:      author,
 	}
-	if status, err = pr.Create(reply); err != nil {
+	if status, err = prm.Create(reply); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -85,4 +81,15 @@ func UpdateReply(w http.ResponseWriter, r *http.Request) {
 
 func DeleteReply(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func newPRM() (prm *crud.PostReplyModel, err error) {
+	var db *sql.DB
+	if db, err = database.Connect(); err != nil {
+		return
+	}
+	if prm, err = crud.NewPostReplyModel(db); err != nil {
+		return
+	}
+	return
 }

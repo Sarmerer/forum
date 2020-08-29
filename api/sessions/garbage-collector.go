@@ -3,7 +3,7 @@ package sessions
 import (
 	"fmt"
 	"forum/api/logger"
-	models "forum/api/models/user"
+	"forum/api/repository/crud"
 	"forum/config"
 	"forum/database"
 	"time"
@@ -24,7 +24,7 @@ func GarbageCollector() {
 			logger.ServerLogs("Garbage collector", "", dbErr)
 			return
 		}
-		um, umErr := models.NewUserModel(db)
+		um, umErr := crud.NewUserModel(db)
 		if umErr != nil {
 			logger.ServerLogs("Garbage collector", "", umErr)
 			return

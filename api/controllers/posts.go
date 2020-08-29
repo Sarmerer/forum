@@ -1,23 +1,26 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
-	"forum/api/controllers/helpers"
-	models "forum/api/models/post"
+	"forum/api/models"
+	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
+	"forum/database"
 	"net/http"
 	"time"
 )
 
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
-		pm    *models.PostModel
+		pm    repository.PostRepo
 		posts []models.Post
 		err   error
 	)
-	if pm, err = helpers.NewPostModel(); err != nil {
+	if pm, err = newPM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -32,17 +35,17 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid    uint64
-		pm     *models.PostModel
+		pm     repository.PostRepo
 		post   *models.Post
 		status int
 		err    error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if pm, err = helpers.NewPostModel(); err != nil {
+	if pm, err = newPM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -57,7 +60,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		author uint64
-		pm     *models.PostModel
+		pm     repository.PostRepo
 		post   models.Post
 		err    error
 	)
@@ -72,7 +75,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pm, err = helpers.NewPostModel(); err != nil {
+	if pm, err = newPM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -98,23 +101,23 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		name        string
 		content     string
 		pid         uint64
-		pm          *models.PostModel
+		pm          repository.PostRepo
 		updatedPost *models.Post
 		status      int
 		err         error
 	)
 	name = r.FormValue("description")
 	content = r.FormValue("content")
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if pm, err = helpers.NewPostModel(); err != nil {
+	if pm, err = newPM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if status, err = helpers.PostExists(pid); err != nil {
+	if updatedPost, status, err = pm.FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -138,20 +141,20 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid    uint64
-		pm     *models.PostModel
+		pm     repository.PostRepo
 		status int
 		err    error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if pm, err = helpers.NewPostModel(); err != nil {
+	if pm, err = newPM(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if status, err = helpers.PostExists(pid); err != nil {
+	if status, err = PostExists(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -161,4 +164,15 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("post has been deleted"), nil)
+}
+
+func newPM() (pm *crud.PostModel, err error) {
+	var db *sql.DB
+	if db, err = database.Connect(); err != nil {
+		return
+	}
+	if pm, err = crud.NewPostModel(db); err != nil {
+		return
+	}
+	return
 }
