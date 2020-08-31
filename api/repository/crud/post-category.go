@@ -18,8 +18,8 @@ type CategoryModel struct {
 }
 
 //NewCategoryModel creates an instance of CategoryModel
-func NewCategoryModel(db *sql.DB) (*CategoryModel, error) {
-	return &CategoryModel{db}, nil
+func NewCategoryModel(db *sql.DB) (*CategoryModel) {
+	return &CategoryModel{db}
 }
 
 //FindAll returns all categories in the database

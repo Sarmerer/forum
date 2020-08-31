@@ -4,10 +4,9 @@ import "forum/api/models"
 
 type ReplyRepo interface {
 	FindAll(uint64) ([]models.PostReply, error)
-	//TODO: add int to return values
-	FindByID(int) (models.PostReply, error)
-	Create(*models.PostReply) (int, error)
-	//TODO: change bool to error
+	FindByID(uint64) (*models.PostReply, int, error)
+	Create(*models.PostReply) error
 	Update(*models.PostReply) error
-	Delete(int) error
+	Delete(uint64) error
+	DeleteGroup(uint64) error
 }

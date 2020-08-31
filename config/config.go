@@ -20,4 +20,9 @@ const (
 	//---> Statuses
 	StatusSuccess = "success"
 	StatusError   = "error"
+
+	//---> Roles
+	RoleDefault   = 0
+	RoleModerator = 1
+	RoleAdmin     = 2
 )

@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 
 	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
-	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
-	"forum/database"
 
 	"net/http"
 )
@@ -22,7 +19,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		users []models.User
 		err   error
 	)
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -47,7 +44,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -75,7 +72,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -107,7 +104,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -121,15 +118,4 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been deleted", nil)
-}
-
-func newUM() (um *crud.UserModel, err error) {
-	var db *sql.DB
-	if db, err = database.Connect(); err != nil {
-		return
-	}
-	if um, err = crud.NewUserModel(db); err != nil {
-		return
-	}
-	return
 }

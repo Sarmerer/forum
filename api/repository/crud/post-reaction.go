@@ -18,8 +18,8 @@ type PostReactionModel struct {
 }
 
 //NewPostReactionModel creates an instance of PostReactionModel
-func NewPostReactionModel(db *sql.DB) (*PostReactionModel, error) {
-	return &PostReactionModel{db}, nil
+func NewPostReactionModel(db *sql.DB) *PostReactionModel {
+	return &PostReactionModel{db}
 }
 
 //FindAll returns all reactions in the database

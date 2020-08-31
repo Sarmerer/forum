@@ -15,8 +15,8 @@ type UserModel struct {
 }
 
 //NewUserModel creates an instance of UserModel
-func NewUserModel(db *sql.DB) (*UserModel, error) {
-	return &UserModel{db}, nil
+func NewUserModel(db *sql.DB) *UserModel {
+	return &UserModel{db}
 }
 
 //FindAll returns all users in the database

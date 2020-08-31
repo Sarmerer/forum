@@ -82,7 +82,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Email:     email,
 		Nickname:  password,
 		SessionID: "",
-		Role:      0,
+		Role:      config.RoleDefault,
 	}
 	if status, err = um.Create(&user); err != nil {
 		response.Error(w, status, err)
@@ -118,8 +118,6 @@ func newUM() (um *crud.UserModel, err error) {
 	if db, err = database.Connect(); err != nil {
 		return
 	}
-	if um, err = crud.NewUserModel(db); err != nil {
-		return
-	}
+	um = crud.NewUserModel(db)
 	return
 }

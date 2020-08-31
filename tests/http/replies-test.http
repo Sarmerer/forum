@@ -1,9 +1,9 @@
 GET {{baseURL}}/api/comments
-    ?ID=1
+    ?ID=5
     &API_KEY={{API_KEY}}
 
 ###
 
 POST {{baseURL}}/api/comments/add
-    ?ID=4
+    ?ID=5
     &API_KEY={{API_KEY}}

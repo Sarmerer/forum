@@ -24,11 +24,7 @@ func GarbageCollector() {
 			logger.ServerLogs("Garbage collector", "", dbErr)
 			return
 		}
-		um, umErr := crud.NewUserModel(db)
-		if umErr != nil {
-			logger.ServerLogs("Garbage collector", "", umErr)
-			return
-		}
+		um := crud.NewUserModel(db)
 		users, uErr := um.FindAll()
 		if uErr != nil {
 			logger.ServerLogs("Garbage collector", "", uErr)

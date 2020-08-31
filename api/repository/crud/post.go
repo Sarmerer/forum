@@ -15,8 +15,8 @@ type PostModel struct {
 }
 
 //NewPostModel creates an instance of PostModel
-func NewPostModel(db *sql.DB) (*PostModel, error) {
-	return &PostModel{db}, nil
+func NewPostModel(db *sql.DB) *PostModel {
+	return &PostModel{db}
 }
 
 //FindAll returns all posts in the database

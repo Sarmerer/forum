@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
-	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
-	"forum/database"
 	"net/http"
 	"time"
 )
@@ -21,7 +18,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		posts []models.Post
 		err   error
 	)
-	if pm, err = newPM(); err != nil {
+	if pm, err = helpers.PreparePostRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -35,9 +32,13 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	var (
-		pid    uint64
-		pm     repository.PostRepo
-		post   *models.Post
+		pid  uint64
+		pm   repository.PostRepo
+		post *models.Post
+
+		prm     repository.ReplyRepo
+		replies []models.PostReply
+
 		status int
 		err    error
 	)
@@ -46,7 +47,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pm, err = newPM(); err != nil {
+	if pm, err = helpers.PreparePostRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -55,7 +56,18 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, post)
+	if prm, err = helpers.PrepareReplyRepo(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	if replies, err = prm.FindAll(pid); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+	}
+	res := struct {
+		Post    interface{} `json:"post"`
+		Replies interface{} `json:"replies"`
+	}{post, replies}
+	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, res)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +88,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pm, err = newPM(); err != nil {
+	if pm, err = helpers.PreparePostRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -114,7 +126,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pm, err = newPM(); err != nil {
+	if pm, err = helpers.PreparePostRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -143,6 +155,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid    uint64
 		pm     repository.PostRepo
+		prm    repository.ReplyRepo
 		status int
 		err    error
 	)
@@ -151,7 +164,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pm, err = newPM(); err != nil {
+	if pm, err = helpers.PreparePostRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -164,16 +177,11 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if prm, err = helpers.PrepareReplyRepo(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+	}
+	if err = prm.DeleteGroup(pid); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+	}
 	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("post has been deleted"), nil)
-}
-
-func newPM() (pm *crud.PostModel, err error) {
-	var db *sql.DB
-	if db, err = database.Connect(); err != nil {
-		return
-	}
-	if pm, err = crud.NewPostModel(db); err != nil {
-		return
-	}
-	return
 }

@@ -4,7 +4,7 @@ import "time"
 
 //PostReply struct contains info about a reply to a post
 type PostReply struct {
-	ID      int
+	ID      uint64
 	Content string
 	Date    time.Time
 	Post    uint64

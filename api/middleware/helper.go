@@ -1,10 +1,8 @@
 package middleware
 
 import (
-	"database/sql"
+	"forum/api/helpers"
 	"forum/api/repository"
-	"forum/api/repository/crud"
-	"forum/database"
 	"net/http"
 )
 
@@ -26,18 +24,12 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 func checkUserRole(id uint64) (int, int, error) {
 	var (
 		role   int
-		db     *sql.DB
 		um     repository.UserRepo
 		status int
 		err    error
 	)
-	status = http.StatusInternalServerError
-	if db, err = database.Connect(); err != nil {
-		return 0, status, err
-	}
-	defer db.Close()
-	if um, err = crud.NewUserModel(db); err != nil {
-		return 0, status, err
+	if um, err = helpers.PrepareUserRepo(); err != nil {
+		return 0, http.StatusInternalServerError, err
 	}
 	if role, status, err = um.GetRole(id); err != nil {
 		return role, status, err

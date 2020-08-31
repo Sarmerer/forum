@@ -2,14 +2,11 @@ package middleware
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"forum/api/helpers"
 	"forum/api/repository"
-	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
-	"forum/database"
 	"net/http"
 	"os"
 )
@@ -29,7 +26,6 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			cookie *http.Cookie
-			db     *sql.DB
 			um     repository.UserRepo
 			uid    uint64
 			err    error
@@ -38,12 +34,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		if db, err = database.Connect(); err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
-			return
-		}
-		defer db.Close()
-		if um, err = crud.NewUserModel(db); err != nil {
+		if um, err = helpers.PrepareUserRepo(); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -58,19 +49,28 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 
 func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		queryUID, err := helpers.ParseID(r)
-		if err != nil {
+		var (
+			queryUID     uint64
+			requestorUID uint64
+			role         int
+			um           repository.UserRepo
+			status       int
+			err          error
+		)
+		if queryUID, err = helpers.ParseID(r); err != nil {
 			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
-		requestorUID := r.Context().Value("uid").(uint64)
+		requestorUID = r.Context().Value("uid").(uint64)
 		if queryUID != requestorUID {
-			role, status, modErr := checkUserRole(requestorUID)
-			if modErr != nil {
-				response.Error(w, status, modErr)
+			if um, err = helpers.PrepareUserRepo(); err != nil {
+				response.Error(w, http.StatusInternalServerError, err)
 				return
 			}
-			if role == 0 {
+			if role, status, err = um.GetRole(queryUID); err != nil {
+				response.Error(w, status, err)
+				return
+			} else if role < config.RoleModerator {
 				response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
 				return
 			}
