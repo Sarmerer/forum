@@ -1,11 +1,7 @@
-GET {{baseURL}}/api/comments
-    ?ID=6
-    &API_KEY={{API_KEY}}
-
 ### Create reply
 
 POST {{baseURL}}/api/comment/add
-    ?ID=6
+    ?ID=2
     &API_KEY={{API_KEY}}
 Content-Type: application/json
 
@@ -23,3 +19,9 @@ Content-Type: application/json
 {
     "content":"updated content"
 }
+
+### Delete reply
+
+DELETE {{baseURL}}/api/comment/delete
+    ?ID=6
+    &API_KEY={{API_KEY}}

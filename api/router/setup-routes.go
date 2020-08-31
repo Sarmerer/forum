@@ -6,12 +6,10 @@ import (
 )
 
 func New() *mux.Router {
-	mux := mux.NewRouter()
-	setupRoutes(mux)
-	return mux
+	return mux.NewRouter()
 }
 
-func setupRoutes(mux *mux.Router) {
+func SetupRoutes(mux *mux.Router) {
 	routes := apiRoutes
 	for _, route := range routes {
 		seq := []middleware.Middlewares{

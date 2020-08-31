@@ -1,69 +1,29 @@
 package controllers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
-	"forum/api/repository/crud"
 	"forum/api/response"
-	"forum/database"
 	"net/http"
 	"time"
 )
 
-func GetReplies(w http.ResponseWriter, r *http.Request) {
+func GetReplies(pid uint64) ([]models.PostReply, error) {
 	var (
-		pid     uint64
 		prm     repository.ReplyRepo
 		replies []models.PostReply
-		status  int
 		err     error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
-		return
-	}
-
-	if status, err = postExists(pid); err != nil {
-		response.Error(w, status, err)
-		return
-	}
 
 	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 	if replies, err = prm.FindAll(pid); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
-
-	response.Success(w, nil, replies)
-}
-
-func GetReply(w http.ResponseWriter, r *http.Request) {
-	var (
-		rid    uint64
-		prm    repository.ReplyRepo
-		reply  *models.PostReply
-		status int
-		err    error
-	)
-	if rid, err = helpers.ParseID(r); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
-		return
-	}
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if reply, status, err = prm.FindByID(rid); err != nil {
-		response.Error(w, status, err)
-		return
-	}
-	response.Success(w, nil, reply)
+	return replies, nil
 }
 
 func CreateReply(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +31,9 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		pid    uint64
 		prm    repository.ReplyRepo
 		author uint64
+
+		pm repository.PostRepo
+
 		status int
 		err    error
 	)
@@ -85,7 +48,11 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if status, err = postExists(pid); err != nil {
+	if pm, err = helpers.PreparePostRepo(); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	if _, status, err = pm.FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -170,19 +137,16 @@ func DeleteReply(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "reply has been deleted", nil)
 }
 
-func postExists(pid uint64) (int, error) {
+func DeleteAllRepliesForPost(pid uint64) error {
 	var (
-		db     *sql.DB
-		pm     repository.PostRepo
-		status int
-		err    error
+		prm repository.ReplyRepo
+		err error
 	)
-	if db, err = database.Connect(); err != nil {
-		return http.StatusInternalServerError, err
+	if prm, err = helpers.PrepareReplyRepo(); err != nil {
+		return err
 	}
-	pm = crud.NewPostModel(db)
-	if _, status, err = pm.FindByID(pid); err != nil {
-		return status, err
+	if err = prm.DeleteGroup(pid); err != nil {
+		return err
 	}
-	return http.StatusOK, nil
+	return nil
 }

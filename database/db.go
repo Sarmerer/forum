@@ -32,7 +32,7 @@ func CheckIntegrity() (err error) {
 		"user_last_online" TEXT,
 		"user_session_id" TEXT,
 		"user_role" INTEGER,
-		PRIMARY KEY("user_id" AUTOINCREMENT))`,
+		PRIMARY KEY("user_id"))`,
 	)
 	if err != nil {
 		return
@@ -49,7 +49,7 @@ func CheckIntegrity() (err error) {
 		"post_rating"	INTEGER,
 		FOREIGN KEY("post_by") REFERENCES "users"("user_id"),
 		FOREIGN KEY("post_category") REFERENCES "categories"("category_id"),
-		PRIMARY KEY("post_id" AUTOINCREMENT))`,
+		PRIMARY KEY("post_id"))`,
 	)
 	if err != nil {
 		return
@@ -85,7 +85,7 @@ func CheckIntegrity() (err error) {
 		"reply_by"	INTEGER,
 		FOREIGN KEY("reply_by") REFERENCES "users"("user_id"),
 		FOREIGN KEY("reply_post") REFERENCES "posts"("post_id"),
-		PRIMARY KEY("reply_id" AUTOINCREMENT))`,
+		PRIMARY KEY("reply_id"))`,
 	)
 	if err != nil {
 		return

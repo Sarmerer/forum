@@ -27,6 +27,7 @@ func Init() {
 
 func Run() {
 	mux := router.New()
+	router.SetupRoutes(mux)
 	log.Printf("Listening https://localhost:%d\n", config.APIPort)
 	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
 }

@@ -32,15 +32,13 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	var (
-		pid  uint64
-		pm   repository.PostRepo
-		post *models.Post
-
-		prm     repository.ReplyRepo
+		pid     uint64
+		pm      repository.PostRepo
+		post    *models.Post
 		replies []models.PostReply
-
-		status int
-		err    error
+		message interface{}
+		status  int
+		err     error
 	)
 	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -56,18 +54,14 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if replies, err = prm.FindAll(pid); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if replies, err = GetReplies(pid); err != nil {
+		message = fmt.Sprintf("failed to load replies. Details: %s", err.Error())
 	}
 	res := struct {
 		Post    interface{} `json:"post"`
 		Replies interface{} `json:"replies"`
 	}{post, replies}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, res)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, message, res)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +149,6 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid    uint64
 		pm     repository.PostRepo
-		prm    repository.ReplyRepo
 		status int
 		err    error
 	)
@@ -176,12 +169,9 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if err = DeleteAllRepliesForPost(pid); err != nil {
+		response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprintf("post has been deleted. Failed to delete replies: %s", err.Error()), nil)
+		return
 	}
-	if err = prm.DeleteGroup(pid); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-	}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("post has been deleted"), nil)
+	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprintf("post has been deleted"), nil)
 }

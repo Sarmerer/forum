@@ -126,14 +126,6 @@ var apiRoutes = []route{
 	//###########################Comments routes###############################
 	//######################################################################
 	{
-		URI:      "/api/comments",
-		Handler:  controllers.GetReplies,
-		Method:   http.MethodGet,
-		MinRole:  0,
-		SelfOnly: false,
-		NeedAuth: false,
-	},
-	{
 		URI:      "/api/comment/add",
 		Handler:  controllers.CreateReply,
 		Method:   http.MethodPost,
