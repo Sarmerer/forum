@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"forum/api/helpers"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
@@ -11,7 +12,6 @@ import (
 	"forum/database"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 func CheckAPIKey(next http.HandlerFunc) http.HandlerFunc {
@@ -58,7 +58,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 
 func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		queryUID, err := strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64)
+		queryUID, err := helpers.ParseID(r)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, err)
 			return

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"database/sql"
+	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -19,12 +20,12 @@ func GetReplies(w http.ResponseWriter, r *http.Request) {
 		status  int
 		err     error
 	)
-	if pid, err = ParseID(r); err != nil {
+	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if status, err = PostExists(pid); err != nil {
+	if status, err = postExists(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -49,11 +50,11 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-	if pid, err = ParseID(r); err != nil {
+	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if status, err = PostExists(pid); err != nil {
+	if status, err = postExists(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -92,4 +93,23 @@ func newPRM() (prm *crud.PostReplyModel, err error) {
 		return
 	}
 	return
+}
+
+func postExists(pid uint64) (int, error) {
+	var (
+		db     *sql.DB
+		pm     repository.PostRepo
+		status int
+		err    error
+	)
+	if db, err = database.Connect(); err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if pm, err = crud.NewPostModel(db); err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if _, status, err = pm.FindByID(pid); err != nil {
+		return status, err
+	}
+	return http.StatusOK, nil
 }

@@ -3,8 +3,8 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"strconv"
 
+	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -42,7 +42,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-	if uid, err = ParseID(r); err != nil {
+	if uid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
@@ -70,7 +70,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		err         error
 	)
 	name = r.FormValue("name")
-	if uid, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
+	if uid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -102,7 +102,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-	if uid, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
+	if uid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, errors.New("invalid ID parameter"))
 		return
 	}

@@ -13,7 +13,6 @@ type response struct {
 	Data    interface{} `json:"data"`
 }
 
-//JSON function takes
 func JSON(w http.ResponseWriter, status string, code int, message, data interface{}) {
 	b, marshalErr := json.Marshal(response{status, code, message, data})
 	if marshalErr != nil {

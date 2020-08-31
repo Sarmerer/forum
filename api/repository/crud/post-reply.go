@@ -19,9 +19,9 @@ func NewPostReplyModel(db *sql.DB) (*PostReplyModel, error) {
 	return &PostReplyModel{db}, nil
 }
 
-//FindAll returns all replies in the database
-func (pr *PostReplyModel) FindAll(postID uint64) ([]models.PostReply, error) {
-	rows, err := pr.DB.Query("SELECT * FROM replies WHERE reply_post = ?", postID)
+//FindAll returns all replies for the specified post
+func (prm *PostReplyModel) FindAll(postID uint64) ([]models.PostReply, error) {
+	rows, err := prm.DB.Query("SELECT * FROM replies WHERE reply_post = ?", postID)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -42,9 +42,9 @@ func (pr *PostReplyModel) FindAll(postID uint64) ([]models.PostReply, error) {
 }
 
 //FindByID returns a specific reply from the database
-func (pr *PostReplyModel) FindByID(id int) (models.PostReply, error) {
+func (prm *PostReplyModel) FindByID(id int) (models.PostReply, error) {
 	var reply models.PostReply
-	rows, err := pr.DB.Query("SELECT * FROM replies WHERE reply_id = ?", id)
+	rows, err := prm.DB.Query("SELECT * FROM replies WHERE reply_id = ?", id)
 	if err != nil {
 		return reply, err
 	}
@@ -58,8 +58,8 @@ func (pr *PostReplyModel) FindByID(id int) (models.PostReply, error) {
 }
 
 //Create adds a new reply to the database
-func (pr *PostReplyModel) Create(reply *models.PostReply) (int, error) {
-	statement, err := pr.DB.Prepare("INSERT INTO replies (reply_content, reply_date, reply_post, reply_by) VALUES (?, ?, ?, ?)")
+func (prm *PostReplyModel) Create(reply *models.PostReply) (int, error) {
+	statement, err := prm.DB.Prepare("INSERT INTO replies (reply_content, reply_date, reply_post, reply_by) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -78,31 +78,61 @@ func (pr *PostReplyModel) Create(reply *models.PostReply) (int, error) {
 }
 
 //Update updates existing reply in the database
-func (pr *PostReplyModel) Update(reply *models.PostReply) bool {
-	statement, err := pr.DB.Prepare("UPDATE replies SET reply_content = ?, reply_date = ?, reply_post = ?, reply_by = ? WHERE reply_id = ?")
-	if err != nil {
-		return false
+func (prm *PostReplyModel) Update(reply *models.PostReply) error {
+	var (
+		stmt         *sql.Stmt
+		res          sql.Result
+		rowsAffected int64
+		err          error
+	)
+	if stmt, err = prm.DB.Prepare("UPDATE replies SET reply_content = ?, reply_date = ?, reply_post = ?, reply_by = ? WHERE reply_id = ?"); err != nil {
+		return err
 	}
-	res, err := statement.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By, reply.ID)
-	if err != nil {
-		return false
+	if res, err = stmt.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By, reply.ID); err != nil {
+		return err
 	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return false
+	if rowsAffected, err = res.RowsAffected(); err != nil {
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("failed to update the reply")
 }
 
 //Delete deletes reply from the database
-func (pr *PostReplyModel) Delete(id int) bool {
-	res, err := pr.DB.Exec("DELETE FROM replies WHERE reply_id = ?", id)
-	if err != nil {
-		return false
+func (prm *PostReplyModel) Delete(rid int) error {
+	var (
+		res          sql.Result
+		rowsAffected int64
+		err          error
+	)
+	if res, err = prm.DB.Exec("DELETE FROM replies WHERE reply_id = ?", rid); err != nil {
+		return err
 	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return false
+	if rowsAffected, err = res.RowsAffected(); err != nil {
+		return err
 	}
-	return rowsAffected > 0
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("failed to delete the reply")
+}
+
+func (prm *PostReplyModel) DeleteAll(pid uint64) error {
+	var (
+		res          sql.Result
+		rowsAffected int64
+		err          error
+	)
+	if res, err = prm.DB.Exec("DELETE FROM replies WHERE reply_post = ?", pid); err != nil {
+		return err
+	}
+	if rowsAffected, err = res.RowsAffected(); err != nil {
+		return err
+	}
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("failed to delete replies for the post")
 }

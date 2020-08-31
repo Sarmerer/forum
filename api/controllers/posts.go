@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -40,7 +41,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-	if pid, err = ParseID(r); err != nil {
+	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
@@ -108,7 +109,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	)
 	name = r.FormValue("description")
 	content = r.FormValue("content")
-	if pid, err = ParseID(r); err != nil {
+	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -145,7 +146,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-	if pid, err = ParseID(r); err != nil {
+	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
@@ -154,7 +155,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if status, err = PostExists(pid); err != nil {
+	if _, status, err = pm.FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}

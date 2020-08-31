@@ -8,6 +8,6 @@ type ReplyRepo interface {
 	FindByID(int) (models.PostReply, error)
 	Create(*models.PostReply) (int, error)
 	//TODO: change bool to error
-	Update(*models.PostReply) bool
-	Delete(int) bool
+	Update(*models.PostReply) error
+	Delete(int) error
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"forum/api/logger"
 	"forum/api/response"
-	"forum/api/utils"
 	"net/http"
 )
 
@@ -26,21 +25,25 @@ func NewRouter() *Router {
 }
 
 // ServeHTTP is called for every connection
-func (s *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	f, found := s.handlers[r.URL.Path]
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	f, found := r.handlers[req.URL.Path]
 	if !found {
-		logger.HTTPLogs(utils.PaintStatus(http.StatusNotFound), "0µs", r.Host, utils.PaintMethod(r.Method), r.URL.Path)
+		logger.HTTPLogs(logger.PaintStatus(http.StatusNotFound), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
 		response.Error(w, http.StatusNotFound, errors.New("page not found"))
 		return
 	}
-	if f.Method != r.Method {
-		logger.HTTPLogs(utils.PaintStatus(http.StatusMethodNotAllowed), "0µs", r.Host, utils.PaintMethod(r.Method), r.URL.Path)
+	if f.Method != req.Method {
+		logger.HTTPLogs(logger.PaintStatus(http.StatusMethodNotAllowed), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
 		response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
 		return
 	}
-	f.Handler(w, r)
+	f.Handler(w, req)
 }
 
-func (s *Router) HandleFunc(path, method string, h http.HandlerFunc) {
-	s.handlers[path] = &handler{h, method}
+func (r *Router) HandleFunc(path, method string, h http.HandlerFunc) {
+	r.handlers[path] = &handler{h, method}
+}
+
+func (r *Router) Method(method string) {
+
 }
