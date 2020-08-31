@@ -67,7 +67,7 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 				response.Error(w, http.StatusInternalServerError, err)
 				return
 			}
-			if role, status, err = um.GetRole(queryUID); err != nil {
+			if role, status, err = um.GetRole(requestorUID); err != nil {
 				response.Error(w, status, err)
 				return
 			} else if role < config.RoleModerator {

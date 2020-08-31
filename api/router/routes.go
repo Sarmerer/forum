@@ -134,7 +134,7 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
-		URI:      "/api/comments/add",
+		URI:      "/api/comment/add",
 		Handler:  controllers.CreateReply,
 		Method:   http.MethodPost,
 		MinRole:  0,
@@ -142,7 +142,7 @@ var apiRoutes = []route{
 		NeedAuth: true,
 	},
 	{
-		URI:      "/api/comments/update",
+		URI:      "/api/comment/update",
 		Handler:  controllers.UpdateReply,
 		Method:   http.MethodPut,
 		MinRole:  0,
@@ -150,7 +150,7 @@ var apiRoutes = []route{
 		NeedAuth: true,
 	},
 	{
-		URI:      "/api/comments/delete",
+		URI:      "/api/comment/delete",
 		Handler:  controllers.DeleteReply,
 		Method:   http.MethodDelete,
 		MinRole:  0,

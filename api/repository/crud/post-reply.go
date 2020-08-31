@@ -50,7 +50,7 @@ func (prm *PostReplyModel) FindByID(rid uint64) (*models.PostReply, int, error) 
 		reply models.PostReply
 		err   error
 	)
-	if err = prm.DB.QueryRow("SELECT * FROM replies WHERE reply_id = ?", rid).Scan(&reply.Content, &date, &reply.Post, &reply.By, &reply.ID); err == sql.ErrNoRows {
+	if err = prm.DB.QueryRow("SELECT * FROM replies WHERE reply_id = ?", rid).Scan(&reply.ID, &reply.Content, &date, &reply.Post, &reply.By); err == sql.ErrNoRows {
 		return nil, http.StatusBadRequest, errors.New("reply not found")
 	} else if err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -94,7 +94,7 @@ func (prm *PostReplyModel) Update(reply *models.PostReply) error {
 	if stmt, err = prm.DB.Prepare("UPDATE replies SET reply_content = ?, reply_date = ?, reply_post = ?, reply_by = ? WHERE reply_id = ?"); err != nil {
 		return err
 	}
-	if res, err = stmt.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By, reply.ID); err != nil {
+	if res, err = stmt.Exec(reply.Content, reply.Date.Format(config.TimeLayout), reply.Post, reply.By, reply.ID); err != nil {
 		return err
 	}
 	if rowsAffected, err = res.RowsAffected(); err != nil {
