@@ -1,15 +1,13 @@
 package auth
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
+	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
-	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
-	"forum/database"
 	"net/http"
 	"time"
 )
@@ -29,7 +27,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 	}
 	if user, status, err = um.FindByNameOrEmail(login); err != nil {
@@ -50,7 +48,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, cookie)
-	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("user is logged in"), nil)
+	response.Success(w, fmt.Sprint("user is logged in"), nil)
 }
 
 //SignUp authorizes new user
@@ -72,7 +70,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -94,11 +92,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
 	var (
-		um  repository.UserRepo
-		uid uint64
-		err error
+		um     repository.UserRepo
+		uid    uint64
+		cookie *http.Cookie
+		err    error
 	)
-	if um, err = newUM(); err != nil {
+	if um, err = helpers.PrepareUserRepo(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 	}
 	uid = r.Context().Value("uid").(uint64)
@@ -106,18 +105,21 @@ func SignOut(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	cookie, _ := r.Cookie(config.SessionCookieName)
+	cookie, _ = r.Cookie(config.SessionCookieName)
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
 	response.Success(w, "user is logged out", nil)
 	return
 }
 
-func newUM() (um *crud.UserModel, err error) {
-	var db *sql.DB
-	if db, err = database.Connect(); err != nil {
-		return
-	}
-	um = crud.NewUserModel(db)
-	return
+func Status(w http.ResponseWriter, r *http.Request) {
+	// var (
+	// 	cookie *http.Cookie
+	// 	err    error
+	// )
+	// if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
+
+	// } else if err == nil {
+
+	// }
 }

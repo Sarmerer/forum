@@ -7,7 +7,6 @@ import (
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/response"
-	"forum/config"
 
 	"net/http"
 )
@@ -53,7 +52,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, user)
+	response.Success(w, nil, user)
 }
 
 //UpdateUser updates info about the user
@@ -88,7 +87,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been updated", nil)
+	response.Success(w, "user has been updated", nil)
 }
 
 //DeleteUser deletes a user from the database
@@ -117,5 +116,5 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, "user has been deleted", nil)
+	response.Success(w, "user has been deleted", nil)
 }

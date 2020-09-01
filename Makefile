@@ -1,3 +1,5 @@
+run_app:
+	bash -c "make -j run_server -j run_client"
 docker: ## Build and run development docker container
 	docker build -t sarmerer/forum .
 	docker run -rm -p 4433:4433 sarmerer/forum

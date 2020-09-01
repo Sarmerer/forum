@@ -1,4 +1,4 @@
-package mux
+package router
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Router serves http
+// Router contains a map of API routes, with their handlrers
 type Router struct {
 	handlers map[string]*handler
 }
@@ -17,14 +17,14 @@ type handler struct {
 	Method  string
 }
 
-// NewRouter creates instance of Router
-func NewRouter() *Router {
+// New creates an instance of Router
+func New() *Router {
 	router := new(Router)
 	router.handlers = make(map[string]*handler)
 	return router
 }
 
-// ServeHTTP is called for every connection
+// ServeHTTP is called for every request, it finds an API route, matching request path, and calls the handler for that path
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	f, found := r.handlers[req.URL.Path]
 	if !found {
@@ -40,10 +40,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	f.Handler(w, req)
 }
 
+// HandleFunc adds a route pattern to the router
 func (r *Router) HandleFunc(path, method string, h http.HandlerFunc) {
 	r.handlers[path] = &handler{h, method}
-}
-
-func (r *Router) Method(method string) {
-
 }

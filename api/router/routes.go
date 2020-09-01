@@ -3,6 +3,7 @@ package router
 import (
 	"forum/api/auth"
 	"forum/api/controllers"
+	"forum/api/middleware"
 	"net/http"
 )
 
@@ -15,12 +16,33 @@ type route struct {
 	NeedAuth bool
 }
 
+// SetupRoutes sets handlers with middleware chains to API routes
+func (mux *Router) SetupRoutes() {
+	routes := apiRoutes
+	for _, route := range routes {
+		seq := []middleware.Middlewares{
+			middleware.Logger,
+			middleware.SetHeaders,
+			middleware.CheckAPIKey,
+		}
+		if route.NeedAuth {
+			seq = append(seq, middleware.CheckUserAuth)
+		}
+		if route.SelfOnly {
+			seq = append(seq, middleware.SelfActionOnly)
+		}
+		mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, seq...))
+	}
+}
+
 var apiRoutes = []route{
-	//######################################################################
-	//############################Auth routes###############################
-	//######################################################################
+
+	/* -------------------------------------------------------------------------- */
+	/*                                 Auth routes                                */
+	/* -------------------------------------------------------------------------- */
+
 	{
-		URI:      "/api/signin",
+		URI:      "/api/auth/signin",
 		Handler:  auth.SignIn,
 		Method:   http.MethodPost,
 		MinRole:  0,
@@ -28,7 +50,7 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
-		URI:      "/api/signup",
+		URI:      "/api/auth/signup",
 		Handler:  auth.SignUp,
 		Method:   http.MethodPost,
 		MinRole:  0,
@@ -36,16 +58,26 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
-		URI:      "/api/signout",
+		URI:      "/api/auth/signout",
 		Handler:  auth.SignOut,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
 		NeedAuth: true,
 	},
-	//######################################################################
-	//###########################Users routes###############################
-	//######################################################################
+	{
+		URI:      "/api/auth/status",
+		Handler:  auth.Status,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+
+	/* -------------------------------------------------------------------------- */
+	/*                                 User routes                                */
+	/* -------------------------------------------------------------------------- */
+
 	{
 		URI:      "/api/user",
 		Handler:  controllers.GetUser,
@@ -78,9 +110,11 @@ var apiRoutes = []route{
 		SelfOnly: true,
 		NeedAuth: true,
 	},
-	//######################################################################
-	//###########################Posts routes###############################
-	//######################################################################
+
+	/* -------------------------------------------------------------------------- */
+	/*                                 Post routes                                */
+	/* -------------------------------------------------------------------------- */
+
 	{
 		URI:      "/api/post",
 		Handler:  controllers.GetPost,
@@ -122,9 +156,10 @@ var apiRoutes = []route{
 		NeedAuth: true,
 	},
 
-	//######################################################################
-	//###########################Comments routes###############################
-	//######################################################################
+	/* -------------------------------------------------------------------------- */
+	/*                               Comment routes                               */
+	/* -------------------------------------------------------------------------- */
+
 	{
 		URI:      "/api/comment/add",
 		Handler:  controllers.CreateReply,

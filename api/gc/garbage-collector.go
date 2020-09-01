@@ -1,4 +1,4 @@
-package sessions
+package gc
 
 import (
 	"fmt"
@@ -9,12 +9,13 @@ import (
 	"time"
 )
 
-//StartGC starts garbage collector
-func StartGC() {
-	go GarbageCollector()
+// Start starts the garbage collector service,
+// it will remove expired sessions from database with the interval, specified in the config file
+func Start() {
+	go garbageCollector()
 }
 
-func GarbageCollector() {
+func garbageCollector() {
 	for {
 		<-time.After(config.GCInterval)
 		counter := 0

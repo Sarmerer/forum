@@ -7,7 +7,6 @@ import (
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/response"
-	"forum/config"
 	"net/http"
 	"time"
 )
@@ -27,7 +26,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, nil, posts)
+	response.Success(w, nil, posts)
 }
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +60,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		Post    interface{} `json:"post"`
 		Replies interface{} `json:"replies"`
 	}{post, replies}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, message, res)
+	response.Success(w, message, res)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +99,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, "post has been created", nil)
+	response.Success(w, "post has been created", nil)
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +141,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprint("post has been updated"), nil)
+	response.Success(w, fmt.Sprint("post has been updated"), nil)
 }
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {
@@ -170,8 +169,8 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = DeleteAllRepliesForPost(pid); err != nil {
-		response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprintf("post has been deleted. Failed to delete replies: %s", err.Error()), nil)
+		response.Success(w, fmt.Sprintf("post has been deleted. Failed to delete replies: %s", err.Error()), nil)
 		return
 	}
-	response.JSON(w, config.StatusSuccess, http.StatusOK, fmt.Sprintf("post has been deleted"), nil)
+	response.Success(w, fmt.Sprintf("post has been deleted"), nil)
 }

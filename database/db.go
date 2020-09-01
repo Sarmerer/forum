@@ -3,19 +3,18 @@ package database
 import (
 	"database/sql"
 	"forum/config"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
-//Connect connects to the database
+// Connect opens and returns database
 func Connect() (*sql.DB, error) {
-	db, err := sql.Open(config.DbDriver, config.DbPath)
+	db, err := sql.Open("sqlite3", config.DatabasePath)
 	if err != nil {
 		return nil, err
 	}
 	return db, nil
 }
 
+// CheckIntegrity creates necessary tables in the database, if they do not exist already
 func CheckIntegrity() (err error) {
 	var db *sql.DB
 	db, err = Connect()
