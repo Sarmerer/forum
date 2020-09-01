@@ -7,7 +7,6 @@ type User struct {
 	Name       string
 	Password   string
 	Email      string
-	Nickname   string
 	Created    time.Time
 	LastOnline time.Time
 	SessionID  string

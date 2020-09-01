@@ -7,6 +7,7 @@ import (
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/response"
+	"forum/config"
 	"net/http"
 	"time"
 )
@@ -94,13 +95,12 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	post = models.Post{
-		Name:     input.Description,
-		Content:  input.Content,
-		By:       author,
-		Category: 0,
-		Created:  time.Now(),
-		Updated:  time.Now(),
-		Rating:   0,
+		Title:   input.Description,
+		Content: input.Content,
+		Author:  author,
+		Created: time.Now().Format(config.TimeLayout),
+		Updated: time.Now().Format(config.TimeLayout),
+		Rating:  0,
 	}
 	if pid, err = pm.Create(&post); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
@@ -147,9 +147,9 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedPost.Updated = time.Now()
+	updatedPost.Updated = time.Now().Format(config.TimeLayout)
 	if name != "" {
-		updatedPost.Name = name
+		updatedPost.Title = name
 	}
 	if content != "" {
 		updatedPost.Content = content

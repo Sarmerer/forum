@@ -78,7 +78,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Name:      login,
 		Password:  string(hashedPassword),
 		Email:     email,
-		Nickname:  password,
 		SessionID: "",
 		Role:      config.RoleAdmin,
 	}

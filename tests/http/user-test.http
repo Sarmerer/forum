@@ -5,7 +5,7 @@ GET {{baseURL}}/api/users
 ### Get user
 
 GET {{baseURL}}/api/user
-    ?ID=3
+    ?ID=1
     &API_KEY={{API_KEY}}
 
 ### Sign up
@@ -25,20 +25,20 @@ POST {{baseURL}}/api/auth/signin
     
 ### Sign out
 
-POST {{baseURL}}/api/signout
+POST {{baseURL}}/api/auth/signout
     ?API_KEY={{API_KEY}}
 
 ### Update user
 
 PUT https://localhost:4433/api/user/update
-    ?ID=10
-    &name=fwa
+    ?ID=1
+    &name=admin
     &API_KEY={{API_KEY}}
 
 
 ### Delete user
 
 DELETE https://localhost:4433/api/user/delete
-    ?ID=10
+    ?ID=1
     &API_KEY={{API_KEY}}
 

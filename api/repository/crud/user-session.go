@@ -6,7 +6,7 @@ import (
 )
 
 func (um *UserModel) ValidateSession(session string) (uid uint64, err error) {
-	err = um.DB.QueryRow("SELECT user_id FROM users WHERE user_session_id = ?", session).Scan(&uid)
+	err = um.DB.QueryRow("SELECT id FROM users WHERE session_id = ?", session).Scan(&uid)
 	if err == sql.ErrNoRows {
 		err = errors.New("session not found")
 		return
@@ -17,7 +17,7 @@ func (um *UserModel) ValidateSession(session string) (uid uint64, err error) {
 }
 
 func (um *UserModel) UpdateSession(id uint64, newSession string) error {
-	statement, err := um.DB.Prepare("UPDATE users SET user_session_id = ? WHERE user_id = ?")
+	statement, err := um.DB.Prepare("UPDATE users SET session_id = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}

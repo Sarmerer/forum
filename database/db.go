@@ -21,45 +21,47 @@ func CheckIntegrity() (err error) {
 	if err != nil {
 		return
 	}
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "users" (
-		"user_id" INTEGER,
-		"user_name" TEXT,
-		"user_password"	BLOB,
-		"user_email" TEXT,
-		"user_nickname"	TEXT,
-		"user_created" TEXT,
-		"user_last_online" TEXT,
-		"user_session_id" TEXT,
-		"user_role" INTEGER,
-		PRIMARY KEY("user_id"))`,
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
+		id 	 	 	INTEGER PRIMARY KEY,
+		name     	TEXT,
+		password 	BLOB,
+		email 	 	TEXT,
+		created  	TEXT,
+		last_online TEXT,
+		session_id	TEXT,
+		role 		INTEGER)`,
 	)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
-		"post_id"	INTEGER,
-		"post_by"	INTEGER,
-		"post_category"	INTEGER,
-		"post_name"	TEXT,
-		"post_content"	TEXT,
-		"post_created"	TEXT,
-		"post_updated"	TEXT,
-		"post_rating"	INTEGER,
-		FOREIGN KEY("post_by") REFERENCES "users"("user_id"),
-		FOREIGN KEY("post_category") REFERENCES "categories"("category_id"),
-		PRIMARY KEY("post_id"))`,
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS posts (
+		id			INTEGER PRIMARY KEY,
+		author_fkey	INTEGER,
+		title		TEXT,
+		content		TEXT,
+		created		TEXT,
+		updated		TEXT,
+		rating		INTEGER,
+		FOREIGN KEY(author_fkey) REFERENCES users(id))`,
 	)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "categories" (
-		"category_id"	INTEGER,
-		"category_post"		INTEGER,
-		"category_name"	TEXT,
-		FOREIGN KEY("category_post") REFERENCES "posts"("post_id"),
-		PRIMARY KEY("category_id"))`)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS categories (
+		id	 		 INTEGER PRIMARY KEY,
+		name 		 TEXT)`)
+	if err != nil {
+		return
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS posts_categories_bridge (
+		id				 INTEGER PRIMARY KEY,
+		post_id_fkey	 INTEGER,
+		category_id_fkey INTEGER,
+		FOREIGN KEY(post_id_fkey) REFERENCES posts(id),
+		FOREIGN KEY(category_id_fkey) REFERENCES categories(id))`)
 	if err != nil {
 		return
 	}

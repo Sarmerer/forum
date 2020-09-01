@@ -5,7 +5,7 @@ GET {{baseURL}}/api/posts
 ### Get post
 
 GET {{baseURL}}/api/post
-    ?ID=1
+    ?ID=2
     &API_KEY={{API_KEY}}
 
 ### Create post
@@ -15,9 +15,9 @@ POST {{baseURL}}/api/post/create
 Content-Type: application/json
 
 {
-    "description":"post2",
-    "content":"content",
-    "categories": [ "dog", "cat,", "snake" ]
+    "description":"post with dog category",
+    "content":"dog",
+    "categories": [ "dog" ]
 }
 
 ### Update post

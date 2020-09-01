@@ -8,7 +8,7 @@ import (
 
 func (um *UserModel) GetRole(id uint64) (int, int, error) {
 	var role int
-	err := um.DB.QueryRow("SELECT user_role FROM users WHERE user_id = ?", id).Scan(&role)
+	err := um.DB.QueryRow("SELECT role FROM users WHERE id = ?", id).Scan(&role)
 	if err == sql.ErrNoRows {
 		return 0, http.StatusBadRequest, errors.New("user not found")
 	} else if err != nil {
@@ -19,7 +19,7 @@ func (um *UserModel) GetRole(id uint64) (int, int, error) {
 
 //UpdateRole updates user role in the database
 func (um *UserModel) UpdateRole(uid uint64, role int) error {
-	statement, err := um.DB.Prepare("UPDATE users SET user_role = ? WHERE user_id = ?")
+	statement, err := um.DB.Prepare("UPDATE users SET role = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}

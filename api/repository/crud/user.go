@@ -31,7 +31,7 @@ func (um *UserModel) FindAll() ([]models.User, error) {
 	for rows.Next() {
 		var user models.User
 		var created, lastOnline string
-		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
+		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &created, &lastOnline, &user.SessionID, &user.Role)
 		if user.Created, err = time.Parse(config.TimeLayout, created); err != nil {
 			return nil, err
 		}
@@ -47,8 +47,8 @@ func (um *UserModel) FindAll() ([]models.User, error) {
 func (um *UserModel) FindByID(uid uint64) (*models.User, int, error) {
 	var user models.User
 	var created, lastOnline string
-	row := um.DB.QueryRow("SELECT * FROM users WHERE user_id = ?", uid)
-	err := row.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
+	row := um.DB.QueryRow("SELECT * FROM users WHERE id = ?", uid)
+	err := row.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &created, &lastOnline, &user.SessionID, &user.Role)
 	if err == sql.ErrNoRows {
 		return nil, http.StatusBadRequest, errors.New("user not found")
 	}
@@ -66,24 +66,24 @@ func (um *UserModel) FindByID(uid uint64) (*models.User, int, error) {
 
 //Create adds a new user to the database
 func (um *UserModel) Create(user *models.User) (int, error) {
-	statement, err := um.DB.Prepare("INSERT INTO users (user_name, user_password, user_email, user_nickname, user_created, user_last_online, user_session_id, user_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+	statement, err := um.DB.Prepare("INSERT INTO users (name, password, email, created, last_online, session_id, role) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		return http.StatusInternalServerError, errors.New("unable to create new user account")
+		return http.StatusInternalServerError, err
 	}
-	nameErr := um.DB.QueryRow("SELECT user_name FROM users WHERE user_name = ?", user.Name).Scan(&user.Name)
-	emailErr := um.DB.QueryRow("SELECT user_email FROM users WHERE user_email = ?", user.Email).Scan(&user.Email)
+	nameErr := um.DB.QueryRow("SELECT name FROM users WHERE name = ?", user.Name).Scan(&user.Name)
+	emailErr := um.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&user.Email)
 	if nameErr != sql.ErrNoRows && nameErr != nil || emailErr != sql.ErrNoRows && emailErr != nil {
 		return http.StatusInternalServerError, errors.New("unable to create new user account")
 	} else if nameErr == sql.ErrNoRows && emailErr == sql.ErrNoRows {
 		res, err := statement.Exec(
-			user.Name, user.Password, user.Email, user.Nickname, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), user.SessionID, user.Role,
+			user.Name, user.Password, user.Email, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), user.SessionID, user.Role,
 		)
 		if err != nil {
-			return http.StatusInternalServerError, err //errors.New("unable to create new user account")
+			return http.StatusInternalServerError, err
 		}
 		rowsAffected, err := res.RowsAffected()
 		if err != nil {
-			return http.StatusInternalServerError, err //errors.New("unable to create new user account")
+			return http.StatusInternalServerError, err
 		}
 		if rowsAffected > 0 {
 			return http.StatusOK, nil
@@ -100,11 +100,11 @@ func (um *UserModel) Create(user *models.User) (int, error) {
 
 //Update updates existing user in the database
 func (um *UserModel) Update(user *models.User) (int, error) {
-	statement, err := um.DB.Prepare("UPDATE users SET user_name = ?, user_email = ?, user_nickname = ?, user_last_online = ? WHERE user_id = ?")
+	statement, err := um.DB.Prepare("UPDATE users SET name = ?, email = ?, last_online = ? WHERE id = ?")
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	res, err := statement.Exec(user.Name, user.Email, user.Nickname, user.LastOnline.Format(config.TimeLayout), user.ID)
+	res, err := statement.Exec(user.Name, user.Email, user.LastOnline.Format(config.TimeLayout), user.ID)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -121,7 +121,7 @@ func (um *UserModel) Delete(id uint64) (int, error) {
 	var err error
 	var result sql.Result
 	var rowsAffected int64
-	result, err = um.DB.Exec("DELETE FROM users WHERE user_id = ?", id)
+	result, err = um.DB.Exec("DELETE FROM users WHERE id = ?", id)
 	if err == sql.ErrNoRows {
 		return http.StatusBadRequest, errors.New("user not found")
 	}
@@ -130,15 +130,14 @@ func (um *UserModel) Delete(id uint64) (int, error) {
 	}
 	if rowsAffected, err = result.RowsAffected(); rowsAffected > 0 && err == nil {
 		return http.StatusOK, nil
-	} else {
-		return http.StatusInternalServerError, err
 	}
+	return http.StatusInternalServerError, err
 }
 
 //FindByNameOrEmail finds a user by name or email in the database
 func (um *UserModel) FindByNameOrEmail(login string) (*models.User, int, error) {
 	var user models.User
-	rows, err := um.DB.Query("SELECT * FROM users WHERE user_name = ? OR user_email = ?", login, login)
+	rows, err := um.DB.Query("SELECT * FROM users WHERE name = ? OR email = ?", login, login)
 	if err == sql.ErrNoRows {
 		return nil, http.StatusBadRequest, errors.New("wrong login or password")
 	}
@@ -147,7 +146,7 @@ func (um *UserModel) FindByNameOrEmail(login string) (*models.User, int, error) 
 	}
 	for rows.Next() {
 		var created, lastOnline string
-		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &user.Nickname, &created, &lastOnline, &user.SessionID, &user.Role)
+		rows.Scan(&user.ID, &user.Name, &user.Password, &user.Email, &created, &lastOnline, &user.SessionID, &user.Role)
 		if user.Created, err = time.Parse(config.TimeLayout, created); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
