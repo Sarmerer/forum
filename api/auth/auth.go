@@ -80,7 +80,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Email:     email,
 		Nickname:  password,
 		SessionID: "",
-		Role:      config.RoleDefault,
+		Role:      config.RoleAdmin,
 	}
 	if status, err = um.Create(&user); err != nil {
 		response.Error(w, status, err)

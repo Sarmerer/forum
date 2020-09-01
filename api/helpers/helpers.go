@@ -3,6 +3,7 @@ package helpers
 import (
 	"database/sql"
 	"errors"
+	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/database"
 	"net/http"
@@ -16,7 +17,7 @@ func ParseID(r *http.Request) (res uint64, err error) {
 	return res, nil
 }
 
-func PrepareUserRepo() (um *crud.UserModel, err error) {
+func PrepareUserRepo() (um repository.UserRepo, err error) {
 	var db *sql.DB
 	if db, err = database.Connect(); err != nil {
 		return
@@ -25,7 +26,7 @@ func PrepareUserRepo() (um *crud.UserModel, err error) {
 	return
 }
 
-func PreparePostRepo() (pm *crud.PostModel, err error) {
+func PreparePostRepo() (pm repository.PostRepo, err error) {
 	var db *sql.DB
 	if db, err = database.Connect(); err != nil {
 		return
@@ -34,11 +35,20 @@ func PreparePostRepo() (pm *crud.PostModel, err error) {
 	return
 }
 
-func PrepareReplyRepo() (prm *crud.PostReplyModel, err error) {
+func PrepareReplyRepo() (prm repository.ReplyRepo, err error) {
 	var db *sql.DB
 	if db, err = database.Connect(); err != nil {
 		return
 	}
 	prm = crud.NewPostReplyModel(db)
+	return
+}
+
+func PrepareCategoriesRepo() (cm repository.CategoryRepo, err error) {
+	var db *sql.DB
+	if db, err = database.Connect(); err != nil {
+		return
+	}
+	cm = crud.NewCategoryModel(db)
 	return
 }

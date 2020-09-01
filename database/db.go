@@ -56,9 +56,10 @@ func CheckIntegrity() (err error) {
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "categories" (
 		"category_id"	INTEGER,
-		"category_name"	TEXT UNIQUE,
-		"category_description"	TEXT,
-		PRIMARY KEY("category_id" AUTOINCREMENT))`)
+		"category_post"		INTEGER,
+		"category_name"	TEXT,
+		FOREIGN KEY("category_post") REFERENCES "posts"("post_id"),
+		PRIMARY KEY("category_id"))`)
 	if err != nil {
 		return
 	}

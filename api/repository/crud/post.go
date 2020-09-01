@@ -61,23 +61,28 @@ func (pm *PostModel) FindByID(pid uint64) (*models.Post, int, error) {
 }
 
 //Create adds a new post to the database
-func (pm *PostModel) Create(post *models.Post) error {
-	statement, err := pm.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		return err
+func (pm *PostModel) Create(post *models.Post) (pid int64, err error) {
+	var (
+		stmt         *sql.Stmt
+		result       sql.Result
+		rowsAffected int64
+	)
+	if stmt, err = pm.DB.Prepare("INSERT INTO posts (post_by, post_category, post_name, post_content, post_created, post_updated, post_rating) VALUES (?, ?, ?, ?, ?, ?, ?)"); err != nil {
+		return
 	}
-	res, err := statement.Exec(post.By, post.Category, post.Name, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating)
-	if err != nil {
-		return err
+	if result, err = stmt.Exec(post.By, post.Category, post.Name, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating); err != nil {
+		return
 	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
+	if rowsAffected, err = result.RowsAffected(); err != nil {
+		return
+	}
+	if pid, err = result.LastInsertId(); err != nil {
+		return
 	}
 	if rowsAffected > 0 {
-		return nil
+		return
 	}
-	return errors.New("could not create new post")
+	return 0, errors.New("could not create new post")
 }
 
 //Update updates existing post in the database

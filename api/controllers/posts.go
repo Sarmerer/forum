@@ -31,13 +31,13 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	var (
-		pid     uint64
-		pm      repository.PostRepo
-		post    *models.Post
-		replies []models.PostReply
-		message interface{}
-		status  int
-		err     error
+		pid        uint64
+		pm         repository.PostRepo
+		post       *models.Post
+		replies    []models.PostReply
+		categories []models.Category
+		status     int
+		err        error
 	)
 	if pid, err = helpers.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -54,26 +54,34 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if replies, err = GetReplies(pid); err != nil {
-		message = fmt.Sprintf("failed to load replies. Details: %s", err.Error())
+		replies = nil
+	}
+	if categories, err = GetCategories(pid); err != nil {
+		categories = nil
 	}
 	res := struct {
-		Post    interface{} `json:"post"`
-		Replies interface{} `json:"replies"`
-	}{post, replies}
-	response.Success(w, message, res)
+		Post       interface{} `json:"post"`
+		Categories interface{} `json:"categories"`
+		Replies    interface{} `json:"replies"`
+	}{post, categories, replies}
+	response.Success(w, nil, res)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
-		author uint64
-		pm     repository.PostRepo
-		post   models.Post
-		err    error
+		author            uint64
+		pm                repository.PostRepo
+		post              models.Post
+		pid               int64
+		cm                repository.CategoryRepo
+		categoriesCreated int
+		err               error
 	)
 	author = r.Context().Value("uid").(uint64)
 	input := struct {
-		Description string `json:"description"`
-		Content     string `json:"content"`
+		Description string   `json:"description"`
+		Content     string   `json:"content"`
+		Categories  []string `json:"categories"`
 	}{}
 
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -94,12 +102,23 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Updated:  time.Now(),
 		Rating:   0,
 	}
-	if err = pm.Create(&post); err != nil {
+	if pid, err = pm.Create(&post); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	response.Success(w, "post has been created", nil)
+	if len(input.Categories) > 0 {
+		if cm, err = helpers.PrepareCategoriesRepo(); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
+		}
+		if categoriesCreated, err = cm.Create(pid, input.Categories...); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	response.Success(w, fmt.Sprintf("post has been created. Catgories created: %d", categoriesCreated), nil)
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -169,8 +188,10 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = DeleteAllRepliesForPost(pid); err != nil {
-		response.Success(w, fmt.Sprintf("post has been deleted. Failed to delete replies: %s", err.Error()), nil)
-		return
+		fmt.Println(err)
+	}
+	if err = DeleteAllCategoriesForPost(pid); err != nil {
+		fmt.Println(err)
 	}
 	response.Success(w, fmt.Sprintf("post has been deleted"), nil)
 }

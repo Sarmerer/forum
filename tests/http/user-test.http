@@ -10,7 +10,7 @@ GET {{baseURL}}/api/user
 
 ### Sign up
 
-POST {{baseURL}}/api/signup
+POST {{baseURL}}/api/auth/signup
     ?login=admin
     &password=admin
     &email=admin
@@ -18,7 +18,7 @@ POST {{baseURL}}/api/signup
 
 ### Sign in
 
-POST {{baseURL}}/api/signin  
+POST {{baseURL}}/api/auth/signin  
     ?login=admin
     &password=admin
     &API_KEY={{API_KEY}}
