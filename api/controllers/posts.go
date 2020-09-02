@@ -12,10 +12,16 @@ import (
 	"time"
 )
 
+//TODO improve response time
 func GetPosts(w http.ResponseWriter, r *http.Request) {
+	type postTpl struct {
+		Post       models.Post
+		Categories []models.Category
+	}
 	var (
 		pm    repository.PostRepo
 		posts []models.Post
+		res   []postTpl
 		err   error
 	)
 	if pm, err = helpers.PreparePostRepo(); err != nil {
@@ -26,8 +32,14 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-
-	response.Success(w, nil, posts)
+	for _, post := range posts {
+		p := postTpl{Post: post}
+		if p.Categories, err = GetCategories(post.ID); err != nil {
+			p.Categories = nil
+		}
+		res = append(res, p)
+	}
+	response.Success(w, nil, res)
 }
 
 func GetPost(w http.ResponseWriter, r *http.Request) {

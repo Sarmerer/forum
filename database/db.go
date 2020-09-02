@@ -21,74 +21,82 @@ func CheckIntegrity() (err error) {
 	if err != nil {
 		return
 	}
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
-		id 	 	 	INTEGER PRIMARY KEY,
-		name     	TEXT,
-		password 	BLOB,
-		email 	 	TEXT,
-		created  	TEXT,
-		last_online TEXT,
-		session_id	TEXT,
-		role 		INTEGER)`,
-	)
+	_, err = db.Exec(
+		`CREATE TABLE IF NOT EXISTS users (
+			id 	 	 	INTEGER PRIMARY KEY,
+			name     	TEXT,
+			password 	BLOB,
+			email 	 	TEXT,
+			created  	TEXT,
+			last_online TEXT,
+			session_id	TEXT,
+			role 		INTEGER
+		)`)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS posts (
-		id			INTEGER PRIMARY KEY,
-		author_fkey	INTEGER,
-		title		TEXT,
-		content		TEXT,
-		created		TEXT,
-		updated		TEXT,
-		rating		INTEGER,
-		FOREIGN KEY(author_fkey) REFERENCES users(id))`,
-	)
+	_, err = db.Exec(
+		`CREATE TABLE IF NOT EXISTS posts (
+			id			INTEGER PRIMARY KEY,
+			author_fkey	INTEGER,
+			title		TEXT,
+			content		TEXT,
+			created		TEXT,
+			updated		TEXT,
+			rating		INTEGER,
+			FOREIGN KEY(author_fkey) REFERENCES users(id)
+		)`)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS categories (
-		id	 		 INTEGER PRIMARY KEY,
-		name 		 TEXT)`)
+	_, err = db.Exec(
+		`CREATE TABLE IF NOT EXISTS categories (
+			id	 INTEGER PRIMARY KEY,
+			name TEXT
+		)`)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS posts_categories_bridge (
-		id				 INTEGER PRIMARY KEY,
-		post_id_fkey	 INTEGER,
-		category_id_fkey INTEGER,
-		FOREIGN KEY(post_id_fkey) REFERENCES posts(id),
-		FOREIGN KEY(category_id_fkey) REFERENCES categories(id))`)
+	_, err = db.Exec(
+		`CREATE TABLE IF NOT EXISTS posts_categories_bridge (
+			id				 INTEGER PRIMARY KEY,
+			post_id_fkey	 INTEGER,
+			category_id_fkey INTEGER,
+			FOREIGN KEY(post_id_fkey) REFERENCES posts(id),
+			FOREIGN KEY(category_id_fkey) REFERENCES categories(id)
+		)`)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "posts_reaction" (
-		"post_reaction_id"	INTEGER,
-		"post_id"	INTEGER,
-		"user_id"	INTEGER,
-		"reaction"	INTEGER,
-		FOREIGN KEY("post_id") REFERENCES "posts"("post_id"),
-		FOREIGN KEY("user_id") REFERENCES "users"("user_id"),
-		PRIMARY KEY("post_reaction_id" AUTOINCREMENT))`,
-	)
+	_, err = db.Exec(
+		`CREATE TABLE IF NOT EXISTS "posts_reaction" (
+			"post_reaction_id"	INTEGER,
+			"post_id"	INTEGER,
+			"user_id"	INTEGER,
+			"reaction"	INTEGER,
+			FOREIGN KEY("post_id") REFERENCES "posts"("post_id"),
+			FOREIGN KEY("user_id") REFERENCES "users"("user_id"),
+			PRIMARY KEY("post_reaction_id" AUTOINCREMENT)
+		)`)
 	if err != nil {
 		return
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "replies" (
-		"reply_id"	INTEGER,
-		"reply_content"	TEXT,
-		"reply_date"	TEXT,
-		"reply_post"	INTEGER,
-		"reply_by"	INTEGER,
-		FOREIGN KEY("reply_by") REFERENCES "users"("user_id"),
-		FOREIGN KEY("reply_post") REFERENCES "posts"("post_id"),
-		PRIMARY KEY("reply_id"))`,
-	)
+	_, err = db.Exec(
+		`CREATE TABLE IF NOT EXISTS "replies" (
+			"reply_id"	INTEGER,
+			"reply_content"	TEXT,
+			"reply_date"	TEXT,
+			"reply_post"	INTEGER,
+			"reply_by"	INTEGER,
+			FOREIGN KEY("reply_by") REFERENCES "users"("user_id"),
+			FOREIGN KEY("reply_post") REFERENCES "posts"("post_id"),
+			PRIMARY KEY("reply_id")
+		)`)
 	if err != nil {
 		return
 	}
