@@ -1,4 +1,4 @@
-package auth
+package controllers
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.UserRepo
+		repo   repository.UserRepo = crud.NewUserRepoCRUD()
 		user   *models.User
 		cookie *http.Cookie
 		status int
@@ -23,11 +23,6 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	)
 	login := r.FormValue("login")
 	password := r.FormValue("password")
-	if login == "" || password == "" {
-		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
-		return
-	}
-	repo = crud.NewUserRepoCRUD()
 	if user, status, err = repo.FindByNameOrEmail(login); err != nil {
 		response.Error(w, status, err)
 		return
@@ -52,8 +47,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 //SignUp authorizes new user
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	var (
+		repo           repository.UserRepo = crud.NewUserRepoCRUD()
 		hashedPassword []byte
-		repo           repository.UserRepo
 		status         int
 		err            error
 	)
@@ -68,7 +63,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	repo = crud.NewUserRepoCRUD()
 	user := models.User{
 		Name:      login,
 		Password:  string(hashedPassword),
@@ -86,13 +80,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.UserRepo
-		uid    uint64
+		repo   repository.UserRepo = crud.NewUserRepoCRUD()
+		uid    uint64              = r.Context().Value("uid").(uint64)
 		cookie *http.Cookie
 		err    error
 	)
-	repo = crud.NewUserRepoCRUD()
-	uid = r.Context().Value("uid").(uint64)
 	if err = repo.UpdateSession(uid, ""); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return

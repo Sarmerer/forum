@@ -1,7 +1,6 @@
 package router
 
 import (
-	"forum/api/auth"
 	"forum/api/controllers"
 	"forum/api/middleware"
 	"net/http"
@@ -43,7 +42,7 @@ var apiRoutes = []route{
 
 	{
 		URI:      "/api/auth/signin",
-		Handler:  auth.SignIn,
+		Handler:  controllers.SignIn,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
@@ -51,7 +50,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/auth/signup",
-		Handler:  auth.SignUp,
+		Handler:  controllers.SignUp,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
@@ -59,7 +58,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/auth/signout",
-		Handler:  auth.SignOut,
+		Handler:  controllers.SignOut,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
@@ -67,7 +66,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/auth/status",
-		Handler:  auth.Status,
+		Handler:  controllers.Status,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,

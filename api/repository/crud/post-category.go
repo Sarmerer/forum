@@ -111,6 +111,7 @@ func (um *CategoryRepoCRUD) Delete(cid int) error {
 	return errors.New("could not delete the category")
 }
 
+//TODO don't delete a category from categories table, if any other post has that category
 func (cm *CategoryRepoCRUD) DeleteGroup(pid uint64) error {
 	var (
 		err error

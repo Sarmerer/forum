@@ -8,11 +8,10 @@ import (
 
 func GetCategories(pid uint64) ([]models.Category, error) {
 	var (
-		repo       repository.CategoryRepo
+		repo       repository.CategoryRepo = crud.NewCategoryRepoCRUD()
 		categories []models.Category
 		err        error
 	)
-	repo = crud.NewCategoryRepoCRUD()
 	if categories, err = repo.FindAll(pid); err != nil {
 		return nil, err
 	}
@@ -21,10 +20,9 @@ func GetCategories(pid uint64) ([]models.Category, error) {
 
 func DeleteAllCategoriesForPost(pid uint64) error {
 	var (
-		repo repository.CategoryRepo
+		repo repository.CategoryRepo = crud.NewCategoryRepoCRUD()
 		err  error
 	)
-	repo = crud.NewCategoryRepoCRUD()
 	if err = repo.DeleteGroup(pid); err != nil {
 		return err
 	}

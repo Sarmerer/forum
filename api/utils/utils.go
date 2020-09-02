@@ -4,9 +4,18 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
+
+func ParseID(r *http.Request) (res uint64, err error) {
+	if res, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
+		return 0, errors.New("invalid id")
+	}
+	return res, nil
+}
 
 // LoadEnv sets environment variables required to run the API
 func LoadEnv(filename string) error {

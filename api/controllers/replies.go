@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
-	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
+	"forum/api/utils"
 	"forum/config"
 	"net/http"
 	"time"
@@ -14,12 +14,11 @@ import (
 
 func GetReplies(pid uint64) ([]models.PostReply, error) {
 	var (
-		repo    repository.ReplyRepo
+		repo    repository.ReplyRepo = crud.NewReplyRepoCRUD()
 		replies []models.PostReply
 		err     error
 	)
 
-	repo = crud.NewReplyRepoCRUD()
 	if replies, err = repo.FindAll(pid); err != nil {
 		return nil, err
 	}
@@ -28,9 +27,9 @@ func GetReplies(pid uint64) ([]models.PostReply, error) {
 
 func CreateReply(w http.ResponseWriter, r *http.Request) {
 	var (
+		repo   repository.ReplyRepo = crud.NewReplyRepoCRUD()
+		author uint64               = r.Context().Value("uid").(uint64)
 		pid    uint64
-		repo   repository.ReplyRepo
-		author uint64
 		status int
 		err    error
 	)
@@ -41,16 +40,14 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	repo = crud.NewReplyRepoCRUD()
 	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	author = r.Context().Value("uid").(uint64)
 	reply := &models.PostReply{
 		Content: input.Content,
 		Created: time.Now().Format(config.TimeLayout),
@@ -66,8 +63,8 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 
 func UpdateReply(w http.ResponseWriter, r *http.Request) {
 	var (
+		repo         repository.ReplyRepo = crud.NewReplyRepoCRUD()
 		rid          uint64
-		repo         repository.ReplyRepo
 		updatedReply *models.PostReply
 		status       int
 		err          error
@@ -79,11 +76,10 @@ func UpdateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if rid, err = helpers.ParseID(r); err != nil {
+	if rid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	repo = crud.NewReplyRepoCRUD()
 	if updatedReply, status, err = repo.FindByID(rid); err != nil {
 		response.Error(w, status, err)
 		return
@@ -100,16 +96,15 @@ func UpdateReply(w http.ResponseWriter, r *http.Request) {
 
 func DeleteReply(w http.ResponseWriter, r *http.Request) {
 	var (
+		repo   repository.ReplyRepo = crud.NewReplyRepoCRUD()
 		rid    uint64
-		repo   repository.ReplyRepo
 		status int
 		err    error
 	)
-	if rid, err = helpers.ParseID(r); err != nil {
+	if rid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	repo = crud.NewReplyRepoCRUD()
 	if _, status, err = repo.FindByID(rid); err != nil {
 		response.Error(w, status, err)
 		return
@@ -123,10 +118,9 @@ func DeleteReply(w http.ResponseWriter, r *http.Request) {
 
 func DeleteAllRepliesForPost(pid uint64) error {
 	var (
-		repo repository.ReplyRepo
+		repo repository.ReplyRepo = crud.NewReplyRepoCRUD()
 		err  error
 	)
-	repo = crud.NewReplyRepoCRUD()
 	if err = repo.DeleteGroup(pid); err != nil {
 		return err
 	}
@@ -134,7 +128,7 @@ func DeleteAllRepliesForPost(pid uint64) error {
 }
 
 func CountReplies(pid uint64) (replies string, err error) {
-	repo := crud.NewReplyRepoCRUD()
+	var repo = crud.NewReplyRepoCRUD()
 	if replies, err = repo.CountReplies(pid); err != nil {
 		return "0", err
 	}

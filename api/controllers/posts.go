@@ -3,103 +3,93 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
+	"forum/api/utils"
 	"forum/config"
 	"net/http"
 	"time"
 )
 
+type responsePost struct {
+	Post       *models.Post `json:"post"`
+	Categories interface{}  `json:"categories"`
+	Replies    interface{}  `json:"replies"`
+}
+
 //TODO improve response time
 func GetPosts(w http.ResponseWriter, r *http.Request) {
-	type postTpl struct {
-		Post       models.Post
-		Categories interface{}
-		Replies    interface{}
-	}
 	var (
-		repo  repository.PostRepo
-		posts []models.Post
-		res   []postTpl
-		err   error
+		repo   repository.PostRepo = crud.NewPostRepoCRUD()
+		posts  []models.Post
+		result []responsePost
+		err    error
 	)
-	repo = crud.NewPostRepoCRUD()
 	if posts, err = repo.FindAll(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	for _, post := range posts {
-		p := postTpl{Post: post}
-		if p.Replies, err = CountReplies(post.ID); err != nil {
+	for _, pst := range posts {
+		p := responsePost{Post: &pst}
+		if p.Replies, err = CountReplies(pst.ID); err != nil {
 			p.Replies = err
 		}
-		if p.Categories, err = GetCategories(post.ID); err != nil {
+		if p.Categories, err = GetCategories(pst.ID); err != nil {
 			p.Categories = err
 		}
-		res = append(res, p)
+		result = append(result, p)
 	}
-	response.Success(w, nil, res)
+	response.Success(w, nil, result)
 }
 
 func GetPost(w http.ResponseWriter, r *http.Request) {
 	var (
-		pid        uint64
-		repo       repository.PostRepo
-		post       *models.Post
-		replies    []models.PostReply
-		categories []models.Category
-		status     int
-		err        error
+		repo   repository.PostRepo = crud.NewPostRepoCRUD()
+		pid    uint64
+		result responsePost
+		status int
+		err    error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	repo = crud.NewPostRepoCRUD()
-	if post, status, err = repo.FindByID(pid); err != nil {
+
+	if result.Post, status, err = repo.FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-
-	if replies, err = GetReplies(pid); err != nil {
-		replies = nil
+	if result.Categories, err = GetCategories(pid); err != nil {
+		result.Categories = err
 	}
-	if categories, err = GetCategories(pid); err != nil {
-		categories = nil
+	if result.Replies, err = GetReplies(pid); err != nil {
+		result.Replies = err
 	}
-	res := struct {
-		Post       interface{} `json:"post"`
-		Categories interface{} `json:"categories"`
-		Replies    interface{} `json:"replies"`
-	}{post, categories, replies}
-	response.Success(w, nil, res)
+	response.Success(w, nil, result)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
-		author            uint64
-		repo              repository.PostRepo
-		post              models.Post
-		pid               int64
-		err               error
+		repo   repository.PostRepo = crud.NewPostRepoCRUD()
+		author uint64              = r.Context().Value("uid").(uint64)
+		post   models.Post
+		pid    int64
+		err    error
 	)
-	author = r.Context().Value("uid").(uint64)
 	input := struct {
-		Description string   `json:"description"`
-		Content     string   `json:"content"`
-		Categories  []string `json:"categories"`
+		Title      string   `json:"title"`
+		Content    string   `json:"content"`
+		Categories []string `json:"categories"`
 	}{}
 
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	repo = crud.NewPostRepoCRUD()
 	post = models.Post{
-		Title:   input.Description,
+		Title:   input.Title,
 		Content: input.Content,
 		Author:  author,
 		Created: time.Now().Format(config.TimeLayout),
@@ -123,34 +113,40 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var (
+		repo        repository.PostRepo = crud.NewPostRepoCRUD()
 		name        string
 		content     string
 		pid         uint64
-		repo        repository.PostRepo
 		updatedPost *models.Post
 		status      int
 		err         error
 	)
-	name = r.FormValue("description")
-	content = r.FormValue("content")
-	if pid, err = helpers.ParseID(r); err != nil {
+	input := struct {
+		Title      string   `json:"title"`
+		Content    string   `json:"content"`
+		Categories []string `json:"categories"`
+	}{}
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if pid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	repo = crud.NewPostRepoCRUD()
 	if updatedPost, status, err = repo.FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 
 	updatedPost.Updated = time.Now().Format(config.TimeLayout)
-	if name != "" {
+	if input.Title != "" {
 		updatedPost.Title = name
 	}
-	if content != "" {
+	if input.Content != "" {
 		updatedPost.Content = content
 	}
-
 	if err = repo.Update(updatedPost); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -161,16 +157,15 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
+		repo   repository.PostRepo = crud.NewPostRepoCRUD()
 		pid    uint64
-		repo   repository.PostRepo
 		status int
 		err    error
 	)
-	if pid, err = helpers.ParseID(r); err != nil {
+	if pid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	repo = crud.NewPostRepoCRUD()
 	if _, status, err = repo.FindByID(pid); err != nil {
 		response.Error(w, status, err)
 		return

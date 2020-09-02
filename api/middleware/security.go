@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"errors"
-	"forum/api/helpers"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
+	"forum/api/utils"
 	"forum/config"
 	"net/http"
 	"os"
@@ -41,29 +41,27 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, status, err)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "uid", uid)
-		next(w, r.WithContext(ctx))
+		next(w, r.WithContext(context.WithValue(r.Context(), "uid", uid)))
 	}
 }
 
 func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
+			repo         repository.UserRepo = crud.NewUserRepoCRUD()
+			requestorUID uint64              = r.Context().Value("uid").(uint64)
 			queryUID     uint64
-			requestorUID uint64
 			role         int
-			um           repository.UserRepo
 			status       int
 			err          error
 		)
-		if queryUID, err = helpers.ParseID(r); err != nil {
+		if queryUID, err = utils.ParseID(r); err != nil {
 			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
-		requestorUID = r.Context().Value("uid").(uint64)
 		if queryUID != requestorUID {
-			um = crud.NewUserRepoCRUD()
-			if role, status, err = um.GetRole(requestorUID); err != nil {
+
+			if role, status, err = repo.GetRole(requestorUID); err != nil {
 				response.Error(w, status, err)
 				return
 			} else if role < config.RoleModerator {
