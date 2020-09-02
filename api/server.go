@@ -22,6 +22,9 @@ func Init() {
 	gc.Start()
 	logger.InitLogs("Garbage collector", nil)
 
+	err = database.InitDB()
+	logger.InitLogs("Database init", err)
+
 	err = database.CheckIntegrity()
 	logger.InitLogs("Database integrity", err)
 }

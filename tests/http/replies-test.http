@@ -1,27 +1,27 @@
 ### Create reply
 
 POST {{baseURL}}/api/comment/add
-    ?ID=1
+    ?ID=2
     &API_KEY={{API_KEY}}
 Content-Type: application/json
 
 {
-    "content":"cool reply"
+    "content":"test reply"
 }
 
 ### Update reply
 
 PUT {{baseURL}}/api/comment/update
-    ?ID=3
+    ?ID=2
     &API_KEY={{API_KEY}}
 Content-Type: application/json
 
 {
-    "content":"updated content"
+    "content":"updated cntnt"
 }
 
 ### Delete reply
 
 DELETE {{baseURL}}/api/comment/delete
-    ?ID=6
+    ?ID=3
     &API_KEY={{API_KEY}}

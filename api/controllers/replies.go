@@ -5,6 +5,7 @@ import (
 	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
 	"net/http"
@@ -13,15 +14,13 @@ import (
 
 func GetReplies(pid uint64) ([]models.PostReply, error) {
 	var (
-		prm     repository.ReplyRepo
+		repo    repository.ReplyRepo
 		replies []models.PostReply
 		err     error
 	)
 
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		return nil, err
-	}
-	if replies, err = prm.FindAll(pid); err != nil {
+	repo = crud.NewReplyRepoCRUD()
+	if replies, err = repo.FindAll(pid); err != nil {
 		return nil, err
 	}
 	return replies, nil
@@ -30,11 +29,8 @@ func GetReplies(pid uint64) ([]models.PostReply, error) {
 func CreateReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		pid    uint64
-		prm    repository.ReplyRepo
+		repo   repository.ReplyRepo
 		author uint64
-
-		pm repository.PostRepo
-
 		status int
 		err    error
 	)
@@ -49,16 +45,9 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if pm, err = helpers.PreparePostRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if _, status, err = pm.FindByID(pid); err != nil {
+	repo = crud.NewReplyRepoCRUD()
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid); err != nil {
 		response.Error(w, status, err)
-		return
-	}
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	author = r.Context().Value("uid").(uint64)
@@ -68,7 +57,7 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		Post:    pid,
 		Author:  author,
 	}
-	if err = prm.Create(reply); err != nil {
+	if err = repo.Create(reply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -78,7 +67,7 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 func UpdateReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		rid          uint64
-		prm          repository.ReplyRepo
+		repo         repository.ReplyRepo
 		updatedReply *models.PostReply
 		status       int
 		err          error
@@ -94,18 +83,15 @@ func UpdateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if updatedReply, status, err = prm.FindByID(rid); err != nil {
+	repo = crud.NewReplyRepoCRUD()
+	if updatedReply, status, err = repo.FindByID(rid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	if input.Content != "" {
 		updatedReply.Content = input.Content
 	}
-	if err = prm.Update(updatedReply); err != nil {
+	if err = repo.Update(updatedReply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -115,7 +101,7 @@ func UpdateReply(w http.ResponseWriter, r *http.Request) {
 func DeleteReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		rid    uint64
-		prm    repository.ReplyRepo
+		repo   repository.ReplyRepo
 		status int
 		err    error
 	)
@@ -123,15 +109,12 @@ func DeleteReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if _, status, err = prm.FindByID(rid); err != nil {
+	repo = crud.NewReplyRepoCRUD()
+	if _, status, err = repo.FindByID(rid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if err = prm.Delete(rid); err != nil {
+	if err = repo.Delete(rid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -140,24 +123,19 @@ func DeleteReply(w http.ResponseWriter, r *http.Request) {
 
 func DeleteAllRepliesForPost(pid uint64) error {
 	var (
-		prm repository.ReplyRepo
-		err error
+		repo repository.ReplyRepo
+		err  error
 	)
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		return err
-	}
-	if err = prm.DeleteGroup(pid); err != nil {
+	repo = crud.NewReplyRepoCRUD()
+	if err = repo.DeleteGroup(pid); err != nil {
 		return err
 	}
 	return nil
 }
 
 func CountReplies(pid uint64) (replies string, err error) {
-	var prm repository.ReplyRepo
-	if prm, err = helpers.PrepareReplyRepo(); err != nil {
-		return "0", err
-	}
-	if replies, err = prm.CountReplies(pid); err != nil {
+	repo := crud.NewReplyRepoCRUD()
+	if replies, err = repo.CountReplies(pid); err != nil {
 		return "0", err
 	}
 	return replies, nil

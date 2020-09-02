@@ -3,9 +3,9 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
 	"net/http"
@@ -15,7 +15,7 @@ import (
 //SignIn signs the user in if exists
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	var (
-		um     repository.UserRepo
+		repo   repository.UserRepo
 		user   *models.User
 		cookie *http.Cookie
 		status int
@@ -27,10 +27,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("bad request"))
 		return
 	}
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-	}
-	if user, status, err = um.FindByNameOrEmail(login); err != nil {
+	repo = crud.NewUserRepoCRUD()
+	if user, status, err = repo.FindByNameOrEmail(login); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -43,7 +41,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	} else {
 		cookie.Expires = time.Now().Add(config.SessionExpiration)
 	}
-	if err = um.UpdateSession(user.ID, cookie.Value); err != nil {
+	if err = repo.UpdateSession(user.ID, cookie.Value); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -55,7 +53,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	var (
 		hashedPassword []byte
-		um             repository.UserRepo
+		repo           repository.UserRepo
 		status         int
 		err            error
 	)
@@ -70,10 +68,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
+	repo = crud.NewUserRepoCRUD()
 	user := models.User{
 		Name:      login,
 		Password:  string(hashedPassword),
@@ -81,7 +76,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		SessionID: "",
 		Role:      config.RoleAdmin,
 	}
-	if status, err = um.Create(&user); err != nil {
+	if status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -91,16 +86,14 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 func SignOut(w http.ResponseWriter, r *http.Request) {
 	var (
-		um     repository.UserRepo
+		repo   repository.UserRepo
 		uid    uint64
 		cookie *http.Cookie
 		err    error
 	)
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-	}
+	repo = crud.NewUserRepoCRUD()
 	uid = r.Context().Value("uid").(uint64)
-	if err = um.UpdateSession(uid, ""); err != nil {
+	if err = repo.UpdateSession(uid, ""); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

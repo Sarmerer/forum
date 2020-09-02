@@ -5,6 +5,7 @@ import (
 	"errors"
 	"forum/api/helpers"
 	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/config"
 	"net/http"
@@ -28,18 +29,16 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			cookie *http.Cookie
 			um     repository.UserRepo
 			uid    uint64
+			status int
 			err    error
 		)
 		if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		if um, err = helpers.PrepareUserRepo(); err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
-			return
-		}
-		if uid, err = um.ValidateSession(cookie.Value); err != nil {
-			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
+		um = crud.NewUserRepoCRUD()
+		if uid, status, err = um.ValidateSession(cookie.Value); err != nil {
+			response.Error(w, status, err)
 			return
 		}
 		ctx := context.WithValue(r.Context(), "uid", uid)
@@ -63,10 +62,7 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 		}
 		requestorUID = r.Context().Value("uid").(uint64)
 		if queryUID != requestorUID {
-			if um, err = helpers.PrepareUserRepo(); err != nil {
-				response.Error(w, http.StatusInternalServerError, err)
-				return
-			}
+			um = crud.NewUserRepoCRUD()
 			if role, status, err = um.GetRole(requestorUID); err != nil {
 				response.Error(w, status, err)
 				return

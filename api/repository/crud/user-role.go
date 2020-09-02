@@ -3,36 +3,44 @@ package crud
 import (
 	"database/sql"
 	"errors"
+	"forum/database"
 	"net/http"
 )
 
-func (um *UserModel) GetRole(id uint64) (int, int, error) {
-	var role int
-	err := um.DB.QueryRow("SELECT role FROM users WHERE id = ?", id).Scan(&role)
-	if err == sql.ErrNoRows {
-		return 0, http.StatusBadRequest, errors.New("user not found")
-	} else if err != nil {
-		return 0, http.StatusInternalServerError, err
+func (repo *UserRepoCRUD) GetRole(id uint64) (int, int, error) {
+	var (
+		role int
+		err  error
+	)
+	if err = database.DB.QueryRow(
+		"SELECT role FROM users WHERE id = ?", id,
+	).Scan(&role); err != nil {
+		if err != sql.ErrNoRows {
+			return 0, http.StatusInternalServerError, err
+		}
+		return 0, http.StatusNoContent, errors.New("user not found")
 	}
 	return role, http.StatusOK, nil
 }
 
 //UpdateRole updates user role in the database
-func (um *UserModel) UpdateRole(uid uint64, role int) error {
-	statement, err := um.DB.Prepare("UPDATE users SET role = ? WHERE id = ?")
-	if err != nil {
+func (um *UserRepoCRUD) UpdateRole(uid uint64, role int) error {
+	var (
+		result       sql.Result
+		rowsAffected int64
+		err          error
+	)
+	if result, err = database.DB.Exec(
+		"UPDATE users SET role = ? WHERE id = ?",
+		role, uid,
+	); err != nil {
 		return err
 	}
-	res, err := statement.Exec(role, uid)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
+	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return err
 	}
 	if rowsAffected > 0 {
 		return nil
 	}
-	return errors.New("failed to update role")
+	return nil
 }

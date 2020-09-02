@@ -5,18 +5,17 @@ import (
 	"errors"
 	"forum/api/models"
 	"forum/config"
+	"forum/database"
 	"net/http"
 	"time"
 )
 
 //ReplyRepoCRUD helps performing CRUD operations
-type ReplyRepoCRUD struct {
-	DB *sql.DB
-}
+type ReplyRepoCRUD struct{}
 
 //NewReplyRepoCRUD creates an instance of PostReplyModel
-func NewReplyRepoCRUD(db *sql.DB) *ReplyRepoCRUD {
-	return &ReplyRepoCRUD{db}
+func NewReplyRepoCRUD() *ReplyRepoCRUD {
+	return &ReplyRepoCRUD{}
 }
 
 //FindAll returns all replies for the specified post
@@ -26,10 +25,12 @@ func (repo *ReplyRepoCRUD) FindAll(postID uint64) ([]models.PostReply, error) {
 		replies []models.PostReply
 		err     error
 	)
-	if rows, err = repo.DB.Query("SELECT * FROM replies WHERE post_id_fkey = ?", postID); err == sql.ErrNoRows {
+	if rows, err = database.DB.Query(
+		"SELECT * FROM replies WHERE post_id_fkey = ?", postID); err != nil {
+		if err != sql.ErrNoRows {
+			return nil, err
+		}
 		return nil, nil
-	} else if err != nil {
-		return nil, err
 	}
 	for rows.Next() {
 		var r models.PostReply
@@ -45,9 +46,11 @@ func (repo *ReplyRepoCRUD) FindByID(rid uint64) (*models.PostReply, int, error) 
 		r   models.PostReply
 		err error
 	)
-	if err = repo.DB.
-		QueryRow("SELECT * FROM replies WHERE id = ?", rid).
-		Scan(&r.ID, &r.Author, &r.Content, &r.Created, &r.Post); err != nil {
+	if err = database.DB.QueryRow(
+		"SELECT * FROM replies WHERE id = ?", rid,
+	).Scan(
+		&r.ID, &r.Author, &r.Content, &r.Created, &r.Post,
+	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
@@ -59,84 +62,98 @@ func (repo *ReplyRepoCRUD) FindByID(rid uint64) (*models.PostReply, int, error) 
 //Create adds a new reply to the database
 func (repo *ReplyRepoCRUD) Create(r *models.PostReply) error {
 	var (
-		stmt         *sql.Stmt
-		res          sql.Result
+		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if stmt, err = repo.DB.Prepare("INSERT INTO replies (author, content, created, post_id_fkey) VALUES (?, ?, ?, ?)"); err != nil {
+	if result, err = database.DB.Exec(
+		"INSERT INTO replies (author, content, created, post_id_fkey) VALUES (?, ?, ?, ?)",
+		r.Author, r.Content, time.Now().Format(config.TimeLayout), r.Post,
+	); err != nil {
 		return err
 	}
-	if res, err = stmt.Exec(r.Author, r.Content, time.Now().Format(config.TimeLayout), r.Post); err != nil {
+
+	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return err
 	}
-	if rowsAffected, err = res.RowsAffected(); err != nil {
-		return err
-	} else if rowsAffected > 0 {
+	if rowsAffected > 0 {
 		return nil
 	}
-	return errors.New("could not create the reply")
+	return nil
 }
 
 //Update updates existing reply in the database
 func (repo *ReplyRepoCRUD) Update(r *models.PostReply) error {
 	var (
-		stmt         *sql.Stmt
-		res          sql.Result
+		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if stmt, err = repo.DB.Prepare("UPDATE replies SET author = ?, content = ?, created = ?, post_id_fkey = ? WHERE reply_id = ?"); err != nil {
+	if result, err = database.DB.Exec(
+		"UPDATE replies SET author = ?, content = ?, created = ?, post_id_fkey = ? WHERE id = ?",
+		r.Author, r.Content, r.Created, r.Post, r.ID,
+	); err != nil {
 		return err
 	}
-	if res, err = stmt.Exec(r.Author, r.Content, r.Created, r.Post, r.ID); err != nil {
+
+	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return err
 	}
-	if rowsAffected, err = res.RowsAffected(); err != nil {
-		return err
-	} else if rowsAffected > 0 {
+	if rowsAffected > 0 {
 		return nil
 	}
-	return errors.New("failed to update the reply")
+	return nil
 }
 
 //Delete deletes reply from the database
 func (repo *ReplyRepoCRUD) Delete(rid uint64) error {
 	var (
-		res          sql.Result
+		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if res, err = repo.DB.Exec("DELETE FROM replies WHERE id = ?", rid); err != nil {
+	if result, err = database.DB.Exec(
+		"DELETE FROM replies WHERE id = ?", rid,
+	); err != nil {
 		return err
 	}
-	if rowsAffected, err = res.RowsAffected(); err != nil {
+
+	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return err
-	} else if rowsAffected > 0 {
+	}
+	if rowsAffected > 0 {
 		return nil
 	}
-	return errors.New("failed to delete the reply")
+	return nil
 }
 
 func (repo *ReplyRepoCRUD) DeleteGroup(pid uint64) error {
 	var (
-		res          sql.Result
+		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if res, err = repo.DB.Exec("DELETE FROM replies WHERE post_id_fkey = ?", pid); err != nil {
+	if result, err = database.DB.Exec(
+		"DELETE FROM replies WHERE post_id_fkey = ?", pid,
+	); err != nil {
 		return err
 	}
-	if rowsAffected, err = res.RowsAffected(); err != nil {
+
+	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return err
-	} else if rowsAffected > 0 {
+	}
+	if rowsAffected > 0 {
 		return nil
 	}
-	return errors.New("failed to delete replies for the post")
+	return nil
 }
 
 func (repo *ReplyRepoCRUD) CountReplies(pid uint64) (replies string, err error) {
-	if err = repo.DB.QueryRow("SELECT count(id) FROM replies WHERE post_id_fkey = ?", pid).Scan(&replies); err != nil {
+	if err = database.DB.QueryRow(
+		"SELECT count(id) FROM replies WHERE post_id_fkey = ?", pid,
+	).Scan(
+		&replies,
+	); err != nil {
 		if err != sql.ErrNoRows {
 			return "0", err
 		}

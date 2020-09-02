@@ -13,7 +13,7 @@ type UserRepo interface {
 	FindByNameOrEmail(string) (*models.User, int, error)
 
 	UpdateSession(uint64, string) error
-	ValidateSession(string) (uint64, error)
+	ValidateSession(string) (uint64, int, error)
 
 	GetRole(uint64) (int, int, error)
 	UpdateRole(uint64, int) error

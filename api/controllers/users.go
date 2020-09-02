@@ -6,6 +6,7 @@ import (
 	"forum/api/helpers"
 	"forum/api/models"
 	"forum/api/repository"
+	"forum/api/repository/crud"
 	"forum/api/response"
 
 	"net/http"
@@ -14,15 +15,12 @@ import (
 //GetUsers gets all users from the database
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var (
-		um    repository.UserRepo
+		repo  repository.UserRepo
 		users []models.User
 		err   error
 	)
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if users, err = um.FindAll(); err != nil {
+	repo = crud.NewUserRepoCRUD()
+	if users, err = repo.FindAll(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -33,7 +31,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid    uint64
-		um     repository.UserRepo
+		repo   repository.UserRepo
 		user   *models.User
 		status int
 		err    error
@@ -43,11 +41,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if user, status, err = um.FindByID(uid); err != nil {
+	repo = crud.NewUserRepoCRUD()
+	if user, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -60,7 +55,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		name        string
 		uid         uint64
-		um          repository.UserRepo
+		repo        repository.UserRepo
 		updatedUser *models.User
 		status      int
 		err         error
@@ -71,18 +66,15 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if updatedUser, status, err = um.FindByID(uid); err != nil {
+	repo = crud.NewUserRepoCRUD()
+	if updatedUser, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	if name != "" {
 		updatedUser.Name = name
 	}
-	if status, err = um.Update(updatedUser); err != nil {
+	if status, err = repo.Update(updatedUser); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -94,7 +86,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		uid    uint64
-		um     repository.UserRepo
+		repo   repository.UserRepo
 		status int
 		err    error
 	)
@@ -103,15 +95,12 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if _, status, err = um.FindByID(uid); err != nil {
+	repo = crud.NewUserRepoCRUD()
+	if _, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if status, err = um.Delete(uid); err != nil {
+	if status, err = repo.Delete(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}

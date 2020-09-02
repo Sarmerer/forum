@@ -5,23 +5,25 @@ import (
 	"forum/config"
 )
 
-// Connect opens and returns database
-func Connect() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", config.DatabasePath)
-	if err != nil {
-		return nil, err
+var DB *sql.DB
+
+func InitDB() (err error) {
+	if DB, err = sql.Open("sqlite3", config.DatabasePath); err != nil {
+		return err
 	}
-	return db, nil
+	DB.SetMaxIdleConns(100)
+	if err = DB.Ping(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // CheckIntegrity creates necessary tables in the database, if they do not exist already
 func CheckIntegrity() (err error) {
-	var db *sql.DB
-	db, err = Connect()
 	if err != nil {
 		return
 	}
-	_, err = db.Exec(
+	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS users (
 			id 	 	 	INTEGER PRIMARY KEY,
 			name     	TEXT,
@@ -36,7 +38,7 @@ func CheckIntegrity() (err error) {
 		return
 	}
 
-	_, err = db.Exec(
+	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts (
 			id			INTEGER PRIMARY KEY,
 			author_fkey	INTEGER,
@@ -51,7 +53,7 @@ func CheckIntegrity() (err error) {
 		return
 	}
 
-	_, err = db.Exec(
+	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS categories (
 			id	 INTEGER PRIMARY KEY,
 			name TEXT
@@ -60,7 +62,7 @@ func CheckIntegrity() (err error) {
 		return
 	}
 
-	_, err = db.Exec(
+	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts_categories_bridge (
 			id				 INTEGER PRIMARY KEY,
 			post_id_fkey	 INTEGER,
@@ -72,7 +74,7 @@ func CheckIntegrity() (err error) {
 		return
 	}
 
-	_, err = db.Exec(
+	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS "posts_reaction" (
 			"post_reaction_id"	INTEGER,
 			"post_id"	INTEGER,
@@ -86,7 +88,7 @@ func CheckIntegrity() (err error) {
 		return
 	}
 
-	_, err = db.Exec(
+	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS replies (
 			id			 INTEGER PRIMARY KEY,
 			author		 INTEGER,

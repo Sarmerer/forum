@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"forum/api/helpers"
 	"forum/api/repository"
+	"forum/api/repository/crud"
 	"net/http"
 )
 
@@ -28,9 +28,7 @@ func checkUserRole(id uint64) (int, int, error) {
 		status int
 		err    error
 	)
-	if um, err = helpers.PrepareUserRepo(); err != nil {
-		return 0, http.StatusInternalServerError, err
-	}
+	um = crud.NewUserRepoCRUD()
 	if role, status, err = um.GetRole(id); err != nil {
 		return role, status, err
 	}

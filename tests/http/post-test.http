@@ -17,18 +17,18 @@ Content-Type: application/json
 {
     "description":"post with dog category",
     "content":"dog",
-    "categories": [ "dog" ]
+    "categories": [ "dog", "car" ]
 }
 
 ### Update post
 
 PUT {{baseURL}}/api/post/update
     ?ID=2
-    &description=updated
+    &description=updated post
     &API_KEY={{API_KEY}}
 
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=1
+    ?ID=2
     &API_KEY={{API_KEY}}

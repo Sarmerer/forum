@@ -3,9 +3,10 @@ package gc
 import (
 	"fmt"
 	"forum/api/logger"
+	"forum/api/models"
+	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/config"
-	"forum/database"
 	"time"
 )
 
@@ -16,24 +17,29 @@ func Start() {
 }
 
 func garbageCollector() {
+	var (
+		um         repository.UserRepo
+		lastOnline time.Time
+		users      []models.User
+		err        error
+	)
+	um = crud.NewUserRepoCRUD()
 	for {
 		<-time.After(config.GCInterval)
 		counter := 0
 		start := time.Now()
-		db, dbErr := database.Connect()
-		if dbErr != nil {
-			logger.ServerLogs("Garbage collector", "", dbErr)
-			return
-		}
-		um := crud.NewUserModel(db)
-		users, uErr := um.FindAll()
-		if uErr != nil {
-			logger.ServerLogs("Garbage collector", "", uErr)
+		if users, err = um.FindAll(); err != nil {
+			logger.ServerLogs("Garbage collector", "", err)
 			return
 		}
 		for _, user := range users {
-			if time.Now().After(user.LastOnline.Add(config.SessionExpiration)) {
-				um.UpdateSession(user.ID, "")
+			if lastOnline, err = time.Parse(config.TimeLayout, user.LastOnline); err != nil {
+				logger.ServerLogs("Garbage collector", "time parsing error", err)
+			}
+			if time.Now().After(lastOnline.Add(config.SessionExpiration)) {
+				if err = um.UpdateSession(user.ID, ""); err != nil {
+					logger.ServerLogs("Garbage collector", "session closing error", err)
+				}
 				counter++
 			}
 		}
