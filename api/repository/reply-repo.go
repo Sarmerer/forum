@@ -9,4 +9,5 @@ type ReplyRepo interface {
 	Update(*models.PostReply) error
 	Delete(uint64) error
 	DeleteGroup(uint64) error
+	CountReplies(uint64) (string, error)
 }

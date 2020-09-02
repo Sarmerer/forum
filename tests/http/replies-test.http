@@ -1,7 +1,7 @@
 ### Create reply
 
 POST {{baseURL}}/api/comment/add
-    ?ID=2
+    ?ID=1
     &API_KEY={{API_KEY}}
 Content-Type: application/json
 

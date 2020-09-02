@@ -9,70 +9,65 @@ import (
 	"time"
 )
 
-//PostReplyModel helps performing CRUD operations
-type PostReplyModel struct {
+//ReplyRepoCRUD helps performing CRUD operations
+type ReplyRepoCRUD struct {
 	DB *sql.DB
 }
 
-//NewPostReplyModel creates an instance of PostReplyModel
-func NewPostReplyModel(db *sql.DB) *PostReplyModel {
-	return &PostReplyModel{db}
+//NewReplyRepoCRUD creates an instance of PostReplyModel
+func NewReplyRepoCRUD(db *sql.DB) *ReplyRepoCRUD {
+	return &ReplyRepoCRUD{db}
 }
 
 //FindAll returns all replies for the specified post
-func (prm *PostReplyModel) FindAll(postID uint64) ([]models.PostReply, error) {
+func (repo *ReplyRepoCRUD) FindAll(postID uint64) ([]models.PostReply, error) {
 	var (
 		rows    *sql.Rows
 		replies []models.PostReply
 		err     error
 	)
-	if rows, err = prm.DB.Query("SELECT * FROM replies WHERE reply_post = ?", postID); err == sql.ErrNoRows {
+	if rows, err = repo.DB.Query("SELECT * FROM replies WHERE post_id_fkey = ?", postID); err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var reply models.PostReply
-		var date string
-		rows.Scan(&reply.ID, &reply.Content, &date, &reply.Post, &reply.By)
-		if reply.Date, err = time.Parse(config.TimeLayout, date); err != nil {
-			return nil, err
-		}
-		replies = append(replies, reply)
+		var r models.PostReply
+		rows.Scan(&r.ID, &r.Author, &r.Content, &r.Created, &r.Post)
+		replies = append(replies, r)
 	}
 	return replies, nil
 }
 
 //FindByID returns a specific reply from the database
-func (prm *PostReplyModel) FindByID(rid uint64) (*models.PostReply, int, error) {
+func (repo *ReplyRepoCRUD) FindByID(rid uint64) (*models.PostReply, int, error) {
 	var (
-		date  string
-		reply models.PostReply
-		err   error
+		r   models.PostReply
+		err error
 	)
-	if err = prm.DB.QueryRow("SELECT * FROM replies WHERE reply_id = ?", rid).Scan(&reply.ID, &reply.Content, &date, &reply.Post, &reply.By); err == sql.ErrNoRows {
+	if err = repo.DB.
+		QueryRow("SELECT * FROM replies WHERE id = ?", rid).
+		Scan(&r.ID, &r.Author, &r.Content, &r.Created, &r.Post); err != nil {
+		if err != sql.ErrNoRows {
+			return nil, http.StatusInternalServerError, err
+		}
 		return nil, http.StatusBadRequest, errors.New("reply not found")
-	} else if err != nil {
-		return nil, http.StatusInternalServerError, err
 	}
-	if reply.Date, err = time.Parse(config.TimeLayout, date); err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	return &reply, http.StatusOK, nil
+	return &r, http.StatusOK, nil
 }
 
 //Create adds a new reply to the database
-func (prm *PostReplyModel) Create(reply *models.PostReply) error {
+func (repo *ReplyRepoCRUD) Create(r *models.PostReply) error {
 	var (
 		stmt         *sql.Stmt
 		res          sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if stmt, err = prm.DB.Prepare("INSERT INTO replies (reply_content, reply_date, reply_post, reply_by) VALUES (?, ?, ?, ?)"); err != nil {
+	if stmt, err = repo.DB.Prepare("INSERT INTO replies (author, content, created, post_id_fkey) VALUES (?, ?, ?, ?)"); err != nil {
 		return err
 	}
-	if res, err = stmt.Exec(reply.Content, time.Now().Format(config.TimeLayout), reply.Post, reply.By); err != nil {
+	if res, err = stmt.Exec(r.Author, r.Content, time.Now().Format(config.TimeLayout), r.Post); err != nil {
 		return err
 	}
 	if rowsAffected, err = res.RowsAffected(); err != nil {
@@ -84,17 +79,17 @@ func (prm *PostReplyModel) Create(reply *models.PostReply) error {
 }
 
 //Update updates existing reply in the database
-func (prm *PostReplyModel) Update(reply *models.PostReply) error {
+func (repo *ReplyRepoCRUD) Update(r *models.PostReply) error {
 	var (
 		stmt         *sql.Stmt
 		res          sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if stmt, err = prm.DB.Prepare("UPDATE replies SET reply_content = ?, reply_date = ?, reply_post = ?, reply_by = ? WHERE reply_id = ?"); err != nil {
+	if stmt, err = repo.DB.Prepare("UPDATE replies SET author = ?, content = ?, created = ?, post_id_fkey = ? WHERE reply_id = ?"); err != nil {
 		return err
 	}
-	if res, err = stmt.Exec(reply.Content, reply.Date.Format(config.TimeLayout), reply.Post, reply.By, reply.ID); err != nil {
+	if res, err = stmt.Exec(r.Author, r.Content, r.Created, r.Post, r.ID); err != nil {
 		return err
 	}
 	if rowsAffected, err = res.RowsAffected(); err != nil {
@@ -106,13 +101,13 @@ func (prm *PostReplyModel) Update(reply *models.PostReply) error {
 }
 
 //Delete deletes reply from the database
-func (prm *PostReplyModel) Delete(rid uint64) error {
+func (repo *ReplyRepoCRUD) Delete(rid uint64) error {
 	var (
 		res          sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if res, err = prm.DB.Exec("DELETE FROM replies WHERE reply_id = ?", rid); err != nil {
+	if res, err = repo.DB.Exec("DELETE FROM replies WHERE id = ?", rid); err != nil {
 		return err
 	}
 	if rowsAffected, err = res.RowsAffected(); err != nil {
@@ -123,13 +118,13 @@ func (prm *PostReplyModel) Delete(rid uint64) error {
 	return errors.New("failed to delete the reply")
 }
 
-func (prm *PostReplyModel) DeleteGroup(pid uint64) error {
+func (repo *ReplyRepoCRUD) DeleteGroup(pid uint64) error {
 	var (
 		res          sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if res, err = prm.DB.Exec("DELETE FROM replies WHERE reply_post = ?", pid); err != nil {
+	if res, err = repo.DB.Exec("DELETE FROM replies WHERE post_id_fkey = ?", pid); err != nil {
 		return err
 	}
 	if rowsAffected, err = res.RowsAffected(); err != nil {
@@ -138,4 +133,14 @@ func (prm *PostReplyModel) DeleteGroup(pid uint64) error {
 		return nil
 	}
 	return errors.New("failed to delete replies for the post")
+}
+
+func (repo *ReplyRepoCRUD) CountReplies(pid uint64) (replies string, err error) {
+	if err = repo.DB.QueryRow("SELECT count(id) FROM replies WHERE post_id_fkey = ?", pid).Scan(&replies); err != nil {
+		if err != sql.ErrNoRows {
+			return "0", err
+		}
+		return "0", nil
+	}
+	return replies, nil
 }

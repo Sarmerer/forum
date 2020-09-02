@@ -6,6 +6,7 @@ import (
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/response"
+	"forum/config"
 	"net/http"
 	"time"
 )
@@ -63,9 +64,9 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 	author = r.Context().Value("uid").(uint64)
 	reply := &models.PostReply{
 		Content: input.Content,
-		Date:    time.Now(),
+		Created: time.Now().Format(config.TimeLayout),
 		Post:    pid,
-		By:      author,
+		Author:  author,
 	}
 	if err = prm.Create(reply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
@@ -149,4 +150,15 @@ func DeleteAllRepliesForPost(pid uint64) error {
 		return err
 	}
 	return nil
+}
+
+func CountReplies(pid uint64) (replies string, err error) {
+	var prm repository.ReplyRepo
+	if prm, err = helpers.PrepareReplyRepo(); err != nil {
+		return "0", err
+	}
+	if replies, err = prm.CountReplies(pid); err != nil {
+		return "0", err
+	}
+	return replies, nil
 }

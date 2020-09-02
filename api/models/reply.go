@@ -1,12 +1,10 @@
 package models
 
-import "time"
-
 //PostReply struct contains info about a reply to a post
 type PostReply struct {
 	ID      uint64
+	Author  uint64
 	Content string
-	Date    time.Time
+	Created string
 	Post    uint64
-	By      uint64
 }

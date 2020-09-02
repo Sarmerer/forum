@@ -5,7 +5,7 @@ GET {{baseURL}}/api/posts
 ### Get post
 
 GET {{baseURL}}/api/post
-    ?ID=2
+    ?ID=1
     &API_KEY={{API_KEY}}
 
 ### Create post

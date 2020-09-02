@@ -16,7 +16,8 @@ import (
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	type postTpl struct {
 		Post       models.Post
-		Categories []models.Category
+		Categories interface{}
+		Replies    interface{}
 	}
 	var (
 		pm    repository.PostRepo
@@ -34,8 +35,11 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, post := range posts {
 		p := postTpl{Post: post}
+		if p.Replies, err = CountReplies(post.ID); err != nil {
+			p.Replies = err
+		}
 		if p.Categories, err = GetCategories(post.ID); err != nil {
-			p.Categories = nil
+			p.Categories = err
 		}
 		res = append(res, p)
 	}

@@ -87,15 +87,14 @@ func CheckIntegrity() (err error) {
 	}
 
 	_, err = db.Exec(
-		`CREATE TABLE IF NOT EXISTS "replies" (
-			"reply_id"	INTEGER,
-			"reply_content"	TEXT,
-			"reply_date"	TEXT,
-			"reply_post"	INTEGER,
-			"reply_by"	INTEGER,
-			FOREIGN KEY("reply_by") REFERENCES "users"("user_id"),
-			FOREIGN KEY("reply_post") REFERENCES "posts"("post_id"),
-			PRIMARY KEY("reply_id")
+		`CREATE TABLE IF NOT EXISTS replies (
+			id			 INTEGER PRIMARY KEY,
+			author		 INTEGER,
+			content		 TEXT,
+			created		 TEXT,
+			post_id_fkey INTEGER,
+			FOREIGN KEY(author) REFERENCES users(id),
+			FOREIGN KEY(post_id_fkey) REFERENCES posts(id)
 		)`)
 	if err != nil {
 		return

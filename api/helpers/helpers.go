@@ -40,7 +40,7 @@ func PrepareReplyRepo() (prm repository.ReplyRepo, err error) {
 	if db, err = database.Connect(); err != nil {
 		return
 	}
-	prm = crud.NewPostReplyModel(db)
+	prm = crud.NewReplyRepoCRUD(db)
 	return
 }
 
