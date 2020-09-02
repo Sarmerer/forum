@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"forum/api/models"
+	"forum/api/repository"
 	"forum/config"
-	"forum/database"
 	"net/http"
 	"time"
 )
@@ -14,18 +14,18 @@ import (
 type PostRepoCRUD struct{}
 
 //NewPostRepoCRUD creates an instance of PostModel
-func NewPostRepoCRUD() *PostRepoCRUD {
-	return &PostRepoCRUD{}
+func NewPostRepoCRUD() PostRepoCRUD {
+	return PostRepoCRUD{}
 }
 
 //FindAll returns all posts in the database
-func (repo *PostRepoCRUD) FindAll() ([]models.Post, error) {
+func (PostRepoCRUD) FindAll() ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
 		err   error
 	)
-	if rows, err = database.DB.Query("SELECT * FROM posts"); err != nil {
+	if rows, err = repository.DB.Query("SELECT * FROM posts"); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
@@ -37,12 +37,12 @@ func (repo *PostRepoCRUD) FindAll() ([]models.Post, error) {
 }
 
 //FindByID returns a specific post from the database
-func (repo *PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
+func (PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
 	var (
 		post models.Post
 		err  error
 	)
-	if err = database.DB.QueryRow(
+	if err = repository.DB.QueryRow(
 		"SELECT * FROM posts WHERE id = ?", pid,
 	).Scan(
 		&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating,
@@ -50,20 +50,20 @@ func (repo *PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
-		return nil, http.StatusNoContent, errors.New("post not found")
+		return nil, http.StatusNotFound, errors.New("post not found")
 	}
 	return &post, http.StatusOK, nil
 }
 
 //Create adds a new post to the database
-func (repo *PostRepoCRUD) Create(post *models.Post) (int64, error) {
+func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		pid          int64
 		err          error
 	)
-	if result, err = database.DB.Exec(
+	if result, err = repository.DB.Exec(
 		"INSERT INTO posts (author_fkey, title, content, created, updated, rating) VALUES (?, ?, ?, ?, ?, ?)",
 		post.Author, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating,
 	); err != nil {
@@ -84,13 +84,13 @@ func (repo *PostRepoCRUD) Create(post *models.Post) (int64, error) {
 }
 
 //Update updates existing post in the database
-func (repo *PostRepoCRUD) Update(post *models.Post) error {
+func (PostRepoCRUD) Update(post *models.Post) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if result, err = database.DB.Exec(
+	if result, err = repository.DB.Exec(
 		"UPDATE posts SET author_fkey = ?, title = ?, content = ?, created = ?, updated = ?, rating = ? WHERE id = ?",
 		post.Author, post.Title, post.Content, post.Created, post.Updated, post.Rating, post.ID,
 	); err != nil {
@@ -107,19 +107,19 @@ func (repo *PostRepoCRUD) Update(post *models.Post) error {
 }
 
 //Delete deletes post from the database
-func (repo *PostRepoCRUD) Delete(pid uint64) (int, error) {
+func (PostRepoCRUD) Delete(pid uint64) (int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if result, err = database.DB.Exec(
+	if result, err = repository.DB.Exec(
 		"DELETE FROM posts WHERE id = ?", pid,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return http.StatusInternalServerError, err
 		}
-		return http.StatusNoContent, errors.New("post not found")
+		return http.StatusNotFound, errors.New("post not found")
 	}
 
 	if rowsAffected, err = result.RowsAffected(); err == nil {

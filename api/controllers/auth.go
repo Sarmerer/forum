@@ -64,11 +64,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := models.User{
-		Name:      login,
-		Password:  string(hashedPassword),
-		Email:     email,
-		SessionID: "",
-		Role:      config.RoleAdmin,
+		Login:       login,
+		Password:    string(hashedPassword),
+		Email:       email,
+		DisplayName: login,
+		SessionID:   "",
+		Role:        config.RoleAdmin,
 	}
 	if status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)

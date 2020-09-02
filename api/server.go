@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"forum/api/gc"
 	"forum/api/logger"
+	"forum/api/repository"
 	"forum/api/router"
 	"forum/api/utils"
 	"forum/config"
-	"forum/database"
 	"log"
 	"net/http"
 )
@@ -22,10 +22,10 @@ func Init() {
 	gc.Start()
 	logger.InitLogs("Garbage collector", nil)
 
-	err = database.InitDB()
+	err = repository.InitDB()
 	logger.InitLogs("Database init", err)
 
-	err = database.CheckIntegrity()
+	err = repository.CheckDBIntegrity()
 	logger.InitLogs("Database integrity", err)
 }
 

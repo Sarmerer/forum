@@ -11,9 +11,9 @@ GET {{baseURL}}/api/user
 ### Sign up
 
 POST {{baseURL}}/api/auth/signup
-    ?login=admin2
-    &password=admin2
-    &email=admin2
+    ?login=admin
+    &password=admin
+    &email=admin
     &API_KEY={{API_KEY}}
 
 ### Sign in
@@ -32,7 +32,7 @@ POST {{baseURL}}/api/auth/signout
 
 PUT https://localhost:4433/api/user/update
     ?ID=2
-    &name=admin
+    &name=admin44
     &API_KEY={{API_KEY}}
 
 

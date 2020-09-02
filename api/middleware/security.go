@@ -26,22 +26,25 @@ func CheckAPIKey(next http.HandlerFunc) http.HandlerFunc {
 func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
+			repo   repository.UserRepo = crud.NewUserRepoCRUD()
 			cookie *http.Cookie
-			um     repository.UserRepo
 			uid    uint64
 			status int
 			err    error
 		)
-		if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
+		if cookie, err = r.Cookie(config.SessionCookieName); err != nil {
+			if err != http.ErrNoCookie {
+				response.Error(w, http.StatusBadRequest, err)
+			}
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		um = crud.NewUserRepoCRUD()
-		if uid, status, err = um.ValidateSession(cookie.Value); err != nil {
+		if uid, status, err = repo.ValidateSession(cookie.Value); err != nil {
 			response.Error(w, status, err)
 			return
 		}
-		next(w, r.WithContext(context.WithValue(r.Context(), "uid", uid)))
+		ctx := context.WithValue(r.Context(), "uid", uid)
+		next(w, r.WithContext(ctx))
 	}
 }
 

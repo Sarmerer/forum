@@ -4,25 +4,25 @@ import (
 	"database/sql"
 	"errors"
 	"forum/api/models"
-	"forum/database"
+	"forum/api/repository"
 )
 
 //CategoryRepoCRUD helps performing CRUD operations
 type CategoryRepoCRUD struct{}
 
 //NewCategoryRepoCRUD creates an instance of CategoryModel
-func NewCategoryRepoCRUD() *CategoryRepoCRUD {
-	return &CategoryRepoCRUD{}
+func NewCategoryRepoCRUD() CategoryRepoCRUD {
+	return CategoryRepoCRUD{}
 }
 
 //FindAll returns all categories in the database
-func (repo *CategoryRepoCRUD) FindAll(postID uint64) ([]models.Category, error) {
+func (CategoryRepoCRUD) FindAll(postID uint64) ([]models.Category, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
 		err        error
 	)
-	if rows, err = database.DB.Query(
+	if rows, err = repository.DB.Query(
 		"SELECT category_id_fkey, name FROM categories c LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = ? WHERE c.id = ctb.category_id_fkey",
 		postID,
 	); err != nil {
@@ -38,9 +38,9 @@ func (repo *CategoryRepoCRUD) FindAll(postID uint64) ([]models.Category, error) 
 
 //Find returns a specific category from the database
 //TODO implment search for all post with such categories here
-func (repo *CategoryRepoCRUD) Find(id int) (*models.Category, error) {
+func (CategoryRepoCRUD) Find(id int) (*models.Category, error) {
 	var category models.Category
-	rows, err := database.DB.Query("SELECT * FROM categories WHERE id = ?", id)
+	rows, err := repository.DB.Query("SELECT * FROM categories WHERE id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +52,13 @@ func (repo *CategoryRepoCRUD) Find(id int) (*models.Category, error) {
 
 //Create adds a new category to the database
 //FIXME category being duplicated, when creating new post with existing category
-func (repo *CategoryRepoCRUD) Create(postID int64, categories ...string) (err error) {
+func (CategoryRepoCRUD) Create(postID int64, categories ...string) (err error) {
 	var (
 		cid    int64
 		result sql.Result
 	)
 	for _, category := range categories {
-		if err = database.DB.QueryRow(
+		if err = repository.DB.QueryRow(
 			"SELECT id FROM categories WHERE name = ?",
 			category,
 		).Scan(
@@ -67,7 +67,7 @@ func (repo *CategoryRepoCRUD) Create(postID int64, categories ...string) (err er
 			if err != sql.ErrNoRows {
 				return err
 			}
-			if result, err = database.DB.Exec(
+			if result, err = repository.DB.Exec(
 				"INSERT INTO categories (name) VALUES (?)",
 				category,
 			); err != nil {
@@ -77,7 +77,7 @@ func (repo *CategoryRepoCRUD) Create(postID int64, categories ...string) (err er
 				return err
 			}
 		}
-		if _, err = database.DB.Exec(
+		if _, err = repository.DB.Exec(
 			"INSERT INTO posts_categories_bridge (post_id_fkey, category_id_fkey) VALUES (?, ?)",
 			postID, cid,
 		); err != nil {
@@ -89,13 +89,13 @@ func (repo *CategoryRepoCRUD) Create(postID int64, categories ...string) (err er
 
 //Delete deletes category from the database
 //TODO also delete category from the brige table
-func (um *CategoryRepoCRUD) Delete(cid int) error {
+func (CategoryRepoCRUD) Delete(cid int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if result, err = database.DB.Exec(
+	if result, err = repository.DB.Exec(
 		"DELETE FROM categories WHERE id = ?",
 		cid,
 	); err != nil {
@@ -112,17 +112,17 @@ func (um *CategoryRepoCRUD) Delete(cid int) error {
 }
 
 //TODO don't delete a category from categories table, if any other post has that category
-func (cm *CategoryRepoCRUD) DeleteGroup(pid uint64) error {
+func (CategoryRepoCRUD) DeleteGroup(pid uint64) error {
 	var (
 		err error
 	)
-	if _, err = database.DB.Exec(
+	if _, err = repository.DB.Exec(
 		"DELETE FROM categories WHERE post_id_fkey = ?",
 		pid,
 	); err != nil {
 		return err
 	}
-	if _, err = database.DB.Exec(
+	if _, err = repository.DB.Exec(
 		"DELETE FROM posts_categories_bridge WHERE post_id_fkey = ?",
 		pid,
 	); err != nil {

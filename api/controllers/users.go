@@ -67,7 +67,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if name != "" {
-		updatedUser.Name = name
+		updatedUser.DisplayName = name
 	}
 	if status, err = repo.Update(updatedUser); err != nil {
 		response.Error(w, status, err)

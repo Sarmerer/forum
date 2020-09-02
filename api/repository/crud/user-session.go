@@ -3,12 +3,12 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/database"
+	"forum/api/repository"
 	"net/http"
 )
 
-func (um *UserRepoCRUD) ValidateSession(session string) (uid uint64, status int, err error) {
-	if err = database.DB.QueryRow("SELECT id FROM users WHERE session_id = ?", session).Scan(&uid); err != nil {
+func (UserRepoCRUD) ValidateSession(session string) (uid uint64, status int, err error) {
+	if err = repository.DB.QueryRow("SELECT id FROM users WHERE session_id = ?", session).Scan(&uid); err != nil {
 		if err != sql.ErrNoRows {
 			return uid, http.StatusInternalServerError, err
 		}
@@ -17,13 +17,13 @@ func (um *UserRepoCRUD) ValidateSession(session string) (uid uint64, status int,
 	return uid, http.StatusOK, nil
 }
 
-func (um *UserRepoCRUD) UpdateSession(id uint64, newSession string) error {
+func (UserRepoCRUD) UpdateSession(id uint64, newSession string) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
-	if result, err = database.DB.Exec(
+	if result, err = repository.DB.Exec(
 		"UPDATE users SET session_id = ? WHERE id = ?",
 		newSession, id,
 	); err != nil {
