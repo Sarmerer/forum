@@ -31,7 +31,10 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
-	if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
+	if cookie, err = r.Cookie(config.SessionCookieName); err != nil {
+		if err != http.ErrNoCookie {
+			response.Error(w, http.StatusBadRequest, err)
+		}
 		cookie = generateCookie()
 	} else {
 		cookie.Expires = time.Now().Add(config.SessionExpiration)

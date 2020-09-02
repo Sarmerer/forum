@@ -10,9 +10,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//generateCookie generates the cookie
+//generateUUID generates the cookie
 func generateCookie() *http.Cookie {
-	return &http.Cookie{Name: config.SessionCookieName, Value: fmt.Sprint(uuid.NewV4()), Expires: time.Now().Add(config.SessionExpiration), HttpOnly: true}
+	return &http.Cookie{
+		Name:     config.SessionCookieName,
+		Value:    fmt.Sprint(uuid.NewV4()),
+		Expires:  time.Now().Add(config.SessionExpiration),
+		HttpOnly: true}
 }
 
 //hash hashes the password

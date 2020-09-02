@@ -111,11 +111,8 @@ func (CategoryRepoCRUD) Delete(cid int) error {
 	return errors.New("could not delete the category")
 }
 
-//TODO don't delete a category from categories table, if any other post has that category
 func (CategoryRepoCRUD) DeleteGroup(pid uint64) error {
-	var (
-		err error
-	)
+	var err error
 	if _, err = repository.DB.Exec(
 		"DELETE FROM categories WHERE post_id_fkey = ?",
 		pid,
@@ -125,6 +122,12 @@ func (CategoryRepoCRUD) DeleteGroup(pid uint64) error {
 	if _, err = repository.DB.Exec(
 		"DELETE FROM posts_categories_bridge WHERE post_id_fkey = ?",
 		pid,
+	); err != nil {
+		return err
+	}
+	if _, err = repository.DB.Exec(
+		`DELETE FROM categories WHERE id IN
+		(SELECT c.id FROM categories c LEFT JOIN posts_categories_bridge pcb ON c.id = pcb.category_id_fkey WHERE pcb.category_id_fkey IS NULL)`,
 	); err != nil {
 		return err
 	}

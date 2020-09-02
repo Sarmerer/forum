@@ -55,6 +55,48 @@ func (PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
 	return &post, http.StatusOK, nil
 }
 
+func (PostRepoCRUD) FindByAuthor(uid uint64) ([]models.Post, error) {
+	var (
+		rows  *sql.Rows
+		posts []models.Post
+		err   error
+	)
+	if rows, err = repository.DB.Query(
+		"SELECT * FROM posts WHERE author_fkey = ?",
+		uid,
+	); err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var post models.Post
+		rows.Scan(&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating)
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
+func (PostRepoCRUD) FindByCategories(category string) ([]models.Post, error) {
+	var (
+		rows  *sql.Rows
+		posts []models.Post
+		err   error
+	)
+	if rows, err = repository.DB.Query(
+		`SELECT * FROM posts p 
+		LEFT JOIN posts_categories_bridge pcb ON pcb.post_id_fkey = p.id WHERE ? IN
+		(SELECT name FROM categories WHERE id = pcb.category_id_fkey)`,
+		category,
+	); err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var post models.Post
+		rows.Scan(&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating)
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
 //Create adds a new post to the database
 func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 	var (

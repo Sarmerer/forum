@@ -15,11 +15,11 @@ POST {{baseURL}}/api/post/create
 Content-Type: application/json
 
 {
-    "description":"post with dog category",
-    "content":"dog",
-    "categories": [ "dog", "car" ]
+    "title":"post4",
+    "content":"cat",
+    "categories": [ "cat"]
 }
-
+//SELECT * FROM posts p LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = 1 INNER JOIN categories c WHERE p.id = ctb.post_id_fkey AND c.id =ctb.category_id_fkey
 ### Update post
 
 PUT {{baseURL}}/api/post/update
@@ -30,5 +30,5 @@ PUT {{baseURL}}/api/post/update
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=2
+    ?ID=5
     &API_KEY={{API_KEY}}
