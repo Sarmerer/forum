@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"forum/api/models"
 	"forum/api/repository"
@@ -33,60 +34,68 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	for i := 0; i < len(posts); i++ {
 		p := responsePost{Post: &posts[i]}
-		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
-			p.Replies = err
-		}
 		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
 			p.Categories = err
+		}
+		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
+			p.Replies = err
 		}
 		result = append(result, p)
 	}
 	response.Success(w, nil, result)
 }
 
-func GetPost(w http.ResponseWriter, r *http.Request) {
+func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		pid    uint64
-		result responsePost
+		result []responsePost
+		posts  []models.Post
 		status int
 		err    error
 	)
-	if pid, err = utils.ParseID(r); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
-		return
-	}
-
-	if result.Post, status, err = repo.FindByID(pid); err != nil {
-		response.Error(w, status, err)
-		return
-	}
-	if result.Categories, err = GetCategories(pid); err != nil {
-		result.Categories = err
-	}
-	if result.Replies, err = GetReplies(pid); err != nil {
-		result.Replies = err
-	}
-	response.Success(w, nil, result)
-}
-
-func FindPost(w http.ResponseWriter, r *http.Request) {
-	var (
-		repo  repository.PostRepo = crud.NewPostRepoCRUD()
-		posts []models.Post
-		err   error
-	)
 	input := struct {
+		By         string   `json:"by"`
+		ID         uint64   `json:"id"`
+		Author     uint64   `json:"author"`
 		Categories []string `json:"categories"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
-	}
-	if posts, err = repo.FindByCategories(input.Categories); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	response.Success(w, nil, posts)
+	switch input.By {
+	case "id":
+		var post *models.Post
+		if post, status, err = repo.FindByID(input.ID); err != nil {
+			response.Error(w, status, err)
+			return
+		}
+		posts = append(posts, *post)
+	case "author":
+		if posts, err = repo.FindByAuthor(input.Author); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
+		}
+	case "categories":
+		if posts, err = repo.FindByCategories(input.Categories); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
+		}
+	default:
+		response.Error(w, http.StatusBadRequest, errors.New("unknown search type"))
+		return
+	}
+	for i := 0; i < len(posts); i++ {
+		p := responsePost{Post: &posts[i]}
+		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
+			p.Categories = err
+		}
+		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
+			p.Replies = err
+		}
+		result = append(result, p)
+	}
+	response.Success(w, nil, result)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {

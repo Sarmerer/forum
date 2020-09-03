@@ -1,12 +1,6 @@
 ### Get all posts
 GET {{baseURL}}/api/posts
     ?API_KEY={{API_KEY}}
-
-### Get post
-
-GET {{baseURL}}/api/post
-    ?ID=1
-    &API_KEY={{API_KEY}}
     
 ### Find post
 
@@ -15,7 +9,10 @@ GET {{baseURL}}/api/post/find
 Content-Type: application/json
 
 {
-    "categories": [ "snake", "dog" ]
+    "by":"id",
+    "id":1,
+    "author":1,
+    "categories": [ "snake" ]
 }
 
 ### Create post
