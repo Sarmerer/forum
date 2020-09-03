@@ -82,9 +82,13 @@ func (PostRepoCRUD) FindByCategories(category string) ([]models.Post, error) {
 		err   error
 	)
 	if rows, err = repository.DB.Query(
-		`SELECT * FROM posts p 
-		LEFT JOIN posts_categories_bridge pcb ON pcb.post_id_fkey = p.id WHERE ? IN
-		(SELECT name FROM categories WHERE id = pcb.category_id_fkey)`,
+		`SELECT p.id, p.author_fkey, p.title, p.content, p.created, p.updated, p.rating
+		FROM posts_categories_bridge AS pcb
+		INNER JOIN posts as p
+		ON p.id = pcb.post_id_fkey
+		INNER JOIN categories AS c
+		ON c.id = pcb.category_id_fkey
+		WHERE c.name = ?`,
 		category,
 	); err != nil {
 		return nil, err

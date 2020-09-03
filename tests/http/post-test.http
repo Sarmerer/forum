@@ -7,6 +7,16 @@ GET {{baseURL}}/api/posts
 GET {{baseURL}}/api/post
     ?ID=1
     &API_KEY={{API_KEY}}
+    
+### Find post
+
+GET {{baseURL}}/api/post/find
+    ?API_KEY={{API_KEY}}
+Content-Type: application/json
+
+{
+    "categories": [ "snake" ]
+}
 
 ### Create post
 
@@ -16,10 +26,9 @@ Content-Type: application/json
 
 {
     "title":"post4",
-    "content":"cat",
-    "categories": [ "cat"]
+    "categories": [ "dog"]
 }
-//SELECT * FROM posts p LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = 1 INNER JOIN categories c WHERE p.id = ctb.post_id_fkey AND c.id =ctb.category_id_fkey
+
 ### Update post
 
 PUT {{baseURL}}/api/post/update

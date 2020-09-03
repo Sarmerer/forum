@@ -31,12 +31,12 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	for _, pst := range posts {
-		p := responsePost{Post: &pst}
-		if p.Replies, err = CountReplies(pst.ID); err != nil {
+	for i := 0; i < len(posts); i++ {
+		p := responsePost{Post: &posts[i]}
+		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
 			p.Replies = err
 		}
-		if p.Categories, err = GetCategories(pst.ID); err != nil {
+		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
 			p.Categories = err
 		}
 		result = append(result, p)
@@ -68,6 +68,25 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 		result.Replies = err
 	}
 	response.Success(w, nil, result)
+}
+
+func FindPost(w http.ResponseWriter, r *http.Request) {
+	var (
+		repo  repository.PostRepo = crud.NewPostRepoCRUD()
+		posts []models.Post
+		err   error
+	)
+	input := struct {
+		Categories []string `json:"categories"`
+	}{}
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+	}
+	if posts, err = repo.FindByCategories(input.Categories[0]); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	response.Success(w, nil, posts)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {

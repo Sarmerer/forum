@@ -123,6 +123,14 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
+		URI:      "/api/post/find",
+		Handler:  controllers.FindPost,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
 		URI:      "/api/posts",
 		Handler:  controllers.GetPosts,
 		Method:   http.MethodGet,
