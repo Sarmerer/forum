@@ -82,7 +82,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 	}
-	if posts, err = repo.FindByCategories(input.Categories[0]); err != nil {
+	if posts, err = repo.FindByCategories(input.Categories); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

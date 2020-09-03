@@ -3,6 +3,7 @@ package crud
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/config"
@@ -75,21 +76,33 @@ func (PostRepoCRUD) FindByAuthor(uid uint64) ([]models.Post, error) {
 	return posts, nil
 }
 
-func (PostRepoCRUD) FindByCategories(category string) ([]models.Post, error) {
+func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
+		args  string
 		posts []models.Post
 		err   error
 	)
+	for _, category := range categories {
+		if len(args) == 0 {
+			args += fmt.Sprintf(`"%s"`, category)
+		} else {
+			args += fmt.Sprintf(`, "%s"`, category)
+		}
+	}
 	if rows, err = repository.DB.Query(
 		`SELECT p.id, p.author_fkey, p.title, p.content, p.created, p.updated, p.rating
 		FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p
-		ON p.id = pcb.post_id_fkey
+			ON p.id = pcb.post_id_fkey
 		INNER JOIN categories AS c
-		ON c.id = pcb.category_id_fkey
-		WHERE c.name = ?`,
-		category,
+			ON c.id = pcb.category_id_fkey
+			   WHERE c.name IN (`+args+`)
+		GROUP BY
+			p.id
+		HAVING 
+			COUNT(DISTINCT c.id) = ?`,
+		len(categories),
 	); err != nil {
 		return nil, err
 	}
