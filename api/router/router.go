@@ -32,7 +32,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		response.Error(w, http.StatusNotFound, errors.New("page not found"))
 		return
 	}
-	if f.Method != req.Method {
+	if f.Method != req.Method && req.Method != http.MethodOptions {
 		logger.HTTPLogs(logger.PaintStatus(http.StatusMethodNotAllowed), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
 		response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
 		return

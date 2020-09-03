@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"forum/api/models"
@@ -21,13 +22,19 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-	login := r.FormValue("login")
-	password := r.FormValue("password")
-	if user, status, err = repo.FindByNameOrEmail(login); err != nil {
+	input := struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	}{}
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+	if user, status, err = repo.FindByNameOrEmail(input.Login); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if err = verifyPassword(user.Password, password); err != nil {
+	if err = verifyPassword(user.Password, input.Password); err != nil {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}

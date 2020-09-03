@@ -16,6 +16,8 @@ func generateCookie() *http.Cookie {
 		Name:     config.SessionCookieName,
 		Value:    fmt.Sprint(uuid.NewV4()),
 		Expires:  time.Now().Add(config.SessionExpiration),
+		Path:     "/",
+		Secure:   true,
 		HttpOnly: true}
 }
 
