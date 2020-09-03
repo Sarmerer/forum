@@ -67,7 +67,7 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 			if role, status, err = repo.GetRole(requestorUID); err != nil {
 				response.Error(w, status, err)
 				return
-			} else if role < config.RoleModerator {
+			} else if role < config.RoleAdmin {
 				response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
 				return
 			}

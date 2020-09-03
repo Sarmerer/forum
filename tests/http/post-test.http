@@ -9,10 +9,10 @@ GET {{baseURL}}/api/post/find
 Content-Type: application/json
 
 {
-    "by":"id",
+    "by":"categories",
     "id":1,
     "author":1,
-    "categories": [ "snake" ]
+    "categories": [ "dog", "snake" ]
 }
 
 ### Create post
@@ -22,8 +22,8 @@ POST {{baseURL}}/api/post/create
 Content-Type: application/json
 
 {
-    "title":"post4",
-    "categories": [ "snake"]
+    "title":"post3",
+    "categories": [ "cat" ]
 }
 
 ### Update post
@@ -36,5 +36,5 @@ PUT {{baseURL}}/api/post/update
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=5
+    ?ID=2
     &API_KEY={{API_KEY}}

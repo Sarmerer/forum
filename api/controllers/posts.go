@@ -14,18 +14,30 @@ import (
 	"time"
 )
 
-type responsePost struct {
+type postResponse struct {
 	Post       *models.Post `json:"post"`
 	Categories interface{}  `json:"categories"`
 	Replies    interface{}  `json:"replies"`
 }
 
-//TODO improve response time
+type createUpdateInput struct {
+	Title      string   `json:"title"`
+	Content    string   `json:"content"`
+	Categories []string `json:"categories"`
+}
+
+type findInput struct {
+	By         string   `json:"by"`
+	ID         uint64   `json:"id"`
+	Author     uint64   `json:"author"`
+	Categories []string `json:"categories"`
+}
+
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
 		posts  []models.Post
-		result []responsePost
+		result []postResponse
 		err    error
 	)
 	if posts, err = repo.FindAll(); err != nil {
@@ -33,7 +45,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i := 0; i < len(posts); i++ {
-		p := responsePost{Post: &posts[i]}
+		p := postResponse{Post: &posts[i]}
 		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
 			p.Categories = err
 		}
@@ -48,17 +60,12 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		result []responsePost
+		input  findInput
+		result []postResponse
 		posts  []models.Post
 		status int
 		err    error
 	)
-	input := struct {
-		By         string   `json:"by"`
-		ID         uint64   `json:"id"`
-		Author     uint64   `json:"author"`
-		Categories []string `json:"categories"`
-	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
@@ -86,7 +93,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i := 0; i < len(posts); i++ {
-		p := responsePost{Post: &posts[i]}
+		p := postResponse{Post: &posts[i]}
 		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
 			p.Categories = err
 		}
@@ -102,15 +109,11 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
 		author uint64              = r.Context().Value("uid").(uint64)
+		input  createUpdateInput
 		post   models.Post
 		pid    int64
 		err    error
 	)
-	input := struct {
-		Title      string   `json:"title"`
-		Content    string   `json:"content"`
-		Categories []string `json:"categories"`
-	}{}
 
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -142,6 +145,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo        repository.PostRepo = crud.NewPostRepoCRUD()
+		input       createUpdateInput
 		name        string
 		content     string
 		pid         uint64
@@ -149,11 +153,6 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		status      int
 		err         error
 	)
-	input := struct {
-		Title      string   `json:"title"`
-		Content    string   `json:"content"`
-		Categories []string `json:"categories"`
-	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
@@ -198,15 +197,15 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if status, err = repo.Delete(pid); err != nil {
-		response.Error(w, status, err)
-		return
-	}
 	if err = DeleteAllRepliesForPost(pid); err != nil {
 		fmt.Println(err)
 	}
 	if err = DeleteAllCategoriesForPost(pid); err != nil {
 		fmt.Println(err)
+	}
+	if status, err = repo.Delete(pid); err != nil {
+		response.Error(w, status, err)
+		return
 	}
 	response.Success(w, fmt.Sprintf("post has been deleted"), nil)
 }

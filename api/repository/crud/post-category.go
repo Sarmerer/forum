@@ -114,12 +114,6 @@ func (CategoryRepoCRUD) Delete(cid int) error {
 func (CategoryRepoCRUD) DeleteGroup(pid uint64) error {
 	var err error
 	if _, err = repository.DB.Exec(
-		"DELETE FROM categories WHERE post_id_fkey = ?",
-		pid,
-	); err != nil {
-		return err
-	}
-	if _, err = repository.DB.Exec(
 		"DELETE FROM posts_categories_bridge WHERE post_id_fkey = ?",
 		pid,
 	); err != nil {
