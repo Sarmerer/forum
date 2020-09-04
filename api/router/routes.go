@@ -65,12 +65,12 @@ var apiRoutes = []route{
 		NeedAuth: true,
 	},
 	{
-		URI:      "/api/auth/status",
-		Handler:  controllers.Status,
-		Method:   http.MethodPost,
+		URI:      "/api/auth/me",
+		Handler:  controllers.Me,
+		Method:   http.MethodGet,
 		MinRole:  0,
 		SelfOnly: false,
-		NeedAuth: false,
+		NeedAuth: true,
 	},
 
 	/* -------------------------------------------------------------------------- */

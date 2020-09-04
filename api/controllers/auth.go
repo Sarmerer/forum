@@ -10,7 +10,6 @@ import (
 	"forum/api/response"
 	"forum/config"
 	"net/http"
-	"time"
 )
 
 //SignIn signs the user in if exists
@@ -38,15 +37,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
-	if cookie, err = r.Cookie(config.SessionCookieName); err != nil {
-		fmt.Println(err)
-		if err != http.ErrNoCookie {
-			response.Error(w, http.StatusBadRequest, err)
-		}
-		cookie = generateCookie()
-	} else {
-		cookie.Expires = time.Now().Add(config.SessionExpiration)
-	}
+	cookie = generateCookie(r.Cookie(config.SessionCookieName))
 	if err = repo.UpdateSession(user.ID, cookie.Value); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -101,21 +92,31 @@ func SignOut(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	cookie, _ = r.Cookie(config.SessionCookieName)
-	cookie.MaxAge = -1
+	cookie = &http.Cookie{
+		Name:     config.SessionCookieName,
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+	}
 	http.SetCookie(w, cookie)
 	response.Success(w, "user is logged out", nil)
 	return
 }
 
-func Status(w http.ResponseWriter, r *http.Request) {
-	// var (
-	// 	cookie *http.Cookie
-	// 	err    error
-	// )
-	// if cookie, err = r.Cookie(config.SessionCookieName); err == http.ErrNoCookie {
+func Me(w http.ResponseWriter, r *http.Request) {
+	var (
+		repo   repository.UserRepo = crud.NewUserRepoCRUD()
+		uid    uint64              = r.Context().Value("uid").(uint64)
+		user   *models.User
+		status int
+		err    error
+	)
 
-	// } else if err == nil {
+	if user, status, err = repo.FindByID(uid); err != nil {
+		response.Error(w, status, err)
+		return
+	}
 
-	// }
+	response.Success(w, nil, user)
 }

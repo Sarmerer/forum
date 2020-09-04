@@ -18,10 +18,13 @@ POST {{baseURL}}/api/auth/signup
 
 ### Sign in
 
-POST {{baseURL}}/api/auth/signin  
-    ?login=admin
-    &password=admin
-    &API_KEY={{API_KEY}}
+POST {{baseURL}}/api/auth/signin HTTP/1.1
+Content-Type: application/json
+
+{
+    "login":"admin",
+    "password": "admin"
+}
     
 ### Sign out
 

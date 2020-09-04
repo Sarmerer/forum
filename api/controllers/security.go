@@ -11,10 +11,16 @@ import (
 )
 
 //generateUUID generates the cookie
-func generateCookie() *http.Cookie {
+func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
+	var newUUID string
+	if err != nil {
+		newUUID = fmt.Sprint(uuid.NewV4())
+	} else {
+		newUUID = cookie.Value
+	}
 	return &http.Cookie{
 		Name:     config.SessionCookieName,
-		Value:    fmt.Sprint(uuid.NewV4()),
+		Value:    newUUID,
 		Expires:  time.Now().Add(config.SessionExpiration),
 		Path:     "/",
 		HttpOnly: true}
