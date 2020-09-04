@@ -34,5 +34,6 @@ func Run() {
 	mux := router.New()
 	mux.SetupRoutes()
 	log.Printf("Listening https://localhost:%d\n", config.APIPort)
-	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
+	////log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.APIPort), mux))
 }

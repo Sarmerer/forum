@@ -1,13 +1,16 @@
 <template>
   <div>
-    <h5>{{ info }}</h5>
+    <h5>{{ msg }}</h5>
   </div>
 </template>
 <script>
 export default {
-  data() {
+  props: {
+    msg: String,
+  },
+  data: function() {
     return {
-      info: "Hello Vue!",
+      counter: this.msg,
     };
   },
 };

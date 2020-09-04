@@ -7,6 +7,8 @@ import (
 var ()
 
 const (
+	APIurl = "http://localhost:4433"
+	VueURL = "http://127.0.0.1:8081"
 	// DatabasePath defines the path to the database
 	DatabasePath = "./database/forum.db"
 	// APIPort defines the port on which the API will run

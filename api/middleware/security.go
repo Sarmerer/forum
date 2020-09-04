@@ -9,16 +9,15 @@ import (
 	"forum/api/utils"
 	"forum/config"
 	"net/http"
-	"os"
 )
 
 func CheckAPIKey(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := r.FormValue("API_KEY")
-		if key == "" || key != os.Getenv("API_KEY") {
-			response.Error(w, http.StatusForbidden, errors.New("cannot access API without a valid API key"))
-			return
-		}
+		// key := r.FormValue("API_KEY")
+		// if key == "" || key != os.Getenv("API_KEY") {
+		// 	response.Error(w, http.StatusForbidden, errors.New("cannot access API without a valid API key"))
+		// 	return
+		// }
 		next(w, r)
 	}
 }

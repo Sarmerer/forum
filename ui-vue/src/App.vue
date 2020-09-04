@@ -2,14 +2,23 @@
   <div id="app">
     <div id="nav">
       <b-nav>
-        <b-nav-item> <router-link to="/">Home</router-link> |</b-nav-item>
-        <b-nav-item><router-link to="/login">Login</router-link></b-nav-item>
+        <b-nav-item> <router-link to="/">Home</router-link></b-nav-item>
+        <Login class="ml-auto"></Login>
       </b-nav>
     </div>
     <router-view />
   </div>
 </template>
+<script>
+import Login from "../src/components/Login";
 
+export default {
+  name: "App",
+  components: {
+    Login,
+  },
+};
+</script>
 <style>
 @import url("https://fonts.googleapis.com/css?family=Roboto");
 

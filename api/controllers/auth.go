@@ -39,6 +39,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if cookie, err = r.Cookie(config.SessionCookieName); err != nil {
+		fmt.Println(err)
 		if err != http.ErrNoCookie {
 			response.Error(w, http.StatusBadRequest, err)
 		}
