@@ -1,14 +1,17 @@
 <template>
   <div>
-    <ul>
-      <li v-for="(Title, Content) in posts" :key="Title">{{ Title }} | {{ Content }}</li>
-    </ul>
-    <!-- <pre>{{ posts }}</pre> -->
+    <b-list-group style="align-items: center; justify-content: center">
+      <Card style="width: 800px;" v-for="post in posts" :key="post.post.ID" :id="post.post.ID" v-bind:Post="post.post" />
+    </b-list-group>
   </div>
 </template>
 <script>
 import axios from "axios";
+import Card from "@/components/Card";
 export default {
+  components: {
+    Card,
+  },
   data: function() {
     return {
       posts: null,

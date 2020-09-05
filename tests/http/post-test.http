@@ -12,7 +12,7 @@ Content-Type: application/json
     "by":"categories",
     "id":1,
     "author":1,
-    "categories": [ "dog", "snake" ]
+    "categories": [ "general" ]
 }
 
 ### Create post
@@ -22,8 +22,9 @@ POST {{baseURL}}/api/post/create
 Content-Type: application/json
 
 {
-    "title":"post3",
-    "categories": [ "cat" ]
+    "title":"post10",
+    "content":"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+    "categories": [ "general" ]
 }
 
 ### Update post
@@ -36,5 +37,5 @@ PUT {{baseURL}}/api/post/update
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=2
+    ?ID=4
     &API_KEY={{API_KEY}}
