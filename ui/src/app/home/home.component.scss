@@ -1,0 +1,49 @@
+/* The hero image */
+.hero-image {
+  background-image: url("/assets/img/home-hero.jpg");
+  box-shadow: 0 5px 6px 2px rgba(10, 10, 10, 0.3);
+  height: 25%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.hero-text {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: large;
+}
+
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 17%;
+}
+
+.columns > * {
+    flex-basis: calc(calc(750px - 100%) * 999);
+}
+
+.card {
+    margin: 20px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
+}
+
+.post-col {
+   flex-grow: 1; 
+}
+
+.info-col {
+   flex-grow: 0.4; 
+}
+
+hr {
+    opacity: 0.3;
+}
