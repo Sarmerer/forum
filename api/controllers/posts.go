@@ -46,7 +46,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 	for i := 0; i < len(posts); i++ {
 		p := postResponse{Post: &posts[i]}
-		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
+		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
 		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
@@ -94,7 +94,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	}
 	for i := 0; i < len(posts); i++ {
 		p := postResponse{Post: &posts[i]}
-		if p.Categories, err = GetCategories(posts[i].ID); err != nil {
+		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
 		if p.Replies, err = CountReplies(posts[i].ID); err != nil {

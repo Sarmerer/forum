@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="nav">
-      <b-navbar toggleable="lg">
+      <b-navbar toggleable="lg" type="light" variant="dark">
         <b-navbar-brand href="#">forum</b-navbar-brand>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
@@ -24,8 +24,7 @@
 <script>
 import Login from "../src/components/Login";
 import Me from "../src/components/Me";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "App",
@@ -48,22 +47,3 @@ export default {
   },
 };
 </script>
-<style>
-@import url("https://fonts.googleapis.com/css?family=Roboto");
-
-#app {
-  font-family: "Roboto", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>

@@ -154,7 +154,17 @@ var apiRoutes = []route{
 		SelfOnly: true,
 		NeedAuth: true,
 	},
-
+	/* -------------------------------------------------------------------------- */
+	/*                               Categories routes                            */
+	/* -------------------------------------------------------------------------- */
+	{
+		URI:      "/api/categories",
+		Handler:  controllers.GetAllCategories,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
 	/* -------------------------------------------------------------------------- */
 	/*                               Comment routes                               */
 	/* -------------------------------------------------------------------------- */
