@@ -22,7 +22,7 @@
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
             <hr />
-            <p>col 2</p>
+            <Categories />
           </div>
         </div>
       </div>
@@ -33,11 +33,13 @@
 <script>
 // @ is an alias to /src
 import Posts from "@/components/Posts.vue";
+import Categories from "@/components/Categories.vue";
 
 export default {
   name: "Home",
   components: {
     Posts,
+    Categories,
   },
 };
 </script>
