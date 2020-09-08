@@ -31,15 +31,14 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import Posts from "@/components/Posts.vue";
 import Categories from "@/components/Categories.vue";
 
 export default {
   name: "Home",
   components: {
-    Posts,
     Categories,
+    Posts,
   },
 };
 </script>

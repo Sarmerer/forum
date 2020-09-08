@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="nav">
-      <b-navbar toggleable="lg">
+      <b-navbar toggleable="lg" type="light" variant="dark">
         <b-navbar-brand href="#">forum</b-navbar-brand>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
@@ -24,8 +24,7 @@
 <script>
 import Login from "../src/components/Login";
 import Me from "../src/components/Me";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "App",
