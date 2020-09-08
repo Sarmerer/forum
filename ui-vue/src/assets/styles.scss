@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap');
+
+@font-face {
+  font-family: Caslon;
+  src: url(/assets/fonts/OPTICaslon-Antique.otf);
+}
+
+body, html {
+    background-color: #121212;
+    color: rgba(255, 255, 255, 0.87);
+    height: 100%;
+    margin:0;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.primary {
+    color:#278ea5;
+}
+
+.primary-variant{
+    color: #1f4287
+}
+
+.secondary {
+    color: #21e6c1;
+}
