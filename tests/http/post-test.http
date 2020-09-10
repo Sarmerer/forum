@@ -10,7 +10,7 @@ GET {{baseURL}}/api/post/find
 Content-Type: application/json
 
 {
-    "by":"categories",
+    "by":"id",
     "id":1,
     "author":1,
     "categories": [ "general" ]
@@ -36,9 +36,14 @@ PUT {{baseURL}}/api/post/update
 ### Delete post
 
 DELETE {{baseURL}}/api/post/delete
-    ?ID=4
+    ?ID=6
 
 ### Rate post
 
 POST {{baseURL}}/api/post/rate
-     ?ID=1
+Content-Type: application/json
+
+{
+    "pid":1,
+    "reaction": 0
+}

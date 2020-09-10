@@ -30,13 +30,25 @@ func (PostRepoCRUD) RatePost(postID, userID uint64, reaction int) error {
 		rowsAffected int64
 		err          error
 	)
-	if result, err = repository.DB.Exec(
-		`INSERT INTO reactions (post_id_fkey, user_id_fkey, reaction) VALUES (?, ?, ?)`,
-		postID, userID, reaction,
-	); err != nil {
-		return err
+	switch reaction {
+	case 0:
+		if result, err = repository.DB.Exec(
+			`DELETE FROM reactions WHERE post_id_fkey = ? AND user_id_fkey = ?`,
+			postID, userID,
+		); err != nil {
+			return err
+		}
+	default:
+		if result, err = repository.DB.Exec(
+			`INSERT
+			OR
+			REPLACE INTO reactions(id, post_id_fkey, user_id_fkey, reaction)
+			VALUES ((SELECT id FROM reactions WHERE post_id_fkey = $1 AND user_id_fkey = $2), $1, $2, $3);`,
+			postID, userID, reaction,
+		); err != nil {
+			return err
+		}
 	}
-
 	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return err
 	}
