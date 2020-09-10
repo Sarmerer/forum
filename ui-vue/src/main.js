@@ -7,6 +7,7 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 import "./assets/styles.scss";
+import vuetify from "./plugins/vuetify";
 
 Vue.config.productionTip = false;
 axios.defaults.baseURL = "/api/";
@@ -15,6 +16,7 @@ store.dispatch("auth/attempt", localStorage.getItem("ilgn")).then(() => {
   new Vue({
     router,
     store,
-    render: (h) => h(App),
+    vuetify,
+    render: h => h(App)
   }).$mount("#app");
 });

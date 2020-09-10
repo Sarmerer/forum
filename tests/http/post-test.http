@@ -22,7 +22,7 @@ POST {{baseURL}}/api/post/create
 Content-Type: application/json
 
 {
-    "title":"post11",
+    "title":"post",
     "content":"content",
     "categories": [ "cat", "dog", "snake" ]
 }
@@ -37,3 +37,8 @@ PUT {{baseURL}}/api/post/update
 
 DELETE {{baseURL}}/api/post/delete
     ?ID=4
+
+### Rate post
+
+POST {{baseURL}}/api/post/rate
+     ?ID=1

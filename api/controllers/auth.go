@@ -12,8 +12,8 @@ import (
 	"net/http"
 )
 
-//SignIn signs the user in if exists
-func SignIn(w http.ResponseWriter, r *http.Request) {
+//LogIn signs the user in if exists
+func LogIn(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
 		user   *models.User
@@ -57,10 +57,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	login := r.FormValue("login")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-	if login == "" || password == "" || email == "" {
-		response.Error(w, http.StatusBadRequest, errors.New("empty login, email or password"))
-		return
-	}
 	if hashedPassword, err = hash(password); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -81,7 +77,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func SignOut(w http.ResponseWriter, r *http.Request) {
+func LogOut(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
 		uid    uint64              = r.Context().Value("uid").(uint64)

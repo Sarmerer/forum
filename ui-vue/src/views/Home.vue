@@ -38,8 +38,8 @@ export default {
   name: "Home",
   components: {
     Categories,
-    Posts,
-  },
+    Posts
+  }
 };
 </script>
 <style lang="scss">

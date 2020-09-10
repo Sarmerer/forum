@@ -8,7 +8,7 @@ import (
 var DB *sql.DB
 
 func InitDB() (err error) {
-	if DB, err = sql.Open("sqlite3", config.DatabasePath); err != nil {
+	if DB, err = sql.Open(config.DatabaseDriver, config.DatabasePath); err != nil {
 		return err
 	}
 	DB.SetMaxIdleConns(100)
@@ -18,7 +18,7 @@ func InitDB() (err error) {
 	return nil
 }
 
-// CheckIntegrity creates necessary tables in the database, if they do not exist already
+// CheckDBIntegrity creates necessary tables in the database, if they do not exist already
 func CheckDBIntegrity() (err error) {
 	_, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS users (

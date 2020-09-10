@@ -1,6 +1,11 @@
 <template>
   <div>
-    <div class="card" v-for="post in posts" :key="post.post.ID" :id="post.post.ID">
+    <div
+      class="card"
+      v-for="post in posts"
+      :key="post.post.ID"
+      :id="post.post.ID"
+    >
       <h3 class="primary">
         <router-link to="/post/2">{{ post.post.Title }}</router-link>
       </h3>
@@ -14,12 +19,12 @@ import axios from "axios";
 export default {
   data: function() {
     return {
-      posts: null,
+      posts: null
     };
   },
   created() {
-    axios.get("posts").then((response) => (this.posts = response.data.data));
+    axios.get("posts").then(response => (this.posts = response.data.data));
   },
-  methods: {},
+  methods: {}
 };
 </script>

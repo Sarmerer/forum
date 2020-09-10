@@ -3,7 +3,7 @@ import axios from "axios";
 export default {
   namespaced: true,
   state: {
-    user: null,
+    user: null
   },
   getters: {
     authenticated(state) {
@@ -11,12 +11,12 @@ export default {
     },
     user(state) {
       return state.user;
-    },
+    }
   },
   mutations: {
     setUser(state, user) {
       state.user = user;
-    },
+    }
   },
   actions: {
     async signIn({ dispatch }, credentials) {
@@ -35,6 +35,6 @@ export default {
       } catch (error) {
         commit("setUser", null);
       }
-    },
-  },
+    }
+  }
 };

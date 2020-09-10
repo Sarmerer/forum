@@ -6,29 +6,32 @@ import (
 
 var ()
 
+// API config
 const (
-	APIurl = "http://localhost:4433"
-	VueURL = "http://127.0.0.1:8081"
-	// DatabasePath defines the path to the database
-	DatabasePath = "./database/forum.db"
-	// APIPort defines the port on which the API will run
-	APIPort = 4433
-	// TimeLayout defines the standartd time layout
-	// All time variables are formatted corresponding to it
-	TimeLayout = "2006-01-02 15:04:05"
-	// GCInterval defines the interval after which garbage collector will run
-	GCInterval = 24 * time.Hour
+	APIPort   = 4433
+	APILink   = "http://localhost:4433"
+	ClientURL = "http://127.0.0.1:8081"
 
-	// SessionCookieName defines the name of the session cookie,
-	// which will be stored in client's cookie-jar
-	SessionCookieName = "session"
-	// SessionExpiration defines the cookie life time
-	SessionExpiration = 14 * 24 * time.Hour
+	DatabaseDriver = "sqlite3"
+	DatabasePath   = "./database/forum.db"
 
-	// RoleDefault defines the permission level of a user
-	RoleDefault = 0
-	// RoleModerator defines the permission level of a user
-	RoleModerator = 1
-	// RoleAdmin defines the permission level of a user
+	TimeLayout = "2006-01-02 15:04:05" // TimeLayout defines the standartd time layout. All time variables are formatted corresponding to it
+	GCInterval = 24 * time.Hour        // GCInterval defines the interval after which garbage collector will run
+
+	SessionCookieName = "sid"               // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
+	SessionExpiration = 14 * 24 * time.Hour // SessionExpiration defines the cookie life time
+
+	RoleUser  = 0
+	RoleModer = 1
 	RoleAdmin = 2
+)
+
+// API response messages
+const (
+	// Auth endpoints
+	SuccessLogIn = "user is logged in"
+	SuccesSignUp = "user has been created"
+	SuccesLogOut = "user is logged out"
+
+	ErrorWrongCreds = "wrong login or password"
 )

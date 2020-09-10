@@ -42,7 +42,7 @@ var apiRoutes = []route{
 
 	{
 		URI:      "/api/auth/signin",
-		Handler:  controllers.SignIn,
+		Handler:  controllers.LogIn,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
@@ -58,7 +58,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/auth/signout",
-		Handler:  controllers.SignOut,
+		Handler:  controllers.LogOut,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
@@ -152,6 +152,14 @@ var apiRoutes = []route{
 		Method:   http.MethodDelete,
 		MinRole:  0,
 		SelfOnly: true,
+		NeedAuth: true,
+	},
+	{
+		URI:      "/api/post/rate",
+		Handler:  controllers.RatePost,
+		Method:   http.MethodPost,
+		MinRole:  0,
+		SelfOnly: false,
 		NeedAuth: true,
 	},
 	/* -------------------------------------------------------------------------- */
