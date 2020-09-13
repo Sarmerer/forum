@@ -8,6 +8,9 @@
           <b-navbar-nav>
             <b-nav-item> <router-link to="/">Home</router-link></b-nav-item>
           </b-navbar-nav>
+          <b-navbar-nav>
+            <b-nav-item> <router-link to="/post/new">New post</router-link></b-nav-item>
+          </b-navbar-nav>
           <b-navbar-nav v-if="!authenticated" class="ml-auto">
             <Login class="ml-auto"></Login>
           </b-navbar-nav>
