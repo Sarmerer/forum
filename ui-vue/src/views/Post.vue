@@ -3,7 +3,13 @@
     <div v-if="$route.params.id === 'new'">
       <b-form @submit="onSubmit">
         <b-form-group id="input-group-2" label="Title:" label-for="input-2">
-          <b-form-input id="input-2" v-model="form.title" required placeholder="Enter title"></b-form-input>
+          <b-form-input
+            id="input-2"
+            v-model="form.title"
+            autocomplete="off"
+            required
+            placeholder="Enter title"
+          ></b-form-input>
         </b-form-group>
         <b-form-group id="input-group-2" label="Content:" label-for="input-2" fluid>
           <b-form-textarea
@@ -45,7 +51,11 @@ export default {
     onSubmit(e) {
       e.preventDefault();
       axios
-        .post("post/create", { Title: this.form.title, Content: this.form.content, Categories: this.form.categories })
+        .post("post/create", {
+          Title: this.form.title,
+          Content: this.form.content,
+          Categories: this.form.categories,
+        })
         .then((response) => {
           console.log(response.data);
           this.resetForm();

@@ -21,9 +21,9 @@ type postResponse struct {
 }
 
 type createUpdateInput struct {
-	Title      string   `json:"title"`
-	Content    string   `json:"content"`
-	Categories []string `json:"categories"`
+	Title      string
+	Content    string
+	Categories []string
 }
 
 type findInput struct {
@@ -114,7 +114,6 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		pid    int64
 		err    error
 	)
-
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
@@ -131,15 +130,14 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-
 	if len(input.Categories) > 0 {
-		if err = crud.NewCategoryRepoCRUD().Create(pid, input.Categories...); err != nil {
+		if err = crud.NewCategoryRepoCRUD().Create(pid, input.Categories); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 	}
 
-	response.Success(w, fmt.Sprintf("post has been created"), nil)
+	response.Success(w, fmt.Sprintf("post has been created"), pid)
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {

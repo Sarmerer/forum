@@ -23,7 +23,6 @@ func (PostRepoCRUD) GetRating(postID uint64) (int, error) {
 	return rating, nil
 }
 
-//TODO update row reaction, if it already exists
 func (PostRepoCRUD) RatePost(postID, userID uint64, reaction int) error {
 	var (
 		result       sql.Result
@@ -40,9 +39,8 @@ func (PostRepoCRUD) RatePost(postID, userID uint64, reaction int) error {
 		}
 	default:
 		if result, err = repository.DB.Exec(
-			`INSERT
-			OR
-			REPLACE INTO reactions(id, post_id_fkey, user_id_fkey, reaction)
+			`INSERT OR REPLACE
+			INTO reactions(id, post_id_fkey, user_id_fkey, reaction)
 			VALUES ((SELECT id FROM reactions WHERE post_id_fkey = $1 AND user_id_fkey = $2), $1, $2, $3);`,
 			postID, userID, reaction,
 		); err != nil {

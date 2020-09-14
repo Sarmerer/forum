@@ -22,7 +22,6 @@ func (mux *Router) SetupRoutes() {
 		seq := []middleware.Middlewares{
 			middleware.Logger,
 			middleware.SetHeaders,
-			middleware.CheckAPIKey,
 		}
 		if route.NeedAuth {
 			seq = append(seq, middleware.CheckUserAuth)

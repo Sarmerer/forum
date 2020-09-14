@@ -1,17 +1,29 @@
 <template>
   <div class="home ">
-    <div class="hero-image">
+    <!-- <div class="hero-image">
       <div class="hero-text">
         <h1>
           WELCOME<br />
           TO <span class="primary">FORUM</span>
         </h1>
       </div>
-    </div>
+    </div> -->
     <div class="main-content">
       <div class="columns">
         <div class="post-col">
-          <Posts />
+          <!-- Start of posts -->
+          <!-- FIXME post gets weird actual ID -->
+          <div class="card" v-for="(post, index) in posts" :key="index">
+            <h3 class="primary">
+              <router-link :to="'/post/' + post.post.ID">{{ post.post.Title }}</router-link>
+            </h3>
+            <hr />
+            <pre style="color: white">{{ post.post.Content }}</pre>
+            <!-- <p>ID in the list: {{ index }}</p>
+            <p>ID in the database: {{ post.post.ID }}</p> -->
+            <button @click="deletePost(index, post.post.ID)" :disabled="deleting">Delete</button>
+          </div>
+          <!-- End of posts -->
         </div>
         <div class="info-col">
           <div class="card">
@@ -21,8 +33,19 @@
           </div>
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
-            <hr />
-            <Categories />
+            <!-- Start of categories -->
+            <b-container v-if="categories">
+              <b-row>
+                <b-col>Name</b-col>
+                <b-col>Posts</b-col>
+              </b-row>
+              <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
+                <b-col>{{ c.Name }}</b-col>
+                <b-col>{{ c.UseCount }}</b-col>
+              </b-row>
+            </b-container>
+            <p v-else>None</p>
+            <!-- End of categories -->
           </div>
         </div>
       </div>
@@ -31,15 +54,45 @@
 </template>
 
 <script>
-import Posts from "@/components/Posts.vue";
-import Categories from "@/components/Categories.vue";
+import axios from "axios";
 
 export default {
   name: "Home",
-  components: {
-    Categories,
-    Posts
-  }
+
+  data() {
+    return {
+      posts: [],
+      categories: [],
+      deleting: false,
+    };
+  },
+  created() {
+    this.getPosts();
+    this.getCategories();
+  },
+  methods: {
+    async getPosts() {
+      return await axios.get("posts").then((response) => (this.posts = response.data.data));
+    },
+    async getCategories() {
+      return await axios
+        .get("categories")
+        .then((response) => (this.categories = response.data.data));
+    },
+    deletePost(IDInTheList, actualID) {
+      this.deleting = true;
+      axios
+        .delete("post/delete", { params: { ID: actualID } })
+        .then((response) => {
+          console.log(response.data);
+          this.posts.splice(IDInTheList, 1);
+        })
+        .catch((error) => {
+          alert(error.response.data.code + " " + error.response.data.message);
+        });
+      this.deleting = false;
+    },
+  },
 };
 </script>
 <style lang="scss">

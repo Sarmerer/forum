@@ -6,7 +6,6 @@ import (
 	"forum/api/logger"
 	"forum/api/repository"
 	"forum/api/router"
-	"forum/api/utils"
 	"forum/config"
 	"log"
 	"net/http"
@@ -16,13 +15,10 @@ import (
 func Init() {
 	log.Println("Starting server...")
 
-	err := utils.LoadEnv(".env")
-	logger.InitLogs("Environment", err)
-
 	gc.Start()
 	logger.InitLogs("Garbage collector", nil)
 
-	err = repository.InitDB()
+	err := repository.InitDB()
 	logger.InitLogs("Database init", err)
 
 	err = repository.CheckDBIntegrity()

@@ -11,6 +11,7 @@ import (
 type categoryRepoCRUD struct{}
 
 //NewCategoryRepoCRUD creates an instance of CategoryModel
+//FIXME wrong categories amount after COUNT
 func NewCategoryRepoCRUD() categoryRepoCRUD {
 	return categoryRepoCRUD{}
 }
@@ -81,7 +82,7 @@ func (categoryRepoCRUD) Find(id int) (*models.Category, error) {
 
 //Create adds a new category to the database
 //FIXME category being duplicated, when creating new post with existing category
-func (categoryRepoCRUD) Create(postID int64, categories ...string) (err error) {
+func (categoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 	var (
 		cid    int64
 		result sql.Result
@@ -99,6 +100,8 @@ func (categoryRepoCRUD) Create(postID int64, categories ...string) (err error) {
 				return err
 			}
 			if result, err = repository.DB.Exec(
+				`INSERT INTO categories (name)
+				VALUES (?)`,
 				category,
 			); err != nil {
 				return err
@@ -108,8 +111,8 @@ func (categoryRepoCRUD) Create(postID int64, categories ...string) (err error) {
 			}
 		}
 		if _, err = repository.DB.Exec(
-			`INSERT INTO categories (name)
-			VALUES (?)`,
+			`INSERT INTO posts_categories_bridge (post_id_fkey, category_id_fkey)
+			VALUES (?, ?)`,
 			postID, cid,
 		); err != nil {
 			return err
@@ -127,9 +130,10 @@ func (categoryRepoCRUD) Delete(cid int) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`DELETE
-		FROM categories
-		WHERE id = ?`,
+		`BEGIN;
+		DELETE FROM categories WHERE id = $1;
+		DELETE FROM posts_categories_bridge WHERE category_id_fkey = $1;
+		COMMIT;`,
 		cid,
 	); err != nil {
 		return err

@@ -1,7 +1,8 @@
-POST {{baseURL}}/api/post/rate HTTP/1.1
+POST {{baseURL}}/api/post/create
 Content-Type: application/json
 
 {
-    "pid":1,
-    "reaction":1
+    "title":"post",
+    "content":"content",
+    "categories": [ "cat", "dog", "snake" ]
 }
