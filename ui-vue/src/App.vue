@@ -9,7 +9,9 @@
             <b-nav-item> <router-link to="/">Home</router-link></b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav>
-            <b-nav-item> <router-link to="/post/new">New post</router-link></b-nav-item>
+            <b-nav-item>
+              <router-link to="/post/new">New post</router-link></b-nav-item
+            >
           </b-navbar-nav>
           <b-navbar-nav v-if="!authenticated" class="ml-auto">
             <Login class="ml-auto"></Login>
@@ -33,20 +35,20 @@ export default {
   name: "App",
   computed: {
     ...mapGetters({
-      authenticated: "auth/authenticated",
-    }),
+      authenticated: "auth/authenticated"
+    })
   },
   components: {
     Login,
-    Me,
+    Me
   },
   methods: {
     ...mapActions({
-      signOut: "auth/signOut",
+      signOut: "auth/signOut"
     }),
     submit() {
       this.signOut();
-    },
-  },
+    }
+  }
 };
 </script>

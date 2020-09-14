@@ -1,4 +1,4 @@
-# ui-vue-scss
+# ui-vue
 
 ## Project setup
 ```

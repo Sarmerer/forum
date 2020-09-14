@@ -18,24 +18,24 @@ import axios from "axios";
 export default {
   data: function() {
     return {
-      posts: null,
+      posts: null
     };
   },
   created() {
-    axios.get("posts").then((response) => (this.posts = response.data.data));
+    axios.get("posts").then(response => (this.posts = response.data.data));
   },
   methods: {
     deletePost(IDInTheList, actualID) {
       axios
         .delete("post/delete", { params: { ID: actualID } })
-        .then((response) => {
+        .then(response => {
           console.log(response.data);
           this.$delete(this.posts, IDInTheList);
         })
-        .catch((error) => {
+        .catch(error => {
           alert(error.response.data.code + " " + error.response.data.message);
         });
-    },
-  },
+    }
+  }
 };
 </script>
