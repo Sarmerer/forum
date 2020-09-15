@@ -11,9 +11,7 @@ Content-Type: application/json
 
 {
     "by":"id",
-    "id":1,
-    "author":1,
-    "categories": [ "general" ]
+    "id":1
 }
 
 ### Create post

@@ -12,7 +12,6 @@
       <div class="columns">
         <div class="post-col">
           <!-- Start of posts -->
-          <!-- FIXME post gets weird actual ID -->
           <div class="card" v-for="(post, index) in posts" :key="index">
             <h3 class="primary">
               <router-link :to="'/post/' + post.post.ID">{{ post.post.Title }}</router-link>
@@ -40,11 +39,11 @@
                 <b-col>Posts</b-col>
               </b-row>
               <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
-                <b-col>{{ c.Name }}</b-col>
-                <b-col>{{ c.UseCount }}</b-col>
+                <b-col>{{ c.name }}</b-col>
+                <b-col>{{ c.use_count }}</b-col>
               </b-row>
             </b-container>
-            <p v-else>None</p>
+            <div v-else><p>None</p></div>
             <!-- End of categories -->
           </div>
         </div>
@@ -66,7 +65,7 @@ export default {
       deleting: false,
     };
   },
-  created() {
+  mounted() {
     this.getPosts();
     this.getCategories();
   },
@@ -86,6 +85,7 @@ export default {
         .then((response) => {
           console.log(response.data);
           this.posts.splice(IDInTheList, 1);
+          this.getCategories();
         })
         .catch((error) => {
           alert(error.response.data.code + " " + error.response.data.message);
