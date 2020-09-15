@@ -2,10 +2,19 @@
   <div>
     <div v-if="$route.params.id === 'new'" class="wrapper">
       <b-form @submit="onSubmit">
-        <b-form-group id="input-group-2" label="Title:" label-for="input-2">
+        <b-form-group label="Title:" label-for="title">
           <b-form-input
-            id="input-2"
+            id="title"
             v-model="form.title"
+            autocomplete="off"
+            required
+            placeholder="Enter title"
+          ></b-form-input>
+        </b-form-group>
+        <b-form-group label="Copies:" label-for="amount">
+          <b-form-input
+            id="amount"
+            v-model="form.amount"
             autocomplete="off"
             required
             placeholder="Enter title"
@@ -16,6 +25,7 @@
             id="textarea-auto-height"
             v-model="form.content"
             placeholder="Enter content"
+            reqired
             :state="form.content.length >= 10 && form.content.length <= 2000"
             rows="3"
             max-rows="10"
@@ -48,6 +58,7 @@ export default {
     return {
       form: {
         title: "",
+        amount: 1,
         content: "",
         categories: [],
       },
@@ -56,20 +67,22 @@ export default {
   methods: {
     onSubmit(e) {
       e.preventDefault();
-      axios
-        .post("post/create", {
-          Title: this.form.title,
-          Content: this.form.content,
-          Categories: this.form.categories,
-        })
-        .then((response) => {
-          console.log(response.data);
-          this.resetForm();
-          this.$router.push("/post/" + response.data.data);
-        })
-        .catch((error) => {
-          alert(error.response.data.code + " " + error.response.data.message);
-        });
+      for (let i = 0; i < this.form.amount; i++) {
+        axios
+          .post("post/create", {
+            Title: this.form.title,
+            Content: this.form.content,
+            Categories: this.form.categories,
+          })
+          .then((response) => {
+            console.log(response.data);
+            this.resetForm();
+            this.$router.push("/post/" + response.data.data);
+          })
+          .catch((error) => {
+            alert(error.response.data.code + " " + error.response.data.message);
+          });
+      }
     },
     resetForm() {
       this.form.title = "";

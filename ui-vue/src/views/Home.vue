@@ -20,7 +20,14 @@
             <pre style="color: white">{{ post.post.Content }}</pre>
             <!-- <p>ID in the list: {{ index }}</p>
             <p>ID in the database: {{ post.post.ID }}</p> -->
-            <button @click="deletePost(index, post.post.ID)" :disabled="deleting">Delete</button>
+            <!-- TODO move this button to GetPost.vue -->
+            <button
+              v-if="user && (user.ID === post.post.Author || user.Role > 0)"
+              @click="deletePost(index, post.post.ID)"
+              :disabled="deleting"
+            >
+              Delete
+            </button>
           </div>
           <!-- End of posts -->
         </div>
@@ -33,18 +40,20 @@
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
             <!-- Start of categories -->
-            <b-container v-if="categories">
-              <b-row>
-                <b-col>Name</b-col>
-                <b-col>Posts</b-col>
-              </b-row>
-              <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
-                <b-col>{{ c.name }}</b-col>
-                <b-col>{{ c.use_count }}</b-col>
-              </b-row>
-            </b-container>
-            <div v-else><p>None</p></div>
-            <!-- End of categories -->
+            <b-overlay variant="transparent" :show="deleting" rounded="sm">
+              <b-container v-if="categories">
+                <b-row>
+                  <b-col>Name</b-col>
+                  <b-col>Posts</b-col>
+                </b-row>
+                <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
+                  <b-col>{{ c.name }}</b-col>
+                  <b-col>{{ c.use_count }}</b-col>
+                </b-row>
+              </b-container>
+              <div v-else><p>None</p></div>
+              <!-- End of categories -->
+            </b-overlay>
           </div>
         </div>
       </div>
@@ -55,9 +64,14 @@
 <script>
 import axios from "axios";
 
+import { mapGetters } from "vuex";
 export default {
   name: "Home",
-
+  computed: {
+    ...mapGetters({
+      user: "auth/user",
+    }),
+  },
   data() {
     return {
       posts: [],
@@ -84,13 +98,14 @@ export default {
         .delete("post/delete", { params: { ID: actualID } })
         .then((response) => {
           console.log(response.data);
-          this.posts.splice(IDInTheList, 1);
-          this.getCategories();
+          setTimeout(() => {
+            this.posts.splice(IDInTheList, 1);
+            this.getCategories().then((this.deleting = false));
+          }, 250);
         })
         .catch((error) => {
           alert(error.response.data.code + " " + error.response.data.message);
         });
-      this.deleting = false;
     },
   },
 };

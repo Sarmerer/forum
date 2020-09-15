@@ -6,19 +6,16 @@
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item> <router-link to="/">Home</router-link></b-nav-item>
+            <b-nav-item><router-link to="/">Home</router-link></b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav>
-            <b-nav-item>
-              <router-link to="/post/new">New post</router-link></b-nav-item
-            >
+            <b-nav-item><router-link to="/post/new">New post</router-link></b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav v-if="!authenticated" class="ml-auto">
             <Login class="ml-auto"></Login>
           </b-navbar-nav>
-          <b-navbar-nav v-if="authenticated" class="ml-auto">
+          <b-navbar-nav v-else class="ml-auto">
             <Me />
-            <b-nav-item @click.prevent="signOut" href="#">Logout</b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
@@ -29,26 +26,18 @@
 <script>
 import Login from "../src/components/Login";
 import Me from "../src/components/Me";
-import { mapActions, mapGetters } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "App",
   computed: {
     ...mapGetters({
-      authenticated: "auth/authenticated"
-    })
+      authenticated: "auth/authenticated",
+    }),
   },
   components: {
     Login,
-    Me
+    Me,
   },
-  methods: {
-    ...mapActions({
-      signOut: "auth/signOut"
-    }),
-    submit() {
-      this.signOut();
-    }
-  }
 };
 </script>
