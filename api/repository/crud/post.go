@@ -30,9 +30,9 @@ func (PostRepoCRUD) FindAll() ([]models.Post, error) {
 		return nil, err
 	}
 	for rows.Next() {
-		var post models.Post
-		rows.Scan(&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating)
-		posts = append(posts, post)
+		var p models.Post
+		rows.Scan(&p.ID, &p.Author, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		posts = append(posts, p)
 	}
 	return posts, nil
 }
@@ -40,20 +40,20 @@ func (PostRepoCRUD) FindAll() ([]models.Post, error) {
 //FindByID returns a specific post from the database
 func (PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
 	var (
-		post models.Post
-		err  error
+		p   models.Post
+		err error
 	)
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM posts WHERE id = ?", pid,
 	).Scan(
-		&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating,
+		&p.ID, &p.Author, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusNotFound, errors.New("post not found")
 	}
-	return &post, http.StatusOK, nil
+	return &p, http.StatusOK, nil
 }
 
 func (PostRepoCRUD) FindByAuthor(uid uint64) ([]models.Post, error) {
@@ -69,9 +69,9 @@ func (PostRepoCRUD) FindByAuthor(uid uint64) ([]models.Post, error) {
 		return nil, err
 	}
 	for rows.Next() {
-		var post models.Post
-		rows.Scan(&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating)
-		posts = append(posts, post)
+		var p models.Post
+		rows.Scan(&p.ID, &p.Author, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		posts = append(posts, p)
 	}
 	return posts, nil
 }
@@ -91,7 +91,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 		}
 	}
 	if rows, err = repository.DB.Query(
-		`SELECT p.id, p.author_fkey, p.title, p.content, p.created, p.updated, p.rating
+		`SELECT p.id, p.author_fkey, p.author_name_fkey, p.title, p.content, p.created, p.updated, p.rating
 		FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p
 			ON p.id = pcb.post_id_fkey
@@ -107,9 +107,9 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 		return nil, err
 	}
 	for rows.Next() {
-		var post models.Post
-		rows.Scan(&post.ID, &post.Author, &post.Title, &post.Content, &post.Created, &post.Updated, &post.Rating)
-		posts = append(posts, post)
+		var p models.Post
+		rows.Scan(&p.ID, &p.Author, p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		posts = append(posts, p)
 	}
 	return posts, nil
 }
@@ -123,8 +123,8 @@ func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"INSERT INTO posts (author_fkey, title, content, created, updated, rating) VALUES (?, ?, ?, ?, ?, ?)",
-		post.Author, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating,
+		"INSERT INTO posts (author_fkey,author_name_fkey, title, content, created, updated, rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		post.Author, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating,
 	); err != nil {
 		return 0, err
 	}
@@ -150,8 +150,8 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE posts SET author_fkey = ?, title = ?, content = ?, created = ?, updated = ?, rating = ? WHERE id = ?",
-		post.Author, post.Title, post.Content, post.Created, post.Updated, post.Rating, post.ID,
+		"UPDATE posts SET author_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ?, rating = ? WHERE id = ?",
+		post.Author, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.Rating, post.ID,
 	); err != nil {
 		return err
 	}

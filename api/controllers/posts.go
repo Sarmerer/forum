@@ -108,23 +108,30 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		author uint64              = r.Context().Value("uid").(uint64)
+		uid    uint64              = r.Context().Value("uid").(uint64)
+		author *models.User
 		input  createUpdateInput
 		post   models.Post
 		pid    int64
+		status int
 		err    error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+	if author, status, err = crud.NewUserRepoCRUD().FindByID(uid); err != nil {
+		response.Error(w, status, err)
+		return
+	}
 	post = models.Post{
-		Title:   input.Title,
-		Content: input.Content,
-		Author:  author,
-		Created: time.Now().Format(config.TimeLayout),
-		Updated: time.Now().Format(config.TimeLayout),
-		Rating:  0,
+		Title:      input.Title,
+		Content:    input.Content,
+		Author:     uid,
+		AuthorName: author.DisplayName,
+		Created:    time.Now().Format(config.TimeLayout),
+		Updated:    time.Now().Format(config.TimeLayout),
+		Rating:     0,
 	}
 	if pid, err = repo.Create(&post); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)

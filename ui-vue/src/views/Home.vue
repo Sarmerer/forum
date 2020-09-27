@@ -12,23 +12,21 @@
       <div class="columns">
         <div class="post-col">
           <!-- Start of posts -->
-          <div class="card" v-for="(post, index) in posts" :key="index">
-            <h3 class="primary">
-              <router-link :to="'/post/' + post.post.ID">{{ post.post.Title }}</router-link>
-            </h3>
-            <hr />
-            <pre style="color: white">{{ post.post.Content }}</pre>
-            <!-- <p>ID in the list: {{ index }}</p>
-            <p>ID in the database: {{ post.post.ID }}</p> -->
-            <!-- TODO move this button to GetPost.vue -->
-            <button
-              v-if="user && (user.ID === post.post.Author || user.Role > 0)"
-              @click="deletePost(index, post.post.ID)"
-              :disabled="deleting"
-            >
-              Delete
-            </button>
-          </div>
+          <router-link
+            v-for="(post, index) in posts"
+            :key="index"
+            :to="'/post/' + post.post.ID"
+            style="text-decoration: none;"
+          >
+            <div class="card">
+              <b-link>{{ post.post.AuthorName }}</b-link>
+              <h2 class="primary">
+                {{ post.post.Title }}
+              </h2>
+              <hr />
+              <p style="color: white">{{ post.post.Content }}</p>
+            </div>
+          </router-link>
           <!-- End of posts -->
         </div>
         <div class="info-col">
@@ -91,21 +89,6 @@ export default {
       return await axios
         .get("categories")
         .then((response) => (this.categories = response.data.data));
-    },
-    deletePost(IDInTheList, actualID) {
-      this.deleting = true;
-      axios
-        .delete("post/delete", { params: { ID: actualID } })
-        .then((response) => {
-          console.log(response.data);
-          setTimeout(() => {
-            this.posts.splice(IDInTheList, 1);
-            this.getCategories().then((this.deleting = false));
-          }, 250);
-        })
-        .catch((error) => {
-          alert(error.response.data.code + " " + error.response.data.message);
-        });
     },
   },
 };

@@ -45,7 +45,7 @@
       <div class="post-col">
         <div class="card">
           <h3 class="primary">{{ post.Title }}</h3>
-          <pre style="color: white">{{ post.Content }}</pre>
+          <p style="color: white">{{ post.Content }}</p>
           <div>
             <b-form-tag
               v-for="category in categories"
