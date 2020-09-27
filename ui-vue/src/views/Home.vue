@@ -41,7 +41,8 @@
             <h3 class="primary">CATEGORIES</h3>
             <!-- Start of categories -->
             <b-overlay variant="transparent" :show="deleting" rounded="sm">
-              <b-container v-if="categories">
+              <div v-if="!categories"><p>None</p></div>
+              <b-container v-else>
                 <b-row>
                   <b-col>Name</b-col>
                   <b-col>Posts</b-col>
@@ -51,7 +52,6 @@
                   <b-col>{{ c.use_count }}</b-col>
                 </b-row>
               </b-container>
-              <div v-else><p>None</p></div>
               <!-- End of categories -->
             </b-overlay>
           </div>

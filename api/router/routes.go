@@ -142,7 +142,7 @@ var apiRoutes = []route{
 		Handler:  controllers.UpdatePost,
 		Method:   http.MethodPut,
 		MinRole:  0,
-		SelfOnly: true,
+		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -150,7 +150,7 @@ var apiRoutes = []route{
 		Handler:  controllers.DeletePost,
 		Method:   http.MethodDelete,
 		MinRole:  0,
-		SelfOnly: true,
+		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{

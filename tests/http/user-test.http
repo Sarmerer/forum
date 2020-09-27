@@ -11,9 +11,9 @@ GET {{baseURL}}/api/user
 ### Sign up
 
 POST {{baseURL}}/api/auth/signup
-    ?login=admin
-    &password=admin
-    &email=admin
+    ?login=user
+    &password=user
+    &email=user
     &API_KEY={{API_KEY}}
 
 ### Sign in
