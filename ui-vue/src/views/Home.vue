@@ -12,21 +12,20 @@
       <div class="columns">
         <div class="post-col">
           <!-- Start of posts -->
-          <router-link
-            v-for="(post, index) in posts"
-            :key="index"
-            :to="'/post/' + post.post.ID"
-            style="text-decoration: none;"
-          >
-            <div class="card">
-              <b-link>{{ post.post.AuthorName }}</b-link>
-              <h2 class="primary">
+          <div class="card" v-for="(post, index) in posts" :key="index">
+            <b-link>{{ post.post.AuthorName }}</b-link>
+            <h2 class="primary">
+              <router-link :to="'/post/' + post.post.ID" style="text-decoration: none;">
                 {{ post.post.Title }}
-              </h2>
-              <hr />
-              <p style="color: white">{{ post.post.Content }}</p>
-            </div>
-          </router-link>
+              </router-link>
+            </h2>
+            <hr />
+            <p style="color: white">{{ post.post.Content }}</p>
+            <sub
+              ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
+              {{ post.replies }} replies</sub
+            >
+          </div>
           <!-- End of posts -->
         </div>
         <div class="info-col">

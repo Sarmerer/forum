@@ -58,10 +58,10 @@
             >
             <div class="controls">
               <button class="contols-button">
-                <img src="@/assets/svg/edit-post.svg" alt="edit" srcset="" />
+                <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
               </button>
               <button @click="showModal = !showModal" class="controls-button">
-                <img src="@/assets/svg/delete-post.svg" alt="delete" srcset="" />
+                <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
               </button>
             </div>
           </div>
