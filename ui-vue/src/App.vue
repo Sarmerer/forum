@@ -1,7 +1,8 @@
 <template>
   <div id="app">
+    <sidebar-menu disableHover collapsed :menu="menu" />
     <div id="nav">
-      <b-navbar toggleable="lg" type="light" variant="dark">
+      <b-navbar toggleable="lg" type="light" style="background: #278ea5">
         <b-navbar-brand href="#">forum</b-navbar-brand>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
@@ -38,6 +39,41 @@ export default {
   components: {
     Login,
     Me,
+  },
+  data() {
+    return {
+      menu: [
+        {
+          href: "/",
+          title: "Home",
+          icon: "fa fa-home",
+        },
+        {
+          href: "/",
+          title: "Profile",
+          icon: "fa fa-user",
+        },
+        {
+          href: "/",
+          title: "New post",
+          icon: "fa fa-pencil-alt",
+        },
+        {
+          href: "/",
+          title: "Sign out",
+          icon: {
+            element: "span",
+            class: "fa fa-sign-out-alt",
+            attributes: {
+              style: {
+                color: "red",
+              },
+            },
+            // text: ''
+          },
+        },
+      ],
+    };
   },
 };
 </script>
