@@ -97,8 +97,9 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
-		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
-			p.Replies = err
+		if p.Replies, err = GetReplies(posts[i].ID); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
 		}
 		result = append(result, p)
 	}

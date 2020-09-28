@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -29,29 +30,26 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.ReplyRepo = crud.NewReplyRepoCRUD()
 		author uint64               = r.Context().Value("uid").(uint64)
-		pid    uint64
 		status int
 		err    error
 	)
 	input := struct {
+		PID     uint64 `json:"pid"`
 		Content string `json:"content"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if pid, err = utils.ParseID(r); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
-		return
-	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid); err != nil {
+	fmt.Println(input)
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	reply := &models.PostReply{
 		Content: input.Content,
 		Created: time.Now().Format(config.TimeLayout),
-		Post:    pid,
+		Post:    input.PID,
 		Author:  author,
 	}
 	if err = repo.Create(reply); err != nil {

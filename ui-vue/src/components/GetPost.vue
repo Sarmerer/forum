@@ -69,7 +69,21 @@
       </div>
       <div class="post-col">
         <div class="card">
-          <b-form-input placeholder="Comment this post" variant="dark"></b-form-input>
+          <b-form @submit="onSubmit" inline>
+            <b-input
+              id="inline-form-input-name"
+              class="mb-2 mr-sm-2 mb-sm-0"
+              placeholder="Comment"
+              v-model="form.comment"
+              style="width: 85%"
+            ></b-input>
+
+            <b-button type="submit" variant="dark">submit</b-button>
+          </b-form>
+          <div v-for="comment in comments" :key="comment.ID">
+            <h5 style="display: inline">{{ comment.Content }}</h5>
+            <sup style="display: inline"> {{ comment.Created }}</sup>
+          </div>
         </div>
       </div>
     </div>
@@ -82,11 +96,17 @@ export default {
     return {
       modal: { show: false, deleting: false },
       post: {},
+      comments: {},
       categories: [],
+      form: {
+        comment: "",
+      },
     };
   },
   mounted() {
-    this.getPost();
+    this.getPost().then(() => {
+      console.log(this.comments);
+    });
   },
   methods: {
     async getPost() {
@@ -98,6 +118,7 @@ export default {
         .then((response) => {
           response.data.data.forEach((res) => {
             this.post = res.post;
+            this.comments = res.replies;
             res.categories.forEach((c) => {
               this.categories.push(c.name);
             });
@@ -120,6 +141,19 @@ export default {
           this.modal.show = false;
           this.modal.deleting = false;
           // TODO show error notification
+        });
+    },
+    async onSubmit(e) {
+      console.log(this.comments);
+      e.preventDefault();
+      return await axios
+        .post("comment/add", { pid: this.post.ID, content: this.form.comment })
+        .then((response) => {
+          console.log(response);
+          this.form.comment = "";
+        })
+        .catch((error) => {
+          console.log(error);
         });
     },
   },

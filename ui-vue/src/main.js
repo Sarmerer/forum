@@ -8,11 +8,6 @@ import store from "./store";
 import axios from "axios";
 import "./assets/styles.scss";
 
-import VueSidebarMenu from "vue-sidebar-menu";
-import "vue-sidebar-menu/dist/vue-sidebar-menu.css";
-
-Vue.use(VueSidebarMenu);
-
 Vue.config.productionTip = false;
 axios.defaults.baseURL = "/api/";
 axios.defaults.withCredinentials = true;
