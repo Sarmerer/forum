@@ -1,3 +1,4 @@
+// TODO improve and split all this shit
 <template>
   <div>
     <b-overlay :show="modal.deleting">
@@ -88,27 +89,70 @@
           </b-form>
           <div v-for="(comment, index) in comments" :key="index">
             <div style="margin: 0.3rem; position: relative">
-              <p style="margin-bottom: 0px">
+              <p
+                v-if="index != currComment.editing"
+                style="margin-bottom: 0px; display: block; margin-right: 4rem"
+              >
                 {{ comment.author_name }} says: {{ comment.content }}
               </p>
+              <b-form-textarea
+                v-else
+                v-model="currComment.editingContent"
+                rows="1"
+                no-resize
+                max-rows="10"
+                style="margin-bottom: 0px; display: block; width: 85%"
+              ></b-form-textarea>
               <small v-b-tooltip.hover :title="comment.created"
                 ><timeago :datetime="comment.created" :auto-update="60"></timeago
               ></small>
               <b-button-group
-                v-if="user && (post.author_id == user.id || user.role > 0)"
+                v-if="
+                  user &&
+                    (post.author_id == user.id || user.role > 0) &&
+                    index != currComment.editing
+                "
                 size="sm"
-                style="position: absolute; right: 0px; top: 0px"
+                class="controls-button"
+                style="position: absolute; right: 0px; top: 10px"
               >
-                <b-button size="sm" lg="1" class="controls-button">
+                <b-button
+                  size="sm"
+                  lg="1"
+                  class="controls-button"
+                  :disabled="currComment.deleting"
+                  @click="
+                    () => {
+                      currComment.editing = index;
+                      currComment.editingContent = comment.content;
+                    }
+                  "
+                >
                   <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
                 </b-button>
                 <b-button
-                  v-if="user && (comment.author_id == user.id || user.role > 0)"
-                  :disabled="deletingComment"
+                  :disabled="currComment.deleting"
                   class="controls-button"
                   @click="deleteComment(comment.id, index)"
                   ><img src="@/assets/svg/post/delete.svg" alt="delete" srcset=""
                 /></b-button>
+              </b-button-group>
+              <b-button-group
+                size="sm"
+                vertical
+                v-if="index == currComment.editing"
+                style="position: absolute; right: 0px; top: 10px"
+              >
+                <b-button
+                  :disabled="currComment.editingContent == comment.content"
+                  variant="success"
+                  @click="updateComment(comment.id)"
+                >
+                  Save
+                </b-button>
+                <b-button variant="outline-danger" @click="currComment.editing = -1"
+                  >Cancel</b-button
+                >
               </b-button-group>
             </div>
           </div>
@@ -129,13 +173,13 @@ export default {
   data() {
     return {
       modal: { show: false, deleting: false },
+      currComment: { deleting: false, editing: -1, editingContent: "" },
       post: {},
       comments: [],
       categories: [],
       form: {
         comment: "",
       },
-      deletingComment: false,
     };
   },
   mounted() {
@@ -150,7 +194,6 @@ export default {
         })
         .then((response) => {
           response.data.data.forEach((res) => {
-            console.log(res);
             this.post = res.post;
             if (res.replies) {
               this.comments = res.replies.sort(function(a, b) {
@@ -182,21 +225,21 @@ export default {
         });
     },
     async deleteComment(actualID, IDInList) {
-      this.deletingComment = true;
+      this.currComment.editing = -1;
+      this.currComment.deleting = true;
       return await axios
         .delete("comment/delete", { params: { ID: actualID } })
         .then(() => {
           this.comments.splice(IDInList, 1);
-          this.deletingComment = false;
+          this.currComment.deleting = false;
         })
         .catch((error) => {
           console.log(error);
-          this.deletingComment = false;
+          this.currComment.deleting = false;
           //TODO show alert
         });
     },
     async leaveComment(e) {
-      console.log(this.comments);
       e.preventDefault();
       return await axios
         .post("comment/add", { pid: this.post.id, content: this.form.comment })
@@ -204,6 +247,21 @@ export default {
           console.log(response);
           this.appendComment();
           this.form.comment = "";
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async updateComment(actualID) {
+      return await axios
+        .put("comment/update", {
+          id: actualID,
+          content: this.currComment.editingContent,
+        })
+        .then(() => {
+          console.log(this.comments, this.currComment.editing);
+          this.comments[this.currComment.editing].content = this.currComment.editingContent;
+          this.currComment.editing = -1;
         })
         .catch((error) => {
           console.log(error);

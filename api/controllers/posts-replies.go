@@ -66,23 +66,19 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 func UpdateReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo         repository.ReplyRepo = crud.NewReplyRepoCRUD()
-		rid          uint64
 		updatedReply *models.PostReply
 		status       int
 		err          error
 	)
 	input := struct {
+		RID     uint64 `json:"id"`
 		Content string `json:"content"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if rid, err = utils.ParseID(r); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
-		return
-	}
-	if updatedReply, status, err = repo.FindByID(rid); err != nil {
+	if updatedReply, status, err = repo.FindByID(input.RID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -18,6 +19,7 @@ type response struct {
 //	message 		- provides additional information about a response
 // data				- body of a response
 func JSON(w http.ResponseWriter, responseStatus string, httpStatus int, message, data interface{}) {
+	fmt.Println(responseStatus, httpStatus, message, data)
 	b, marshalErr := json.Marshal(response{responseStatus, httpStatus, message, data})
 	if marshalErr != nil {
 		w.WriteHeader(http.StatusInternalServerError)
