@@ -58,11 +58,12 @@
             >
             <div class="controls">
               <b-button-group v-if="user && (post.author_id == user.id || user.role > 0)" size="sm">
-                <b-button size="sm" lg="1" class="controls-button">
+                <b-button size="sm" lg="1" class="controls-button" variant="light">
                   <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
                 </b-button>
                 <b-button
                   size="sm"
+                  variant="danger"
                   lg="2"
                   @click="modal.show = !modal.show"
                   class="controls-button"
@@ -76,16 +77,30 @@
         <div class="card">
           <b-form @submit="leaveComment">
             <b-input-group class="mt-1">
-              <b-form-input
+              <b-textarea
                 type="text"
-                class="form-control"
                 placeholder="Comment this post"
                 v-model="form.comment"
-              ></b-form-input>
+                rows="1"
+                max-rows="3"
+                size="sm"
+                no-resize
+              ></b-textarea>
               <b-input-group-append>
-                <b-button variant="outline-secondary" type="submit">Say</b-button>
+                <b-button
+                  variant="outline-light"
+                  type="submit"
+                  :disabled="form.comment.length < 5 || form.comment.length > 200"
+                  >Say</b-button
+                >
               </b-input-group-append>
             </b-input-group>
+            <div v-if="form.comment.length > 0">
+              <small v-if="form.comment.length >= 5 && form.comment.length <= 200"
+                >{{ form.comment.length }}/200</small
+              >
+              <small v-else style="color: red">{{ form.comment.length }}/200</small>
+            </div>
           </b-form>
           <div v-for="(comment, index) in comments" :key="index">
             <div style="margin: 0.3rem; position: relative">
@@ -119,6 +134,7 @@
                 <b-button
                   size="sm"
                   lg="1"
+                  variant="light"
                   class="controls-button"
                   :disabled="currComment.deleting"
                   @click="
@@ -131,6 +147,7 @@
                   <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
                 </b-button>
                 <b-button
+                  variant="danger"
                   :disabled="currComment.deleting"
                   class="controls-button"
                   @click="deleteComment(comment.id, index)"
@@ -141,7 +158,7 @@
                 size="sm"
                 vertical
                 v-if="index == currComment.editing"
-                style="position: absolute; right: 0px; top: 10px"
+                style="position: absolute; right: 0px; top: 2px"
               >
                 <b-button
                   :disabled="currComment.editingContent == comment.content"
@@ -169,6 +186,9 @@ export default {
     ...mapGetters({
       user: "auth/user",
     }),
+    commentValidation() {
+      return this.form.comment.length > 2 ? true : false;
+    },
   },
   data() {
     return {
