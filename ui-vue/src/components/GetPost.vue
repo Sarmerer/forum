@@ -57,12 +57,23 @@
               >{{ category }}</b-form-tag
             >
             <div class="controls">
-              <button class="contols-button">
-                <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
-              </button>
-              <button @click="modal.show = !modal.show" class="controls-button">
-                <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
-              </button>
+              <b-button-group size="sm">
+                <b-button
+                  size="sm"
+                  lg="1"
+                  style="background-color: transparent; border-color: transparent;"
+                >
+                  <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
+                </b-button>
+                <b-button
+                  size="sm"
+                  lg="2"
+                  @click="modal.show = !modal.show"
+                  style="background-color: transparent; border-color: transparent;"
+                >
+                  <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
+                </b-button>
+              </b-button-group>
             </div>
           </div>
         </div>
@@ -93,7 +104,13 @@
 </template>
 <script>
 import axios from "axios";
+import { mapGetters } from "vuex";
 export default {
+  computed: {
+    ...mapGetters({
+      user: "auth/user",
+    }),
+  },
   data() {
     return {
       modal: { show: false, deleting: false },
@@ -153,11 +170,23 @@ export default {
         .post("comment/add", { pid: this.post.id, content: this.form.comment })
         .then((response) => {
           console.log(response);
+          this.addComment();
           this.form.comment = "";
         })
         .catch((error) => {
           console.log(error);
         });
+    },
+    addComment() {
+      let comment = {
+        author_id: this.user.id,
+        author_name: this.user.display_name,
+        content: this.form.comment,
+        created: Date.now(),
+        id: this.comments.length !== 0 ? this.comments[0].id + 1 : 1,
+        post: this.post.id,
+      };
+      this.comments = [comment, ...this.comments];
     },
   },
 };
