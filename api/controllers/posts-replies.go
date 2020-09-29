@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -42,7 +41,6 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	fmt.Println(input)
 	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PID); err != nil {
 		response.Error(w, status, err)
 		return

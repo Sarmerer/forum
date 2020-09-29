@@ -27,7 +27,6 @@
             spinner-variant="success"
             class="d-inline-block"
           >
-            <!-- Emulate built in modal footer ok and cancel button actions -->
             <b-button :disabled="modal.deleting" size="sm" variant="success" @click="deletePost()">
               Yes!
             </b-button>
@@ -57,19 +56,15 @@
               >{{ category }}</b-form-tag
             >
             <div class="controls">
-              <b-button-group size="sm">
-                <b-button
-                  size="sm"
-                  lg="1"
-                  style="background-color: transparent; border-color: transparent;"
-                >
+              <b-button-group v-if="user && (post.author_id == user.id || user.role > 0)" size="sm">
+                <b-button size="sm" lg="1" class="controls-button">
                   <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
                 </b-button>
                 <b-button
                   size="sm"
                   lg="2"
                   @click="modal.show = !modal.show"
-                  style="background-color: transparent; border-color: transparent;"
+                  class="controls-button"
                 >
                   <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
                 </b-button>
@@ -78,23 +73,43 @@
           </div>
         </div>
         <div class="card">
-          <b-form @submit="onSubmit" inline>
-            <b-input
-              id="inline-form-input-name"
-              class="mb-2 mr-sm-2 mb-sm-0"
-              placeholder="Comment"
-              v-model="form.comment"
-              style="width: 85%"
-            ></b-input>
-
-            <b-button type="submit" variant="dark">submit</b-button>
+          <b-form @submit="leaveComment">
+            <b-input-group class="mt-1">
+              <b-form-input
+                type="text"
+                class="form-control"
+                placeholder="Comment this post"
+                v-model="form.comment"
+              ></b-form-input>
+              <b-input-group-append>
+                <b-button variant="outline-secondary" type="submit">Say</b-button>
+              </b-input-group-append>
+            </b-input-group>
           </b-form>
-          <div v-for="comment in comments" :key="comment.id">
-            <div style="position: relative">
-              <p>{{ comment.author_name }} says: {{ comment.content }}</p>
-              <sub style="position:absolute; bottom:0; right:0;"
+          <div v-for="(comment, index) in comments" :key="index">
+            <div style="margin: 0.3rem; position: relative">
+              <p style="margin-bottom: 0px">
+                {{ comment.author_name }} says: {{ comment.content }}
+              </p>
+              <small v-b-tooltip.hover :title="comment.created"
                 ><timeago :datetime="comment.created" :auto-update="60"></timeago
-              ></sub>
+              ></small>
+              <b-button-group
+                v-if="user && (post.author_id == user.id || user.role > 0)"
+                size="sm"
+                style="position: absolute; right: 0px; top: 0px"
+              >
+                <b-button size="sm" lg="1" class="controls-button">
+                  <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
+                </b-button>
+                <b-button
+                  v-if="user && (comment.author_id == user.id || user.role > 0)"
+                  :disabled="deletingComment"
+                  class="controls-button"
+                  @click="deleteComment(comment.id, index)"
+                  ><img src="@/assets/svg/post/delete.svg" alt="delete" srcset=""
+                /></b-button>
+              </b-button-group>
             </div>
           </div>
         </div>
@@ -120,6 +135,7 @@ export default {
       form: {
         comment: "",
       },
+      deletingComment: false,
     };
   },
   mounted() {
@@ -136,9 +152,11 @@ export default {
           response.data.data.forEach((res) => {
             console.log(res);
             this.post = res.post;
-            this.comments = res.replies.sort(function(a, b) {
-              return new Date(b.created) - new Date(a.created);
-            });
+            if (res.replies) {
+              this.comments = res.replies.sort(function(a, b) {
+                return new Date(b.created) - new Date(a.created);
+              });
+            }
             res.categories.forEach((c) => {
               this.categories.push(c.name);
             });
@@ -151,7 +169,7 @@ export default {
     async deletePost() {
       this.modal.deleting = true;
       return await axios
-        .delete("post/delete1", { params: { id: this.post.id } })
+        .delete("post/delete", { params: { ID: this.post.id } })
         .then(() => {
           this.modal.show = false;
           this.modal.deleting = false;
@@ -163,21 +181,35 @@ export default {
           // TODO show error notification
         });
     },
-    async onSubmit(e) {
+    async deleteComment(actualID, IDInList) {
+      this.deletingComment = true;
+      return await axios
+        .delete("comment/delete", { params: { ID: actualID } })
+        .then(() => {
+          this.comments.splice(IDInList, 1);
+          this.deletingComment = false;
+        })
+        .catch((error) => {
+          console.log(error);
+          this.deletingComment = false;
+          //TODO show alert
+        });
+    },
+    async leaveComment(e) {
       console.log(this.comments);
       e.preventDefault();
       return await axios
         .post("comment/add", { pid: this.post.id, content: this.form.comment })
         .then((response) => {
           console.log(response);
-          this.addComment();
+          this.appendComment();
           this.form.comment = "";
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    addComment() {
+    appendComment() {
       let comment = {
         author_id: this.user.id,
         author_name: this.user.display_name,
@@ -198,6 +230,10 @@ export default {
   right: 10px;
 }
 .controls-button {
-  margin-left: 20px;
+  background-color: transparent;
+  border-color: transparent;
+}
+.controls-button:hover {
+  background: transparent;
 }
 </style>

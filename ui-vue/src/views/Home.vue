@@ -13,7 +13,10 @@
         <div class="post-col">
           <!-- Start of posts -->
           <div class="card" v-for="(post, index) in posts" :key="index">
-            <b-link>{{ post.post.AuthorName }}</b-link>
+            <small
+              >by <b-link>{{ post.post.author_name }} </b-link>
+              <timeago :datetime="post.post.created" :auto-update="60"></timeago
+            ></small>
             <h2 class="primary">
               <router-link :to="'/post/' + post.post.id" style="text-decoration: none;">
                 {{ post.post.title }}
