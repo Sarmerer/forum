@@ -31,7 +31,7 @@ func (PostRepoCRUD) FindAll() ([]models.Post, error) {
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.Author, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -46,7 +46,7 @@ func (PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM posts WHERE id = ?", pid,
 	).Scan(
-		&p.ID, &p.Author, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating,
+		&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -70,7 +70,7 @@ func (PostRepoCRUD) FindByAuthor(uid uint64) ([]models.Post, error) {
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.Author, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -108,7 +108,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.Author, p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		rows.Scan(&p.ID, &p.AuthorID, p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -124,7 +124,7 @@ func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 	)
 	if result, err = repository.DB.Exec(
 		"INSERT INTO posts (author_fkey,author_name_fkey, title, content, created, updated, rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		post.Author, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating,
+		post.AuthorID, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating,
 	); err != nil {
 		return 0, err
 	}
@@ -151,7 +151,7 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 	)
 	if result, err = repository.DB.Exec(
 		"UPDATE posts SET author_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ?, rating = ? WHERE id = ?",
-		post.Author, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.Rating, post.ID,
+		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.Rating, post.ID,
 	); err != nil {
 		return err
 	}

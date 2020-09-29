@@ -44,8 +44,8 @@
       </div>
       <div class="post-col">
         <div class="card">
-          <h3 class="primary">{{ post.Title }}</h3>
-          <p style="color: white">{{ post.Content }}</p>
+          <h3 class="primary">{{ post.title }}</h3>
+          <p style="color: white">{{ post.content }}</p>
           <div>
             <b-form-tag
               v-for="category in categories"
@@ -66,8 +66,6 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="post-col">
         <div class="card">
           <b-form @submit="onSubmit" inline>
             <b-input
@@ -80,9 +78,13 @@
 
             <b-button type="submit" variant="dark">submit</b-button>
           </b-form>
-          <div v-for="comment in comments" :key="comment.ID">
-            <h5 style="display: inline">{{ comment.Content }}</h5>
-            <sup style="display: inline"> {{ comment.Created }}</sup>
+          <div v-for="comment in comments" :key="comment.id">
+            <div style="position: relative">
+              <p>{{ comment.author_name }} says: {{ comment.content }}</p>
+              <sub style="position:absolute; bottom:0; right:0;"
+                ><timeago :datetime="comment.created" :auto-update="60"></timeago
+              ></sub>
+            </div>
           </div>
         </div>
       </div>
@@ -96,7 +98,7 @@ export default {
     return {
       modal: { show: false, deleting: false },
       post: {},
-      comments: {},
+      comments: [],
       categories: [],
       form: {
         comment: "",
@@ -104,9 +106,7 @@ export default {
     };
   },
   mounted() {
-    this.getPost().then(() => {
-      console.log(this.comments);
-    });
+    this.getPost();
   },
   methods: {
     async getPost() {
@@ -117,8 +117,11 @@ export default {
         })
         .then((response) => {
           response.data.data.forEach((res) => {
+            console.log(res);
             this.post = res.post;
-            this.comments = res.replies;
+            this.comments = res.replies.sort(function(a, b) {
+              return new Date(b.created) - new Date(a.created);
+            });
             res.categories.forEach((c) => {
               this.categories.push(c.name);
             });
@@ -131,7 +134,7 @@ export default {
     async deletePost() {
       this.modal.deleting = true;
       return await axios
-        .delete("post/delete1", { params: { ID: this.post.ID } })
+        .delete("post/delete1", { params: { id: this.post.id } })
         .then(() => {
           this.modal.show = false;
           this.modal.deleting = false;
@@ -147,7 +150,7 @@ export default {
       console.log(this.comments);
       e.preventDefault();
       return await axios
-        .post("comment/add", { pid: this.post.ID, content: this.form.comment })
+        .post("comment/add", { pid: this.post.id, content: this.form.comment })
         .then((response) => {
           console.log(response);
           this.form.comment = "";

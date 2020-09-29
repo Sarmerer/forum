@@ -34,7 +34,7 @@ func (ReplyRepoCRUD) FindAll(postID uint64) ([]models.PostReply, error) {
 	}
 	for rows.Next() {
 		var r models.PostReply
-		rows.Scan(&r.ID, &r.Author, &r.Content, &r.Created, &r.Post)
+		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.Post)
 		replies = append(replies, r)
 	}
 	return replies, nil
@@ -49,7 +49,7 @@ func (ReplyRepoCRUD) FindByID(rid uint64) (*models.PostReply, int, error) {
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM replies WHERE id = ?", rid,
 	).Scan(
-		&r.ID, &r.Author, &r.Content, &r.Created, &r.Post,
+		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.Post,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -67,8 +67,8 @@ func (ReplyRepoCRUD) Create(r *models.PostReply) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"INSERT INTO replies (author_fkey, content, created, post_id_fkey) VALUES (?, ?, ?, ?)",
-		r.Author, r.Content, time.Now().Format(config.TimeLayout), r.Post,
+		"INSERT INTO replies (author_fkey, author_name_fkey, content, created, post_id_fkey) VALUES (?, ?, ?, ?, ?)",
+		r.AuthorID, r.AuthorName, r.Content, time.Now().Format(config.TimeLayout), r.Post,
 	); err != nil {
 		return err
 	}
@@ -90,8 +90,8 @@ func (ReplyRepoCRUD) Update(r *models.PostReply) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE replies SET author_fkey = ?, content = ?, created = ?, post_id_fkey = ? WHERE id = ?",
-		r.Author, r.Content, r.Created, r.Post, r.ID,
+		"UPDATE replies SET author_fkey = ?, author_name_fkey = ?, content = ?, created = ?, post_id_fkey = ? WHERE id = ?",
+		r.AuthorID, r.AuthorName, r.Content, r.Created, r.Post, r.ID,
 	); err != nil {
 		return err
 	}

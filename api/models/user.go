@@ -1,13 +1,13 @@
 package models
 
 type User struct {
-	ID          uint64
-	Login       string
-	Password    string
-	Email       string
-	DisplayName string
-	Created     string
-	LastOnline  string
-	SessionID   string
-	Role        int
+	ID          uint64 `json:"id"`
+	Login       string `json:"login"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	DisplayName string `json:"display_name"`
+	Created     string `json:"created"`
+	LastOnline  string `json:"last_online"`
+	SessionID   string `json:"session_id"`
+	Role        int    `json:"role"`
 }

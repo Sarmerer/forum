@@ -15,12 +15,12 @@
           <div class="card" v-for="(post, index) in posts" :key="index">
             <b-link>{{ post.post.AuthorName }}</b-link>
             <h2 class="primary">
-              <router-link :to="'/post/' + post.post.ID" style="text-decoration: none;">
-                {{ post.post.Title }}
+              <router-link :to="'/post/' + post.post.id" style="text-decoration: none;">
+                {{ post.post.title }}
               </router-link>
             </h2>
             <hr />
-            <p style="color: white">{{ post.post.Content }}</p>
+            <p style="color: white">{{ post.post.content }}</p>
             <sub
               ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
               {{ post.replies }} replies</sub

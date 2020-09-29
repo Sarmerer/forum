@@ -29,7 +29,8 @@ func GetReplies(pid uint64) ([]models.PostReply, error) {
 func CreateReply(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.ReplyRepo = crud.NewReplyRepoCRUD()
-		author uint64               = r.Context().Value("uid").(uint64)
+		uid    uint64               = r.Context().Value("uid").(uint64)
+		author *models.User
 		status int
 		err    error
 	)
@@ -46,11 +47,16 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
+	if author, status, err = crud.NewUserRepoCRUD().FindByID(uid); err != nil {
+		response.Error(w, status, err)
+		return
+	}
 	reply := &models.PostReply{
-		Content: input.Content,
-		Created: time.Now().Format(config.TimeLayout),
-		Post:    input.PID,
-		Author:  author,
+		Content:    input.Content,
+		Created:    time.Now().Format(config.TimeLayout),
+		Post:       input.PID,
+		AuthorID:   uid,
+		AuthorName: author.DisplayName,
 	}
 	if err = repo.Create(reply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)

@@ -128,7 +128,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	post = models.Post{
 		Title:      input.Title,
 		Content:    input.Content,
-		Author:     uid,
+		AuthorID:     uid,
 		AuthorName: author.DisplayName,
 		Created:    time.Now().Format(config.TimeLayout),
 		Updated:    time.Now().Format(config.TimeLayout),
