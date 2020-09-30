@@ -1,40 +1,38 @@
 // TODO improve and split all this shit
 <template>
   <div>
-    <b-overlay :show="modal.deleting">
-      <b-modal
-        id="modal-1"
-        v-model="modal.show"
-        title="Delete this post?"
-        header-bg-variant="dark"
-        body-bg-variant="dark"
-        footer-bg-variant="dark"
-        body-class="position-static"
-      >
-        <p class="my-4">This action can <span style="color: red">NOT</span> be undone</p>
-        <template v-slot:modal-footer="{ hide }">
-          <b-button
-            :disabled="modal.deleting"
-            size="sm"
-            variant="outline-secondary"
-            @click="hide('forget')"
-          >
-            Cancel
+    <b-modal
+      id="modal-1"
+      v-model="modal.show"
+      title="Delete this post?"
+      header-bg-variant="dark"
+      body-bg-variant="dark"
+      footer-bg-variant="dark"
+      body-class="position-static"
+    >
+      <p class="my-4">This action can <span style="color: red">NOT</span> be undone</p>
+      <template v-slot:modal-footer="{ hide }">
+        <b-button
+          :disabled="modal.deleting"
+          size="sm"
+          variant="outline-secondary"
+          @click="hide('forget')"
+        >
+          Cancel
+        </b-button>
+        <b-overlay
+          :show="modal.deleting"
+          rounded="sm"
+          spinner-small
+          spinner-variant="success"
+          class="d-inline-block"
+        >
+          <b-button :disabled="modal.deleting" size="sm" variant="success" @click="deletePost()">
+            Yes!
           </b-button>
-          <b-overlay
-            :show="modal.deleting"
-            rounded="sm"
-            spinner-small
-            spinner-variant="success"
-            class="d-inline-block"
-          >
-            <b-button :disabled="modal.deleting" size="sm" variant="success" @click="deletePost()">
-              Yes!
-            </b-button>
-          </b-overlay>
-        </template>
-      </b-modal>
-    </b-overlay>
+        </b-overlay>
+      </template>
+    </b-modal>
     <div class="columns">
       <div class="info-col">
         <div class="card">
@@ -188,9 +186,6 @@ export default {
     ...mapGetters({
       user: "auth/user",
     }),
-    commentValidation() {
-      return this.form.comment.length > 2 ? true : false;
-    },
   },
   data() {
     return {
