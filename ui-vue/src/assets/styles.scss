@@ -26,3 +26,13 @@ html {
 .secondary {
   color: #21e6c1;
 }
+.textarea {
+  background-color: #101010;
+  color: gray;
+
+  border: none;
+}
+.textarea:focus {
+  color: white;
+  background-color: #121212;
+}

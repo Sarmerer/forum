@@ -75,10 +75,13 @@
           </div>
         </div>
         <div class="card">
+          <!-- Comment section -->
+
           <b-form @submit="leaveComment">
-            <b-input-group class="mt-1">
+            <b-input-group class="mt-1 mb-1">
               <b-textarea
                 type="text"
+                class="textarea"
                 placeholder="Comment this post"
                 v-model="form.comment"
                 rows="1"
@@ -102,17 +105,19 @@
               <small v-else style="color: red">{{ form.comment.length }}/200</small>
             </div>
           </b-form>
+          <span class="ml-1" v-if="comments.length == 0">Be the first to comment this post</span>
           <div v-for="(comment, index) in comments" :key="index">
             <div style="margin: 0.3rem; position: relative">
               <p
-                v-if="index != currComment.editing"
+                v-if="index != editor.editing"
                 style="margin-bottom: 0px; display: block; margin-right: 4rem"
               >
                 {{ comment.author_name }} says: {{ comment.content }}
               </p>
               <b-form-textarea
                 v-else
-                v-model="currComment.editingContent"
+                class="textarea"
+                v-model="editor.editingContent"
                 rows="1"
                 no-resize
                 max-rows="10"
@@ -123,9 +128,7 @@
               ></small>
               <b-button-group
                 v-if="
-                  user &&
-                    (post.author_id == user.id || user.role > 0) &&
-                    index != currComment.editing
+                  user && (post.author_id == user.id || user.role > 0) && index != editor.editing
                 "
                 size="sm"
                 class="controls-button"
@@ -136,11 +139,11 @@
                   lg="1"
                   variant="light"
                   class="controls-button"
-                  :disabled="currComment.deleting"
+                  :disabled="deletingComment"
                   @click="
                     () => {
-                      currComment.editing = index;
-                      currComment.editingContent = comment.content;
+                      editor.editing = index;
+                      editor.editingContent = comment.content;
                     }
                   "
                 >
@@ -148,7 +151,7 @@
                 </b-button>
                 <b-button
                   variant="danger"
-                  :disabled="currComment.deleting"
+                  :disabled="deletingComment"
                   class="controls-button"
                   @click="deleteComment(comment.id, index)"
                   ><img src="@/assets/svg/post/delete.svg" alt="delete" srcset=""
@@ -157,23 +160,22 @@
               <b-button-group
                 size="sm"
                 vertical
-                v-if="index == currComment.editing"
+                v-if="index == editor.editing"
                 style="position: absolute; right: 0px; top: 2px"
               >
                 <b-button
-                  :disabled="currComment.editingContent == comment.content"
+                  :disabled="editor.editingContent == comment.content"
                   variant="success"
                   @click="updateComment(comment.id)"
                 >
                   Save
                 </b-button>
-                <b-button variant="outline-danger" @click="currComment.editing = -1"
-                  >Cancel</b-button
-                >
+                <b-button variant="outline-danger" @click="editor.editing = -1">Cancel</b-button>
               </b-button-group>
             </div>
           </div>
         </div>
+        <!-- End of comment section -->
       </div>
     </div>
   </div>
@@ -193,7 +195,8 @@ export default {
   data() {
     return {
       modal: { show: false, deleting: false },
-      currComment: { deleting: false, editing: -1, editingContent: "" },
+      editor: { editing: -1, editingContent: "" },
+      deletingComment: false,
       post: {},
       comments: [],
       categories: [],
@@ -234,30 +237,30 @@ export default {
       return await axios
         .delete("post/delete", { params: { ID: this.post.id } })
         .then(() => {
-          this.modal.show = false;
-          this.modal.deleting = false;
           this.$router.push("/");
         })
         .catch(() => {
           this.modal.show = false;
-          this.modal.deleting = false;
           // TODO show error notification
+        })
+        .finally(() => {
+          this.modal.deleting = false;
+          this.modal.show = false;
         });
     },
     async deleteComment(actualID, IDInList) {
-      this.currComment.editing = -1;
-      this.currComment.deleting = true;
+      this.editor.editing = -1;
+      this.deletingComment = true;
       return await axios
         .delete("comment/delete", { params: { ID: actualID } })
         .then(() => {
           this.comments.splice(IDInList, 1);
-          this.currComment.deleting = false;
         })
         .catch((error) => {
           console.log(error);
-          this.currComment.deleting = false;
           //TODO show alert
-        });
+        })
+        .finally(() => (this.deletingComment = false));
     },
     async leaveComment(e) {
       e.preventDefault();
@@ -276,12 +279,12 @@ export default {
       return await axios
         .put("comment/update", {
           id: actualID,
-          content: this.currComment.editingContent,
+          content: this.editor.editingContent,
         })
         .then(() => {
-          console.log(this.comments, this.currComment.editing);
-          this.comments[this.currComment.editing].content = this.currComment.editingContent;
-          this.currComment.editing = -1;
+          console.log(this.comments, this.editor.editing);
+          this.comments[this.editor.editing].content = this.editor.editingContent;
+          this.editor.editing = -1;
         })
         .catch((error) => {
           console.log(error);
