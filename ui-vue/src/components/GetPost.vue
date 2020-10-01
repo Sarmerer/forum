@@ -106,55 +106,57 @@
           <span class="ml-1" v-if="comments.length == 0">Be the first to comment this post</span>
           <div v-for="(comment, index) in comments" :key="index">
             <div style="margin: 0.3rem; position: relative">
-              <p
-                v-if="index != editor.editing"
-                style="margin-bottom: 0px; display: block; margin-right: 4rem"
-              >
-                {{ comment.author_name }} says: {{ comment.content }}
-              </p>
-              <b-form-textarea
-                v-else
-                class="textarea"
-                v-model="editor.editingContent"
-                rows="1"
-                no-resize
-                max-rows="10"
-                style="margin-bottom: 0px; display: block; width: 85%"
-              ></b-form-textarea>
-              <small v-b-tooltip.hover :title="comment.created"
-                ><timeago :datetime="comment.created" :auto-update="60"></timeago
-              ></small>
-              <b-button-group
-                v-if="
-                  user && (post.author_id == user.id || user.role > 0) && index != editor.editing
-                "
-                size="sm"
-                class="controls-button"
-                style="position: absolute; right: 0px; top: 10px"
-              >
-                <b-button
-                  size="sm"
-                  lg="1"
-                  variant="light"
-                  class="controls-button"
-                  :disabled="deletingComment"
-                  @click="
-                    () => {
-                      editor.editing = index;
-                      editor.editingContent = comment.content;
-                    }
-                  "
+              <div v-if="index != editor.editing">
+                <p style="margin-bottom: 0px; display: block; margin-right: 4rem">
+                  {{ comment.author_name }} says: {{ comment.content }}
+                </p>
+                <small v-b-tooltip.hover :title="comment.created"
+                  ><timeago :datetime="comment.created" :auto-update="60"></timeago>
+                  {{ comment.edited == 1 ? "edited" : "" }}</small
                 >
-                  <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
-                </b-button>
-                <b-button
-                  variant="danger"
-                  :disabled="deletingComment"
+                <b-button-group
+                  v-if="
+                    user && (post.author_id == user.id || user.role > 0) && index != editor.editing
+                  "
+                  size="sm"
                   class="controls-button"
-                  @click="deleteComment(comment.id, index)"
-                  ><img src="@/assets/svg/post/delete.svg" alt="delete" srcset=""
-                /></b-button>
-              </b-button-group>
+                  style="position: absolute; right: 0px; top: 10px"
+                >
+                  <b-button
+                    size="sm"
+                    lg="1"
+                    variant="light"
+                    class="controls-button"
+                    :disabled="deletingComment"
+                    @click="edit(index, comment.content)"
+                  >
+                    <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
+                  </b-button>
+                  <b-button
+                    variant="danger"
+                    :disabled="deletingComment"
+                    class="controls-button"
+                    @click="deleteComment(comment.id, index)"
+                    ><img src="@/assets/svg/post/delete.svg" alt="delete" srcset=""
+                  /></b-button>
+                </b-button-group>
+              </div>
+              <div v-else>
+                <b-form-textarea
+                  class="textarea"
+                  ref="editComment"
+                  v-model="editor.editingContent"
+                  rows="1"
+                  no-resize
+                  max-rows="10"
+                  style="margin-bottom: 0px; display: block; width: 85%"
+                ></b-form-textarea>
+                <small
+                  v-if="editor.editingContent.length >= 5 && editor.editingContent.length <= 200"
+                  >{{ editor.editingContent.length }}/200</small
+                >
+                <small v-else style="color: red">{{ editor.editingContent.length }}/200</small>
+              </div>
               <b-button-group
                 size="sm"
                 vertical
@@ -162,7 +164,11 @@
                 style="position: absolute; right: 0px; top: 2px"
               >
                 <b-button
-                  :disabled="editor.editingContent == comment.content"
+                  :disabled="
+                    editor.editingContent == comment.content ||
+                      editor.editingContent.length < 5 ||
+                      editor.editingContent.length > 200
+                  "
                   variant="success"
                   @click="updateComment(comment.id)"
                 >
@@ -279,6 +285,7 @@ export default {
         .then(() => {
           console.log(this.comments, this.editor.editing);
           this.comments[this.editor.editing].content = this.editor.editingContent;
+          this.comments[this.editor.editing].edited = 1;
           this.editor.editing = -1;
         })
         .catch((error) => {
@@ -287,14 +294,27 @@ export default {
     },
     appendComment() {
       let comment = {
+        id: this.comments.length !== 0 ? this.comments[0].id + 1 : 1,
         author_id: this.user.id,
         author_name: this.user.display_name,
-        content: this.form.comment,
         created: Date.now(),
-        id: this.comments.length !== 0 ? this.comments[0].id + 1 : 1,
+        content: this.form.comment,
         post: this.post.id,
+        edited: 0,
       };
       this.comments = [comment, ...this.comments];
+    },
+    edit(index, content) {
+      this.editor.editing = index;
+      this.editor.editingContent = content;
+      let interval = setInterval(() => {
+        try {
+          this.$refs.editComment[0].focus();
+          clearInterval(interval);
+        } catch (error) {
+          console.log(error);
+        }
+      }, 10);
     },
   },
 };

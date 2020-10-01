@@ -65,6 +65,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Login:       login,
 		Password:    string(hashedPassword),
 		Email:       email,
+		Avatar:      "https://avatars.dicebear.com/api/male/" + login + ".svg",
 		DisplayName: login,
 		SessionID:   "",
 		Role:        config.RoleAdmin,

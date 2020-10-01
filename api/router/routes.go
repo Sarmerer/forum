@@ -82,7 +82,7 @@ var apiRoutes = []route{
 		Method:   http.MethodGet,
 		MinRole:  0,
 		SelfOnly: false,
-		NeedAuth: true,
+		NeedAuth: false,
 	},
 	{
 		URI:      "/api/users",

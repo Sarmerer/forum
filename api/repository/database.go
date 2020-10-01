@@ -26,6 +26,7 @@ func CheckDBIntegrity() (err error) {
 			login     	 TEXT,
 			password 	 BLOB,
 			email 	 	 TEXT,
+			avatar		 TEXT,
 			display_name TEXT,
 			created  	 TEXT,
 			last_online  TEXT,
@@ -77,7 +78,8 @@ func CheckDBIntegrity() (err error) {
 			author_name_fkey TEXT REFERENCES users(display_name),
 			content		 	 TEXT,
 			created		 	 TEXT,
-			post_id_fkey 	 INTEGER REFERENCES posts(id)
+			post_id_fkey 	 INTEGER REFERENCES posts(id),
+			edited           INTEGER
 		)`)
 	if err != nil {
 		return err

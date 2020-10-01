@@ -8,4 +8,5 @@ type PostReply struct {
 	Content    string `json:"content"`
 	Created    string `json:"created"`
 	Post       uint64 `json:"post"`
+	Edited     int    `json:"edited"`
 }

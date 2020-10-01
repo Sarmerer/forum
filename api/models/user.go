@@ -5,6 +5,7 @@ type User struct {
 	Login       string `json:"login"`
 	Password    string `json:"password"`
 	Email       string `json:"email"`
+	Avatar      string `json:"avatar"`
 	DisplayName string `json:"display_name"`
 	Created     string `json:"created"`
 	LastOnline  string `json:"last_online"`

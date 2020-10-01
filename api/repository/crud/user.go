@@ -32,7 +32,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	}
 	for rows.Next() {
 		var u models.User
-		rows.Scan(&u.ID, &u.Login, &u.Password, &u.Email, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role)
+		rows.Scan(&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role)
 		users = append(users, u)
 	}
 	return users, nil
@@ -47,7 +47,7 @@ func (UserRepoCRUD) FindByID(uid uint64) (*models.User, int, error) {
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM users WHERE id = ?", uid,
 	).Scan(
-		&u.ID, &u.Login, &u.Password, &u.Email, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
+		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -75,8 +75,8 @@ func (UserRepoCRUD) Create(u *models.User) (int, error) {
 	}
 
 	if result, err = repository.DB.Exec(
-		"INSERT INTO users (login, password, email,display_name, created, last_online, session_id, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		u.Login, u.Password, u.Email, u.DisplayName, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), u.SessionID, u.Role,
+		"INSERT INTO users (login, password, email, avatar, display_name, created, last_online, session_id, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		u.Login, u.Password, u.Email, u.Avatar, u.DisplayName, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), u.SessionID, u.Role,
 	); err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -90,6 +90,7 @@ func (UserRepoCRUD) Create(u *models.User) (int, error) {
 }
 
 //Update updates existing user in the database
+//TODO decide what we will let users to update
 func (UserRepoCRUD) Update(u *models.User) (int, error) {
 	var (
 		result       sql.Result
@@ -146,7 +147,7 @@ func (UserRepoCRUD) FindByNameOrEmail(login string) (*models.User, int, error) {
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM users WHERE login = ? OR email = ?", login, login,
 	).Scan(
-		&u.ID, &u.Login, &u.Password, &u.Email, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
+		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err

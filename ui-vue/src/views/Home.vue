@@ -11,10 +11,18 @@
     <div class="main-content">
       <div class="columns">
         <div class="post-col">
+          <div v-if="posts.length > 0" class="card">
+            <b-button @click="sortPosts()"
+              >sort by date: {{ sorter.byDate ? "ascending" : "descending" }}</b-button
+            >
+          </div>
           <!-- Start of posts -->
           <div class="card" v-for="(post, index) in posts" :key="index">
             <small
-              >by <b-link>{{ post.post.author_name }} </b-link>
+              >by
+              <router-link :to="'/user/' + post.post.author_id" style="text-decoration: none;">
+                {{ post.post.author_name }}
+              </router-link>
               <timeago :datetime="post.post.created" :auto-update="60"></timeago
             ></small>
             <h2 class="primary">
@@ -77,6 +85,7 @@ export default {
       posts: [],
       categories: [],
       deleting: false,
+      sorter: { byDate: false },
     };
   },
   mounted() {
@@ -91,6 +100,20 @@ export default {
       return await axios
         .get("categories")
         .then((response) => (this.categories = response.data.data));
+    },
+    sortPosts() {
+      if (this.sorter.byDate) {
+        this.posts
+          .sort((a, b) => {
+            return new Date(b.created) - new Date(a.created);
+          })
+          .reverse();
+      } else {
+        this.posts.sort((a, b) => {
+          return new Date(b.post.created) - new Date(a.post.created);
+        });
+      }
+      this.sorter.byDate = !this.sorter.byDate;
     },
   },
 };
