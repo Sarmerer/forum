@@ -112,8 +112,8 @@
                 </p>
                 <small v-b-tooltip.hover :title="comment.created"
                   ><timeago :datetime="comment.created" :auto-update="60"></timeago>
-                  {{ comment.edited == 1 ? "edited" : "" }}</small
-                >
+                  <small v-if="comment.edited == 1"> edited</small>
+                </small>
                 <b-button-group
                   v-if="
                     user && (post.author_id == user.id || user.role > 0) && index != editor.editing
@@ -267,8 +267,7 @@ export default {
       e.preventDefault();
       return await axios
         .post("comment/add", { pid: this.post.id, content: this.form.comment })
-        .then((response) => {
-          console.log(response);
+        .then(() => {
           this.appendComment();
           this.form.comment = "";
         })

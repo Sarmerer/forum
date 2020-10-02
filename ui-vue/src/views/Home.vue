@@ -8,9 +8,18 @@
         </h1>
       </div>
     </div> -->
+
     <div class="main-content">
       <div class="columns">
         <div class="post-col">
+          <div>
+            <Error
+              v-if="error.show"
+              :message="error.message"
+              :status="error.status"
+              :callback="error.callback"
+            />
+          </div>
           <div v-if="posts.length > 0" class="card">
             <b-button @click="sortPosts()"
               >sort by date: {{ sorter.byDate ? "ascending" : "descending" }}</b-button
@@ -49,7 +58,7 @@
             <h3 class="primary">CATEGORIES</h3>
             <!-- Start of categories -->
             <b-overlay variant="transparent" :show="deleting" rounded="sm">
-              <div v-if="!categories"><p>None</p></div>
+              <span v-if="categories.length == 0">None</span>
               <b-container v-else>
                 <b-row>
                   <b-col>Name</b-col>
@@ -71,8 +80,9 @@
 
 <script>
 import axios from "axios";
-
 import { mapGetters } from "vuex";
+import Error from "@/components/Error";
+
 export default {
   name: "Home",
   computed: {
@@ -80,12 +90,16 @@ export default {
       user: "auth/user",
     }),
   },
+  components: {
+    Error,
+  },
   data() {
     return {
       posts: [],
       categories: [],
       deleting: false,
       sorter: { byDate: false },
+      error: { show: false, status: 200, message: "", callback: {} },
     };
   },
   mounted() {
@@ -94,7 +108,18 @@ export default {
   },
   methods: {
     async getPosts() {
-      return await axios.get("posts").then((response) => (this.posts = response.data.data));
+      return await axios
+        .get("posts")
+        .then((response) => {
+          this.error.show = false;
+          this.posts = response.data.data;
+        })
+        .catch((error) => {
+          this.error.show = true;
+          this.error.status = error.response.status;
+          this.error.message = error.response.statusText;
+          this.error.callback = this.getPosts;
+        });
     },
     async getCategories() {
       return await axios
@@ -156,7 +181,6 @@ export default {
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
 }
-
 .post-col {
   flex-grow: 1;
 }
