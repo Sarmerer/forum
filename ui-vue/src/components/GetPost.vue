@@ -52,16 +52,17 @@
               :title="category"
               variant="dark"
               class="mr-1"
-              >{{ category }}</b-form-tag
             >
+              {{ category }}
+            </b-form-tag>
             <div class="controls">
-              <b-button-group v-if="user && (post.author_id == user.id || user.role > 0)" size="sm">
+              <b-button-group v-if="hasPermission" size="sm">
                 <b-button size="sm" lg="1" class="controls-button" variant="light">
                   <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
                 </b-button>
                 <b-button
                   size="sm"
-                  variant="danger"
+                  variant="outline-danger"
                   lg="2"
                   @click="modal.show = !modal.show"
                   class="controls-button"
@@ -82,6 +83,9 @@
                 class="textarea"
                 placeholder="Comment this post"
                 v-model="form.comment"
+                @keydown.enter.exact.prevent
+                @keyup.enter.exact="leaveComment()"
+                keydown.enter.shift.exact="newline"
                 rows="1"
                 max-rows="3"
                 size="sm"
@@ -91,16 +95,16 @@
                 <b-button
                   variant="outline-light"
                   type="submit"
-                  :disabled="form.comment.length < 5 || form.comment.length > 200"
+                  :disabled="!hasProperLength(form.comment)"
                   >Say</b-button
                 >
               </b-input-group-append>
             </b-input-group>
-            <div v-if="form.comment.length > 0">
-              <small v-if="form.comment.length >= 5 && form.comment.length <= 200"
-                >{{ form.comment.length }}/200</small
+            <div v-if="commentLength > 0">
+              <small v-if="hasProperLength(form.comment)"
+                >{{ commentLength }}/{{ maxCommentLength }}</small
               >
-              <small v-else style="color: red">{{ form.comment.length }}/200</small>
+              <small v-else style="color: red">{{ commentLength }}/{{ maxCommentLength }}</small>
             </div>
           </b-form>
           <span class="ml-1" v-if="comments.length == 0">Be the first to comment this post</span>
@@ -115,9 +119,7 @@
                   <small v-if="comment.edited == 1"> edited</small>
                 </small>
                 <b-button-group
-                  v-if="
-                    user && (post.author_id == user.id || user.role > 0) && index != editor.editing
-                  "
+                  v-if="hasPermission && index != editor.editing"
                   size="sm"
                   class="controls-button"
                   style="position: absolute; right: 0px; top: 10px"
@@ -146,16 +148,18 @@
                   class="textarea"
                   ref="editComment"
                   v-model="editor.editingContent"
+                  @keydown.enter.exact.prevent
+                  @keyup.enter.exact="updateComment(comment.id)"
+                  keydown.enter.shift.exact="newline"
                   rows="1"
                   no-resize
                   max-rows="10"
                   style="margin-bottom: 0px; display: block; width: 85%"
                 ></b-form-textarea>
-                <small
-                  v-if="editor.editingContent.length >= 5 && editor.editingContent.length <= 200"
-                  >{{ editor.editingContent.length }}/200</small
+                <small v-if="hasProperLength(editor.editingContent)"
+                  >{{ editorLength }}/{{ maxCommentLength }}</small
                 >
-                <small v-else style="color: red">{{ editor.editingContent.length }}/200</small>
+                <small v-else style="color: red">{{ editorLength }}/{{ maxCommentLength }}</small>
               </div>
               <b-button-group
                 size="sm"
@@ -164,11 +168,7 @@
                 style="position: absolute; right: 0px; top: 2px"
               >
                 <b-button
-                  :disabled="
-                    editor.editingContent == comment.content ||
-                      editor.editingContent.length < 5 ||
-                      editor.editingContent.length > 200
-                  "
+                  :disabled="canUpdate(comment)"
                   variant="success"
                   @click="updateComment(comment.id)"
                 >
@@ -192,9 +192,20 @@ export default {
     ...mapGetters({
       user: "auth/user",
     }),
+    commentLength() {
+      return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
+    },
+    editorLength() {
+      return this.editor.editingContent.replace(/(\r\n|\n|\r)/g, "").length;
+    },
+    hasPermission() {
+      return this.user && (this.post.author_id == this.user.id || this.user.role > 0);
+    },
   },
   data() {
     return {
+      maxCommentLength: 200,
+      minCommentLength: 5,
       modal: { show: false, deleting: false },
       editor: { editing: -1, editingContent: "" },
       deletingComment: false,
@@ -210,6 +221,20 @@ export default {
     this.getPost();
   },
   methods: {
+    canUpdate(comment) {
+      return (
+        this.editor.editingContent == comment.content ||
+        this.editorLength < this.minCommentLength ||
+        this.editorLength > this.maxCommentLength
+      );
+    },
+    hasProperLength(str) {
+      if (!str) return;
+      return (
+        str.replace(/(\r\n|\n|\r)/g, "").length >= this.minCommentLength &&
+        str.replace(/(\r\n|\n|\r)/g, "").length <= this.maxCommentLength
+      );
+    },
     async getPost() {
       return await axios
         .post("post/find", {
@@ -264,7 +289,10 @@ export default {
         .finally(() => (this.deletingComment = false));
     },
     async leaveComment(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
+      if (this.commentLength < this.minCommentLength || this.commentLength > this.maxCommentLength)
+        return;
+      this.editor.editing = -1;
       return await axios
         .post("comment/add", { pid: this.post.id, content: this.form.comment })
         .then(() => {
@@ -276,6 +304,8 @@ export default {
         });
     },
     async updateComment(actualID) {
+      if (this.editorLength < this.minCommentLength || this.editorLength > this.maxCommentLength)
+        return;
       return await axios
         .put("comment/update", {
           id: actualID,
@@ -318,7 +348,7 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .controls {
   position: absolute;
   top: 5px;
@@ -327,8 +357,10 @@ export default {
 .controls-button {
   background-color: transparent;
   border-color: transparent;
-}
-.controls-button:hover {
-  background: transparent;
+  outline: none !important;
+  outline-width: 0 !important;
+  box-shadow: none;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
 }
 </style>

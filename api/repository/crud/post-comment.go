@@ -102,7 +102,7 @@ func (CommentRepoCRUD) Update(r *models.PostComment) error {
 	if rowsAffected > 0 {
 		return nil
 	}
-	return nil
+	return errors.New("couldn't update the comment")
 }
 
 //Delete deletes reply from the database

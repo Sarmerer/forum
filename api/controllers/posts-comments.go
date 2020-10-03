@@ -71,7 +71,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		err          error
 	)
 	input := struct {
-		RID     int64 `json:"id"`
+		RID     int64  `json:"id"`
 		Content string `json:"content"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -82,9 +82,8 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if input.Content != "" {
-		updatedReply.Content = input.Content
-	}
+	
+	updatedReply.Content = input.Content
 	if err = repo.Update(updatedReply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return

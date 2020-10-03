@@ -25,9 +25,6 @@ export default {
   mounted() {
     this.getUser();
   },
-  updated() {
-    this.getUser();
-  },
   methods: {
     async getUser() {
       return await axios
