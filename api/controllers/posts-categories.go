@@ -20,7 +20,7 @@ func GetAllCategories(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, categories)
 }
 
-func GetCategoriesByPostID(pid uint64) ([]models.Category, error) {
+func GetCategoriesByPostID(pid int64) ([]models.Category, error) {
 	var (
 		repo       repository.CategoryRepo = crud.NewCategoryRepoCRUD()
 		categories []models.Category
@@ -32,7 +32,21 @@ func GetCategoriesByPostID(pid uint64) ([]models.Category, error) {
 	return categories, nil
 }
 
-func DeleteAllCategoriesForPost(pid uint64) error {
+func UpdateCategories(pid int64, categories []string) error {
+	var (
+		repo repository.CategoryRepo = crud.NewCategoryRepoCRUD()
+		err  error
+	)
+	if err = repo.DeleteGroup(pid); err != nil {
+		return err
+	}
+	if err = repo.Create(pid, categories); err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteAllCategoriesForPost(pid int64) error {
 	var (
 		repo repository.CategoryRepo = crud.NewCategoryRepoCRUD()
 		err  error

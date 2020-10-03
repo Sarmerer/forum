@@ -13,12 +13,7 @@
       <div class="columns">
         <div class="post-col">
           <div>
-            <Error
-              v-if="error.show"
-              :message="error.message"
-              :status="error.status"
-              :callback="error.callback"
-            />
+            <Error v-if="error.show" :errorData="error" />
           </div>
           <div v-if="posts.length > 0" class="card">
             <b-button @click="sortPosts()"

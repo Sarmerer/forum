@@ -11,11 +11,11 @@ import (
 func RatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo repository.PostRepo = crud.NewPostRepoCRUD()
-		uid  uint64              = r.Context().Value("uid").(uint64)
+		uid  int64               = r.Context().Value("uid").(int64)
 		err  error
 	)
 	input := struct {
-		Pid      uint64 `json:"pid"`
+		Pid      int64 `json:"pid"`
 		Reaction int    `json:"reaction"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -29,7 +29,7 @@ func RatePost(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "post has been rated", nil)
 }
 
-func GetRating(postID uint64) (int, error) {
+func GetRating(postID int64) (int, error) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
 		rating int

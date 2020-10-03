@@ -21,7 +21,7 @@ func Chain(h http.HandlerFunc, m ...Middlewares) http.HandlerFunc {
 	return wrapped
 }
 
-func checkUserRole(id uint64) (int, int, error) {
+func checkUserRole(id int64) (int, int, error) {
 	var (
 		role   int
 		um     repository.UserRepo

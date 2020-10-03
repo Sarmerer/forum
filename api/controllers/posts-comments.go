@@ -12,10 +12,10 @@ import (
 	"time"
 )
 
-func GetReplies(pid uint64) ([]models.PostReply, error) {
+func GetComments(pid int64) ([]models.PostComment, error) {
 	var (
-		repo    repository.ReplyRepo = crud.NewReplyRepoCRUD()
-		replies []models.PostReply
+		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
+		replies []models.PostComment
 		err     error
 	)
 
@@ -25,16 +25,16 @@ func GetReplies(pid uint64) ([]models.PostReply, error) {
 	return replies, nil
 }
 
-func CreateReply(w http.ResponseWriter, r *http.Request) {
+func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.ReplyRepo = crud.NewReplyRepoCRUD()
-		uid    uint64               = r.Context().Value("uid").(uint64)
+		repo   repository.CommentRepo = crud.NewCommentRepoCRUD()
+		uid    int64                  = r.Context().Value("uid").(int64)
 		author *models.User
 		status int
 		err    error
 	)
 	input := struct {
-		PID     uint64 `json:"pid"`
+		PID     int64  `json:"pid"`
 		Content string `json:"content"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -49,7 +49,7 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	reply := &models.PostReply{
+	reply := &models.PostComment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
 		Post:       input.PID,
@@ -63,15 +63,15 @@ func CreateReply(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "reply has been added", nil)
 }
 
-func UpdateReply(w http.ResponseWriter, r *http.Request) {
+func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo         repository.ReplyRepo = crud.NewReplyRepoCRUD()
-		updatedReply *models.PostReply
+		repo         repository.CommentRepo = crud.NewCommentRepoCRUD()
+		updatedReply *models.PostComment
 		status       int
 		err          error
 	)
 	input := struct {
-		RID     uint64 `json:"id"`
+		RID     int64 `json:"id"`
 		Content string `json:"content"`
 	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -92,10 +92,10 @@ func UpdateReply(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "reply has been updated", nil)
 }
 
-func DeleteReply(w http.ResponseWriter, r *http.Request) {
+func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.ReplyRepo = crud.NewReplyRepoCRUD()
-		rid    uint64
+		repo   repository.CommentRepo = crud.NewCommentRepoCRUD()
+		rid    int64
 		status int
 		err    error
 	)
@@ -114,9 +114,9 @@ func DeleteReply(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "reply has been deleted", nil)
 }
 
-func DeleteAllRepliesForPost(pid uint64) error {
+func DeleteCommentsGroup(pid int64) error {
 	var (
-		repo repository.ReplyRepo = crud.NewReplyRepoCRUD()
+		repo repository.CommentRepo = crud.NewCommentRepoCRUD()
 		err  error
 	)
 	if err = repo.DeleteGroup(pid); err != nil {
@@ -125,9 +125,9 @@ func DeleteAllRepliesForPost(pid uint64) error {
 	return nil
 }
 
-func CountReplies(pid uint64) (replies string, err error) {
-	var repo = crud.NewReplyRepoCRUD()
-	if replies, err = repo.CountReplies(pid); err != nil {
+func CountComments(pid int64) (replies string, err error) {
+	var repo = crud.NewCommentRepoCRUD()
+	if replies, err = repo.Count(pid); err != nil {
 		return "0", err
 	}
 	return replies, nil

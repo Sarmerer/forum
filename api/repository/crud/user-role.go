@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (UserRepoCRUD) GetRole(id uint64) (int, int, error) {
+func (UserRepoCRUD) GetRole(id int64) (int, int, error) {
 	var (
 		role int
 		err  error
@@ -24,7 +24,7 @@ func (UserRepoCRUD) GetRole(id uint64) (int, int, error) {
 }
 
 //UpdateRole updates user role in the database
-func (UserRepoCRUD) UpdateRole(uid uint64, role int) error {
+func (UserRepoCRUD) UpdateRole(uid int64, role int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64

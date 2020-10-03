@@ -6,15 +6,15 @@ import (
 
 type UserRepo interface {
 	FindAll() ([]models.User, error)
-	FindByID(uint64) (*models.User, int, error)
+	FindByID(int64) (*models.User, int, error)
 	Create(*models.User) (int, error)
 	Update(*models.User) (int, error)
-	Delete(uint64) (int, error)
+	Delete(int64) (int, error)
 	FindByNameOrEmail(string) (*models.User, int, error)
 
-	UpdateSession(uint64, string) error
-	ValidateSession(string) (uint64, int, error)
+	UpdateSession(int64, string) error
+	ValidateSession(string) (int64, int, error)
 
-	GetRole(uint64) (int, int, error)
-	UpdateRole(uint64, int) error
+	GetRole(int64) (int, int, error)
+	UpdateRole(int64, int) error
 }

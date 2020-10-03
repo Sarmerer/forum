@@ -16,7 +16,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 		var (
 			repo   repository.UserRepo = crud.NewUserRepoCRUD()
 			cookie *http.Cookie
-			uid    uint64
+			uid    int64
 			status int
 			err    error
 		)
@@ -40,8 +40,8 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			repo         repository.UserRepo = crud.NewUserRepoCRUD()
-			requestorUID uint64              = r.Context().Value("uid").(uint64)
-			queryUID     uint64
+			requestorUID int64              = r.Context().Value("uid").(int64)
+			queryUID     int64
 			role         int
 			status       int
 			err          error

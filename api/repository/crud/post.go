@@ -26,7 +26,7 @@ func (PostRepoCRUD) FindAll() ([]models.Post, error) {
 		posts []models.Post
 		err   error
 	)
-	if rows, err = repository.DB.Query("SELECT * FROM posts"); err != nil {
+	if rows, err = repository.DB.Query("SELECT * FROM posts ORDER BY created DESC"); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
@@ -38,7 +38,7 @@ func (PostRepoCRUD) FindAll() ([]models.Post, error) {
 }
 
 //FindByID returns a specific post from the database
-func (PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
+func (PostRepoCRUD) FindByID(pid int64) (*models.Post, int, error) {
 	var (
 		p   models.Post
 		err error
@@ -56,7 +56,7 @@ func (PostRepoCRUD) FindByID(pid uint64) (*models.Post, int, error) {
 	return &p, http.StatusOK, nil
 }
 
-func (PostRepoCRUD) FindByAuthor(uid uint64) ([]models.Post, error) {
+func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
@@ -166,7 +166,7 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 }
 
 //Delete deletes post from the database
-func (PostRepoCRUD) Delete(pid uint64) (int, error) {
+func (PostRepoCRUD) Delete(pid int64) (int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64

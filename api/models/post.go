@@ -2,8 +2,8 @@ package models
 
 //Post struct contains info about post
 type Post struct {
-	ID         uint64 `json:"id"`
-	AuthorID   uint64 `json:"author_id"`
+	ID         int64  `json:"id"`
+	AuthorID   int64  `json:"author_id"`
 	AuthorName string `json:"author_name"`
 	Title      string `json:"title"`
 	Content    string `json:"content"`

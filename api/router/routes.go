@@ -178,7 +178,7 @@ var apiRoutes = []route{
 
 	{
 		URI:      "/api/comment/add",
-		Handler:  controllers.CreateReply,
+		Handler:  controllers.CreateComment,
 		Method:   http.MethodPost,
 		MinRole:  0,
 		SelfOnly: false,
@@ -186,7 +186,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/comment/update",
-		Handler:  controllers.UpdateReply,
+		Handler:  controllers.UpdateComment,
 		Method:   http.MethodPut,
 		MinRole:  0,
 		SelfOnly: false,
@@ -194,7 +194,7 @@ var apiRoutes = []route{
 	},
 	{
 		URI:      "/api/comment/delete",
-		Handler:  controllers.DeleteReply,
+		Handler:  controllers.DeleteComment,
 		Method:   http.MethodDelete,
 		MinRole:  0,
 		SelfOnly: false,

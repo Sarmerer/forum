@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (UserRepoCRUD) ValidateSession(session string) (uid uint64, status int, err error) {
+func (UserRepoCRUD) ValidateSession(session string) (uid int64, status int, err error) {
 	if err = repository.DB.QueryRow("SELECT id FROM users WHERE session_id = ?", session).Scan(&uid); err != nil {
 		if err != sql.ErrNoRows {
 			return uid, http.StatusInternalServerError, err
@@ -17,7 +17,7 @@ func (UserRepoCRUD) ValidateSession(session string) (uid uint64, status int, err
 	return uid, http.StatusOK, nil
 }
 
-func (UserRepoCRUD) UpdateSession(id uint64, newSession string) error {
+func (UserRepoCRUD) UpdateSession(id int64, newSession string) error {
 	var (
 		result       sql.Result
 		rowsAffected int64

@@ -1,13 +1,15 @@
 <template>
   <div class="error-container">
-    <h3 class="mb-4">{{ status }} {{ message }}</h3>
+    <h3 class="mb-4">{{ errorData.status }} {{ errorData.message }}</h3>
     <!-- TODO add overlay to prevent request spam -->
-    <b-button @click="callback()" variant="outline-light">retry</b-button>
+    <b-button @click="errorData.callback()" variant="outline-light">retry</b-button>
   </div>
 </template>
 <script>
 export default {
-  props: ["message", "status", "callback"],
+  props: {
+    errorData: Object,
+  },
 };
 </script>
 <style lang="scss">

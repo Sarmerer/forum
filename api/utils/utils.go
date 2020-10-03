@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func ParseID(r *http.Request) (res uint64, err error) {
-	if res, err = strconv.ParseUint(r.URL.Query().Get("ID"), 10, 64); err != nil {
+func ParseID(r *http.Request) (res int64, err error) {
+	if res, err = strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64); err != nil {
 		return 0, errors.New("invalid id")
 	}
 	return res, nil

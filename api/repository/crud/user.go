@@ -39,7 +39,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 }
 
 //FindByID returns a specific user from the database
-func (UserRepoCRUD) FindByID(uid uint64) (*models.User, int, error) {
+func (UserRepoCRUD) FindByID(uid int64) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
@@ -114,7 +114,7 @@ func (UserRepoCRUD) Update(u *models.User) (int, error) {
 }
 
 //Delete deletes user from the database
-func (UserRepoCRUD) Delete(id uint64) (int, error) {
+func (UserRepoCRUD) Delete(id int64) (int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64

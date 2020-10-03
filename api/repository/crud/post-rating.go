@@ -6,7 +6,7 @@ import (
 	"forum/api/repository"
 )
 
-func (PostRepoCRUD) GetRating(postID uint64) (int, error) {
+func (PostRepoCRUD) GetRating(postID int64) (int, error) {
 	var (
 		rating int
 		err    error
@@ -23,7 +23,7 @@ func (PostRepoCRUD) GetRating(postID uint64) (int, error) {
 	return rating, nil
 }
 
-func (PostRepoCRUD) RatePost(postID, userID uint64, reaction int) error {
+func (PostRepoCRUD) RatePost(postID, userID int64, reaction int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64

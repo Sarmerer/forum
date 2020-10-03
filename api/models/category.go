@@ -4,5 +4,5 @@ package models
 type Category struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	UseCount uint64 `json:"use_count,omitempty"`
+	UseCount int64 `json:"use_count,omitempty"`
 }

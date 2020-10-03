@@ -28,7 +28,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    uint64
+		uid    int64
 		user   *models.User
 		status int
 		err    error
@@ -51,7 +51,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo        repository.UserRepo = crud.NewUserRepoCRUD()
 		name        string
-		uid         uint64
+		uid         int64
 		updatedUser *models.User
 		status      int
 		err         error
@@ -81,7 +81,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    uint64
+		uid    int64
 		status int
 		err    error
 	)

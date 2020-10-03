@@ -28,8 +28,8 @@ type createUpdateInput struct {
 
 type findInput struct {
 	By         string   `json:"by"`
-	ID         uint64   `json:"id"`
-	Author     uint64   `json:"author"`
+	ID         int64   `json:"id"`
+	Author     int64   `json:"author"`
 	Categories []string `json:"categories"`
 }
 
@@ -49,7 +49,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
-		if p.Replies, err = CountReplies(posts[i].ID); err != nil {
+		if p.Replies, err = CountComments(posts[i].ID); err != nil {
 			p.Replies = err
 		}
 		result = append(result, p)
@@ -97,7 +97,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
-		if p.Replies, err = GetReplies(posts[i].ID); err != nil {
+		if p.Replies, err = GetComments(posts[i].ID); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -109,7 +109,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		uid    uint64              = r.Context().Value("uid").(uint64)
+		uid    int64              = r.Context().Value("uid").(int64)
 		author *models.User
 		input  createUpdateInput
 		post   models.Post
@@ -128,7 +128,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	post = models.Post{
 		Title:      input.Title,
 		Content:    input.Content,
-		AuthorID:     uid,
+		AuthorID:   uid,
 		AuthorName: author.DisplayName,
 		Created:    time.Now().Format(config.TimeLayout),
 		Updated:    time.Now().Format(config.TimeLayout),
@@ -154,7 +154,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		input       createUpdateInput
 		name        string
 		content     string
-		pid         uint64
+		pid         int64
 		updatedPost *models.Post
 		status      int
 		err         error
@@ -191,7 +191,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		pid    uint64
+		pid    int64
 		status int
 		err    error
 	)
@@ -203,7 +203,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if err = DeleteAllRepliesForPost(pid); err != nil {
+	if err = DeleteCommentsGroup(pid); err != nil {
 		fmt.Println(err)
 	}
 	if err = DeleteAllCategoriesForPost(pid); err != nil {

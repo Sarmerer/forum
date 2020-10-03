@@ -42,7 +42,7 @@ func (categoryRepoCRUD) FindAll() ([]models.Category, error) {
 }
 
 //FindByPostID returns all categories belonging to  a post
-func (categoryRepoCRUD) FindByPostID(postID uint64) ([]models.Category, error) {
+func (categoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
@@ -148,7 +148,7 @@ func (categoryRepoCRUD) Delete(cid int) error {
 	return errors.New("could not delete the category")
 }
 
-func (categoryRepoCRUD) DeleteGroup(pid uint64) error {
+func (categoryRepoCRUD) DeleteGroup(pid int64) error {
 	var err error
 	if _, err = repository.DB.Exec(
 		`DELETE

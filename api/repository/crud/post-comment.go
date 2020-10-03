@@ -10,19 +10,19 @@ import (
 	"time"
 )
 
-//ReplyRepoCRUD helps performing CRUD operations
-type ReplyRepoCRUD struct{}
+//CommentRepoCRUD helps performing CRUD operations
+type CommentRepoCRUD struct{}
 
-//NewReplyRepoCRUD creates an instance of PostReplyModel
-func NewReplyRepoCRUD() *ReplyRepoCRUD {
-	return &ReplyRepoCRUD{}
+//NewCommentRepoCRUD creates an instance of PostReplyModel
+func NewCommentRepoCRUD() *CommentRepoCRUD {
+	return &CommentRepoCRUD{}
 }
 
 //FindAll returns all replies for the specified post
-func (ReplyRepoCRUD) FindAll(postID uint64) ([]models.PostReply, error) {
+func (CommentRepoCRUD) FindAll(postID int64) ([]models.PostComment, error) {
 	var (
 		rows    *sql.Rows
-		replies []models.PostReply
+		replies []models.PostComment
 		err     error
 	)
 	if rows, err = repository.DB.Query(
@@ -33,7 +33,7 @@ func (ReplyRepoCRUD) FindAll(postID uint64) ([]models.PostReply, error) {
 		return nil, nil
 	}
 	for rows.Next() {
-		var r models.PostReply
+		var r models.PostComment
 		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.Post, &r.Edited)
 		replies = append(replies, r)
 	}
@@ -41,9 +41,9 @@ func (ReplyRepoCRUD) FindAll(postID uint64) ([]models.PostReply, error) {
 }
 
 //FindByID returns a specific reply from the database
-func (ReplyRepoCRUD) FindByID(rid uint64) (*models.PostReply, int, error) {
+func (CommentRepoCRUD) FindByID(rid int64) (*models.PostComment, int, error) {
 	var (
-		r   models.PostReply
+		r   models.PostComment
 		err error
 	)
 	if err = repository.DB.QueryRow(
@@ -60,7 +60,7 @@ func (ReplyRepoCRUD) FindByID(rid uint64) (*models.PostReply, int, error) {
 }
 
 //Create adds a new reply to the database
-func (ReplyRepoCRUD) Create(r *models.PostReply) error {
+func (CommentRepoCRUD) Create(r *models.PostComment) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -83,7 +83,7 @@ func (ReplyRepoCRUD) Create(r *models.PostReply) error {
 }
 
 //Update updates existing reply in the database
-func (ReplyRepoCRUD) Update(r *models.PostReply) error {
+func (CommentRepoCRUD) Update(r *models.PostComment) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -106,7 +106,7 @@ func (ReplyRepoCRUD) Update(r *models.PostReply) error {
 }
 
 //Delete deletes reply from the database
-func (ReplyRepoCRUD) Delete(rid uint64) error {
+func (CommentRepoCRUD) Delete(rid int64) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -127,7 +127,7 @@ func (ReplyRepoCRUD) Delete(rid uint64) error {
 	return nil
 }
 
-func (ReplyRepoCRUD) DeleteGroup(pid uint64) error {
+func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -148,7 +148,7 @@ func (ReplyRepoCRUD) DeleteGroup(pid uint64) error {
 	return nil
 }
 
-func (ReplyRepoCRUD) CountReplies(pid uint64) (replies string, err error) {
+func (CommentRepoCRUD) Count(pid int64) (replies string, err error) {
 	if err = repository.DB.QueryRow(
 		"SELECT count(id) FROM replies WHERE post_id_fkey = ?", pid,
 	).Scan(
