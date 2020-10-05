@@ -25,8 +25,39 @@
             :to="'/post/' + post.post.id"
             v-for="(post, index) in posts"
             :key="index"
-            class="card"
+            class="card post"
           >
+            <div class="rating-column mr-2">
+              <svg
+                style="display:block"
+                @click="rate($event, 'up')"
+                width="2em"
+                height="2em"
+                viewBox="0 0 16 16"
+                class="bi bi-caret-up-fill"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"
+                />
+              </svg>
+              <span>{{ post.post.rating || Math.floor(Math.random() * 1000) }}</span>
+              <svg
+                style="display:block"
+                @click="rate($event, 'down')"
+                width="2em"
+                height="2em"
+                viewBox="0 0 16 16"
+                class="bi bi-caret-down-fill"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+                />
+              </svg>
+            </div>
             <div>
               <small
                 >by
@@ -40,6 +71,17 @@
               </h2>
               <hr />
               <p style="color: white">{{ post.post.content }}</p>
+              <b-form-tag
+                v-for="(category, index) in post.categories"
+                disabled
+                :key="index"
+                :title="category.name"
+                variant="dark"
+                class="mr-1"
+              >
+                {{ category.name }}
+              </b-form-tag>
+              <br />
               <sub
                 ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
                 {{ post.replies }} replies</sub
@@ -107,6 +149,10 @@ export default {
     this.getCategories();
   },
   methods: {
+    rate(e, msg) {
+      e.preventDefault();
+      console.log("click: " + msg);
+    },
     async getPosts() {
       return await axios
         .get("posts")
@@ -180,6 +226,14 @@ export default {
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
+}
+.card.post {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+.card.post.rating-column {
+  flex-grow: 1;
 }
 a.card {
   color: inherit;
