@@ -26,37 +26,42 @@
             v-for="(post, index) in posts"
             :key="index"
             class="card post"
+            tag="div"
+            style="cursor: pointer"
           >
-            <div class="rating-column mr-2">
+            <div class="rating-column mr-2" style="text-align:center;">
               <svg
                 style="display:block"
-                @click="rate($event, 'up')"
+                @click="rate($event, 'up', index)"
+                :disabled="rating.requesting"
                 width="2em"
                 height="2em"
                 viewBox="0 0 16 16"
                 class="bi bi-caret-up-fill"
-                fill="currentColor"
+                :fill="post.post.your_reaction == 1 ? 'green' : 'white'"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"
                 />
               </svg>
-              <span>{{ post.post.rating || Math.floor(Math.random() * 1000) }}</span>
-              <svg
-                style="display:block"
-                @click="rate($event, 'down')"
-                width="2em"
-                height="2em"
-                viewBox="0 0 16 16"
-                class="bi bi-caret-down-fill"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                />
-              </svg>
+              <span>{{ post.post.rating }}</span>
+              <span
+                ><svg
+                  style="display:block"
+                  @click="rate($event, 'down', index)"
+                  :disabled="rating.requesting"
+                  width="2em"
+                  height="2em"
+                  viewBox="0 0 16 16"
+                  class="bi bi-caret-down-fill"
+                  :fill="post.post.your_reaction == -1 ? 'red' : 'white'"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+                  /></svg
+              ></span>
             </div>
             <div>
               <small
@@ -140,6 +145,7 @@ export default {
       posts: [],
       categories: [],
       deleting: false,
+      rating: { requesting: false },
       sorter: { byDate: false },
       error: { show: false, status: Number, message: String, callback: Function },
     };
@@ -149,16 +155,37 @@ export default {
     this.getCategories();
   },
   methods: {
-    rate(e, msg) {
+    async rate(e, reaction, index) {
       e.preventDefault();
-      console.log("click: " + msg);
+      if (this.rating.requesting) return;
+      this.rating.requesting = true;
+      let self = this;
+      let r = reaction == "up" ? 1 : -1;
+      if (
+        (reaction == "up" && this.posts[index].post.your_reaction == 1) ||
+        (reaction == "down" && this.posts[index].post.your_reaction == -1)
+      ) {
+        r = 0;
+      }
+      await axios
+        .post("post/rate", { pid: self.posts[index].post.id, reaction: r })
+        .then((response) => {
+          self.posts[index].post.your_reaction = response.data.data.your_reaction;
+          self.posts[index].post.rating = response.data.data.rating;
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          self.rating.requesting = false;
+        });
     },
     async getPosts() {
       return await axios
         .get("posts")
         .then((response) => {
           this.error.show = false;
-          this.posts = response.data.data;
+          this.posts = response.data.data || [];
         })
         .catch((error) => {
           this.error.show = true;
@@ -170,7 +197,12 @@ export default {
     async getCategories() {
       return await axios
         .get("categories")
-        .then((response) => (this.categories = response.data.data));
+        .then((response) => {
+          this.categories = response.data.data || [];
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     sortPosts() {
       if (this.sorter.byDate) {

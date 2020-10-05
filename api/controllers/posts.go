@@ -36,10 +36,17 @@ type findInput struct {
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
+		uid    int64
 		posts  []models.Post
 		result []postResponse
 		err    error
 	)
+	uid = func() int64 {
+		if r.Context().Value("uid") != nil {
+			return r.Context().Value("uid").(int64)
+		}
+		return -1
+	}()
 	if posts, err = repo.FindAll(); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -51,6 +58,9 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		}
 		if p.Replies, err = CountComments(posts[i].ID); err != nil {
 			p.Replies = err
+		}
+		if p.Post.Rating, p.Post.YourReaction, err = GetRating(p.Post.ID, uid); err != nil {
+			fmt.Println(err)
 		}
 		result = append(result, p)
 	}

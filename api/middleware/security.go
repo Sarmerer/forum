@@ -11,12 +11,41 @@ import (
 	"net/http"
 )
 
-func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
+func SetContext(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			repo   repository.UserRepo = crud.NewUserRepoCRUD()
 			cookie *http.Cookie
 			uid    int64
+			status int
+			ctx    context.Context
+			err    error
+		)
+		if cookie, err = r.Cookie(config.SessionCookieName); err != nil {
+			if err != http.ErrNoCookie {
+				response.Error(w, http.StatusBadRequest, err)
+			}
+			uid = -1
+			ctx = context.WithValue(r.Context(), "uid", uid)
+			next(w, r.WithContext(ctx))
+		} else {
+			if uid, status, err = repo.ValidateSession(cookie.Value); err != nil {
+				if err != nil && status != http.StatusUnauthorized {
+					response.Error(w, status, err)
+					return
+				}
+			}
+			ctx = context.WithValue(r.Context(), "uid", uid)
+			next(w, r.WithContext(ctx))
+		}
+	}
+}
+
+func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var (
+			repo   repository.UserRepo = crud.NewUserRepoCRUD()
+			cookie *http.Cookie
 			status int
 			err    error
 		)
@@ -27,12 +56,11 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		if uid, status, err = repo.ValidateSession(cookie.Value); err != nil {
+		if _, status, err = repo.ValidateSession(cookie.Value); err != nil {
 			response.Error(w, status, err)
 			return
 		}
-		ctx := context.WithValue(r.Context(), "uid", uid)
-		next(w, r.WithContext(ctx))
+		next(w, r)
 	}
 }
 
@@ -40,7 +68,7 @@ func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			repo         repository.UserRepo = crud.NewUserRepoCRUD()
-			requestorUID int64              = r.Context().Value("uid").(int64)
+			requestorUID int64               = r.Context().Value("uid").(int64)
 			queryUID     int64
 			role         int
 			status       int

@@ -120,7 +120,7 @@ export default {
     async deletePost() {
       this.modal.deleting = true;
       return await axios
-        .delete("post/delete", { params: { ID: this.post.id } })
+        .delete("post/delete", { params: { id: this.post.id } })
         .then(() => {
           this.$router.push("/");
         })

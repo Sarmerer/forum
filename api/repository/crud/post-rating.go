@@ -6,21 +6,22 @@ import (
 	"forum/api/repository"
 )
 
-func (PostRepoCRUD) GetRating(postID int64) (int, error) {
+func (PostRepoCRUD) GetRating(postID int64, currentUser int64) (int, int, error) {
 	var (
-		rating int
-		err    error
+		rating       int
+		yourReaction int
+		err          error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT SUM(reaction) AS rating FROM reactions WHERE post_id_fkey = ?`,
-		postID,
-	).Scan(&rating); err != nil {
+		`SELECT TOTAL(reaction) AS rating, IFNULL ((SELECT reaction FROM reactions WHERE user_id_fkey = $1 AND post_id_fkey = $2), 0) AS yor_reaction FROM reactions WHERE post_id_fkey = $2`,
+		currentUser, postID,
+	).Scan(&rating, &yourReaction); err != nil {
 		if err != sql.ErrNoRows {
-			return 0, err
+			return 0, 0, err
 		}
-		return 0, errors.New("post not found")
+		return 0, 0, errors.New("post not found")
 	}
-	return rating, nil
+	return rating, yourReaction, nil
 }
 
 func (PostRepoCRUD) RatePost(postID, userID int64, reaction int) error {
