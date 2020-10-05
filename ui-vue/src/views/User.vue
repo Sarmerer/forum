@@ -28,7 +28,7 @@ export default {
   methods: {
     async getUser() {
       return await axios
-        .get("user", { params: { ID: this.$route.params.id } })
+        .get("user", { params: { id: this.$route.params.id } })
         .then((response) => {
           this.user = response.data.data;
         })

@@ -26,7 +26,7 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.PostComment, error) {
 		err     error
 	)
 	if rows, err = repository.DB.Query(
-		"SELECT * FROM replies WHERE post_id_fkey = ?", postID); err != nil {
+		"SELECT * FROM replies WHERE post_id_fkey = ? ORDER BY created DESC", postID); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, err
 		}

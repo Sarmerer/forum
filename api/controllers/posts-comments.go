@@ -12,17 +12,26 @@ import (
 	"time"
 )
 
-func GetComments(pid int64) ([]models.PostComment, error) {
+func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		replies []models.PostComment
-		err     error
+		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
+		comments []models.PostComment
+		pid      int64
+		status   int
+		err      error
 	)
-
-	if replies, err = repo.FindAll(pid); err != nil {
-		return nil, err
+	if pid, err = utils.ParseID(r); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
 	}
-	return replies, nil
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid); err != nil {
+		response.Error(w, status, err)
+	}
+	if comments, err = repo.FindAll(pid); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	response.Success(w, nil, comments)
 }
 
 func CreateComment(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +91,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	
+
 	updatedReply.Content = input.Content
 	if err = repo.Update(updatedReply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)

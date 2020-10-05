@@ -9,7 +9,7 @@ import (
 )
 
 func ParseID(r *http.Request) (res int64, err error) {
-	if res, err = strconv.ParseInt(r.URL.Query().Get("ID"), 10, 64); err != nil {
+	if res, err = strconv.ParseInt(r.URL.Query().Get("id"), 10, 64); err != nil {
 		return 0, errors.New("invalid id")
 	}
 	return res, nil

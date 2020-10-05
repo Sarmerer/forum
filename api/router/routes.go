@@ -177,6 +177,14 @@ var apiRoutes = []route{
 	/* -------------------------------------------------------------------------- */
 
 	{
+		URI:      "/api/comments",
+		Handler:  controllers.GetComments,
+		Method:   http.MethodGet,
+		MinRole:  0,
+		SelfOnly: false,
+		NeedAuth: false,
+	},
+	{
 		URI:      "/api/comment/add",
 		Handler:  controllers.CreateComment,
 		Method:   http.MethodPost,

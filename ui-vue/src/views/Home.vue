@@ -21,26 +21,31 @@
             >
           </div>
           <!-- Start of posts -->
-          <div class="card" v-for="(post, index) in posts" :key="index">
-            <small
-              >by
-              <router-link :to="'/user/' + post.post.author_id" style="text-decoration: none;">
-                {{ post.post.author_name }}
-              </router-link>
-              <timeago :datetime="post.post.created" :auto-update="60"></timeago
-            ></small>
-            <h2 class="primary">
-              <router-link :to="'/post/' + post.post.id" style="text-decoration: none;">
+          <router-link
+            :to="'/post/' + post.post.id"
+            v-for="(post, index) in posts"
+            :key="index"
+            class="card"
+          >
+            <div>
+              <small
+                >by
+                <router-link :to="'/user/' + post.post.author_id" style="text-decoration: none;">
+                  {{ post.post.author_name }}
+                </router-link>
+                <timeago :datetime="post.post.created" :auto-update="60"></timeago
+              ></small>
+              <h2 class="primary">
                 {{ post.post.title }}
-              </router-link>
-            </h2>
-            <hr />
-            <p style="color: white">{{ post.post.content }}</p>
-            <sub
-              ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
-              {{ post.replies }} replies</sub
-            >
-          </div>
+              </h2>
+              <hr />
+              <p style="color: white">{{ post.post.content }}</p>
+              <sub
+                ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
+                {{ post.replies }} replies</sub
+              >
+            </div>
+          </router-link>
           <!-- End of posts -->
         </div>
         <div class="info-col">
@@ -94,10 +99,10 @@ export default {
       categories: [],
       deleting: false,
       sorter: { byDate: false },
-      error: { show: false, status: 200, message: "", callback: {} },
+      error: { show: false, status: Number, message: String, callback: Function },
     };
   },
-  mounted() {
+  created() {
     this.getPosts();
     this.getCategories();
   },
@@ -138,7 +143,7 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 /* The hero image */
 .hero-image {
   background-image: url("../assets/img/home-hero.jpg");
@@ -175,6 +180,10 @@ export default {
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
+}
+a.card {
+  color: inherit;
+  text-decoration: none;
 }
 .post-col {
   flex-grow: 1;

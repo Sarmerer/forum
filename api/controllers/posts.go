@@ -17,7 +17,7 @@ import (
 type postResponse struct {
 	Post       *models.Post `json:"post"`
 	Categories interface{}  `json:"categories"`
-	Replies    interface{}  `json:"replies"`
+	Replies    interface{}  `json:"replies,omitempty"`
 }
 
 type createUpdateInput struct {
@@ -28,8 +28,8 @@ type createUpdateInput struct {
 
 type findInput struct {
 	By         string   `json:"by"`
-	ID         int64   `json:"id"`
-	Author     int64   `json:"author"`
+	ID         int64    `json:"id"`
+	Author     int64    `json:"author"`
 	Categories []string `json:"categories"`
 }
 
@@ -97,10 +97,6 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
-		if p.Replies, err = GetComments(posts[i].ID); err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
-			return
-		}
 		result = append(result, p)
 	}
 	response.Success(w, nil, result)
@@ -109,7 +105,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		uid    int64              = r.Context().Value("uid").(int64)
+		uid    int64               = r.Context().Value("uid").(int64)
 		author *models.User
 		input  createUpdateInput
 		post   models.Post
