@@ -46,7 +46,10 @@
             <small v-if="comment.edited == 1"> edited</small>
           </small>
           <b-button-group
-            v-if="hasPermission(comment.author_id) && index != editor.editing"
+            v-if="
+              (user ? comment.author_id == user.id || user.role > 0 : false) &&
+                index != editor.editing
+            "
             size="sm"
             class="controls-button"
             style="position: absolute; right: 0px; top: 10px"
@@ -70,7 +73,12 @@
             /></b-button>
           </b-button-group>
         </div>
-        <div v-if="hasPermission(comment.author_id) && index == editor.editing">
+        <div
+          v-if="
+            (user ? comment.author_id == user.id || user.role > 0 : false) &&
+              index == editor.editing
+          "
+        >
           <b-form-textarea
             class="textarea"
             ref="editComment"
@@ -122,8 +130,7 @@ import axios from "axios";
 import { mapGetters } from "vuex";
 export default {
   props: {
-    postID: Number,
-    hasPermission: Function,
+    postID: { type: Number },
   },
   computed: {
     ...mapGetters({

@@ -47,7 +47,10 @@
           {{ category }}
         </b-form-tag>
         <div class="controls">
-          <b-button-group v-if="hasPermission(post.author_id)" size="sm">
+          <b-button-group
+            v-if="user ? post.author_id == user.id || user.role > 0 : false"
+            size="sm"
+          >
             <b-button size="sm" lg="1" class="controls-button" variant="light">
               <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
             </b-button>
@@ -68,10 +71,16 @@
 </template>
 <script>
 import axios from "axios";
+import { mapGetters } from "vuex";
+
 export default {
   props: {
     postID: { type: Number },
-    hasPermission: { type: Function },
+  },
+  computed: {
+    ...mapGetters({
+      user: "auth/user",
+    }),
   },
   data() {
     return {

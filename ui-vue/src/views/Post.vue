@@ -49,8 +49,8 @@
         </div>
       </div>
       <div class="post-col">
-        <PostSection :postID="postID" :hasPermission="hasPermission" />
-        <CommentsSection :postID="postID" :hasPermission="hasPermission" />
+        <PostSection :postID="postID" />
+        <CommentsSection :postID="postID" />
       </div>
     </div>
   </div>
@@ -83,10 +83,6 @@ export default {
     };
   },
   methods: {
-    hasPermission(author) {
-      let self = this;
-      return () => (self.user ? author == self.user.id || self.user.role > 0 : false);
-    },
     onSubmit(e) {
       e.preventDefault();
       for (let i = 0; i < this.form.amount; i++) {
