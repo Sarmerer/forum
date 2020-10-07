@@ -1,8 +1,0 @@
-POST {{baseURL}}/api/post/create
-Content-Type: application/json
-
-{
-    "title":"post",
-    "content":"content",
-    "categories": [ "cat", "dog", "snake" ]
-}

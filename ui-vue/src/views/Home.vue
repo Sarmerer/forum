@@ -89,9 +89,9 @@
                 {{ category.name }}
               </b-form-tag>
               <br />
-              <sub
+              <sub v-if="post.comments > 0"
                 ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
-                {{ post.replies }} replies</sub
+                {{ post.comments }} {{ post.comments == 1 ? "comment" : "comments" }}</sub
               >
             </div>
           </router-link>

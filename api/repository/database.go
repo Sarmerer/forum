@@ -72,7 +72,7 @@ func CheckDBIntegrity() (err error) {
 	}
 
 	_, err = DB.Exec(
-		`CREATE TABLE IF NOT EXISTS replies (
+		`CREATE TABLE IF NOT EXISTS comments (
 			id			 	 INTEGER PRIMARY KEY,
 			author_fkey	 	 INTEGER REFERENCES users(id),
 			author_name_fkey TEXT REFERENCES users(display_name),

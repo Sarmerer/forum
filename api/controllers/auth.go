@@ -16,15 +16,12 @@ import (
 func LogIn(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
+		input  models.InputUserSignIn
 		user   *models.User
 		cookie *http.Cookie
 		status int
 		err    error
 	)
-	input := struct {
-		Login    string `json:"login"`
-		Password string `json:"password"`
-	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
@@ -50,23 +47,25 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo           repository.UserRepo = crud.NewUserRepoCRUD()
+		input          models.InputUserSignUp
 		hashedPassword []byte
 		status         int
 		err            error
 	)
-	login := r.FormValue("login")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	if hashedPassword, err = hash(password); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+	if hashedPassword, err = hash(input.Password); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	user := models.User{
-		Login:       login,
+		Login:       input.Login,
 		Password:    string(hashedPassword),
-		Email:       email,
-		Avatar:      "https://avatars.dicebear.com/api/male/" + login + ".svg",
-		DisplayName: login,
+		Email:       input.Email,
+		Avatar:      "https://avatars.dicebear.com/api/male/" + input.Login + ".svg",
+		DisplayName: input.Login,
 		SessionID:   "",
 		Role:        config.RoleAdmin,
 	}
@@ -109,11 +108,9 @@ func Me(w http.ResponseWriter, r *http.Request) {
 		status int
 		err    error
 	)
-
 	if user, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-
 	response.Success(w, nil, user)
 }

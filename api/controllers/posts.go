@@ -17,22 +17,10 @@ import (
 type postResponse struct {
 	Post       *models.Post `json:"post"`
 	Categories interface{}  `json:"categories"`
-	Replies    interface{}  `json:"replies,omitempty"`
+	Comments   interface{}  `json:"comments,omitempty"`
 }
 
-type createUpdateInput struct {
-	Title      string
-	Content    string
-	Categories []string
-}
-
-type findInput struct {
-	By         string   `json:"by"`
-	ID         int64    `json:"id"`
-	Author     int64    `json:"author"`
-	Categories []string `json:"categories"`
-}
-
+//TODO create SQL query that returns posts sorted by rating
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
@@ -56,8 +44,8 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
 		}
-		if p.Replies, err = CountComments(posts[i].ID); err != nil {
-			p.Replies = err
+		if p.Comments, err = CountComments(posts[i].ID); err != nil {
+			p.Comments = err
 		}
 		if p.Post.Rating, p.Post.YourReaction, err = GetRating(p.Post.ID, uid); err != nil {
 			fmt.Println(err)
@@ -70,7 +58,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		input  findInput
+		input  models.InputPostFind
 		result []postResponse
 		posts  []models.Post
 		status int
@@ -117,7 +105,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
 		uid    int64               = r.Context().Value("uid").(int64)
 		author *models.User
-		input  createUpdateInput
+		input  models.InputPostCreateUpdate
 		post   models.Post
 		pid    int64
 		status int
@@ -157,7 +145,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo        repository.PostRepo = crud.NewPostRepoCRUD()
-		input       createUpdateInput
+		input       models.InputPostCreateUpdate
 		name        string
 		content     string
 		pid         int64
@@ -197,25 +185,25 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		pid    int64
+		input  models.InputID
 		status int
 		err    error
 	)
-	if pid, err = utils.ParseID(r); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = repo.FindByID(pid); err != nil {
+	if _, status, err = repo.FindByID(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if err = DeleteCommentsGroup(pid); err != nil {
+	if err = DeleteCommentsGroup(input.ID); err != nil {
 		fmt.Println(err)
 	}
-	if err = DeleteAllCategoriesForPost(pid); err != nil {
+	if err = DeleteAllCategoriesForPost(input.ID); err != nil {
 		fmt.Println(err)
 	}
-	if status, err = repo.Delete(pid); err != nil {
+	if status, err = repo.Delete(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

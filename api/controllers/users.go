@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -28,17 +29,16 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64
+		input  models.InputID
 		user   *models.User
 		status int
 		err    error
 	)
-	if uid, err = utils.ParseID(r); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-
-	if user, status, err = repo.FindByID(uid); err != nil {
+	if user, status, err = repo.FindByID(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -81,20 +81,20 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64
+		input  models.InputID
 		status int
 		err    error
 	)
-	if uid, err = utils.ParseID(r); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if _, status, err = repo.FindByID(uid); err != nil {
+	if _, status, err = repo.FindByID(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if status, err = repo.Delete(uid); err != nil {
+	if status, err = repo.Delete(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

@@ -133,10 +133,10 @@ func DeleteCommentsGroup(pid int64) error {
 	return nil
 }
 
-func CountComments(pid int64) (replies string, err error) {
+func CountComments(pid int64) (comments string, err error) {
 	var repo = crud.NewCommentRepoCRUD()
-	if replies, err = repo.Count(pid); err != nil {
+	if comments, err = repo.Count(pid); err != nil {
 		return "0", err
 	}
-	return replies, nil
+	return comments, nil
 }
