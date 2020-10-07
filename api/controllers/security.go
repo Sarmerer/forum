@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"forum/config"
+	"forum/api/config"
 	"net/http"
 	"time"
 

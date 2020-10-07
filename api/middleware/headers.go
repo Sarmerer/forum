@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"forum/config"
+	"forum/api/config"
 	"net/http"
 )
 

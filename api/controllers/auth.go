@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"forum/api/config"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
-	"forum/config"
 	"net/http"
 )
 
@@ -81,7 +81,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 func LogOut(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64              = r.Context().Value("uid").(int64)
+		uid    int64               = r.Context().Value("uid").(int64)
 		cookie *http.Cookie
 		err    error
 	)
@@ -104,7 +104,7 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 func Me(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64              = r.Context().Value("uid").(int64)
+		uid    int64               = r.Context().Value("uid").(int64)
 		user   *models.User
 		status int
 		err    error

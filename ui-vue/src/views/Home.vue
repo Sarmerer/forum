@@ -34,15 +34,16 @@
                 style="display:block"
                 @click="rate($event, 'up', index)"
                 :disabled="rating.requesting"
-                width="2em"
-                height="2em"
+                width="1.5em"
+                height="1.5em"
                 viewBox="0 0 16 16"
-                class="bi bi-caret-up-fill"
+                class="bi bi-chevron-up"
                 :fill="post.post.your_reaction == 1 ? 'green' : 'white'"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"
+                  fill-rule="evenodd"
+                  d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"
                 />
               </svg>
               <span>{{ post.post.rating }}</span>
@@ -51,19 +52,20 @@
                   style="display:block"
                   @click="rate($event, 'down', index)"
                   :disabled="rating.requesting"
-                  width="2em"
-                  height="2em"
+                  width="1.5em"
+                  height="1.5em"
                   viewBox="0 0 16 16"
-                  class="bi bi-caret-down-fill"
+                  class="bi bi-chevron-down"
                   :fill="post.post.your_reaction == -1 ? 'red' : 'white'"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+                    fill-rule="evenodd"
+                    d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"
                   /></svg
               ></span>
             </div>
-            <div>
+            <div style="max-width: 95%">
               <small
                 >by
                 <router-link :to="'/user/' + post.post.author_id" style="text-decoration: none;">
@@ -82,7 +84,7 @@
                 :key="index"
                 :title="category.name"
                 variant="dark"
-                class="mr-1"
+                class="mr-1 mb-1"
               >
                 {{ category.name }}
               </b-form-tag>
@@ -175,6 +177,7 @@ export default {
         })
         .catch((error) => {
           console.log(error);
+          //TODO show alert saying that you need to be logged in to rate
         })
         .finally(() => {
           self.rating.requesting = false;

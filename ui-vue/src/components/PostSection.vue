@@ -42,7 +42,7 @@
           :key="category"
           :title="category"
           variant="dark"
-          class="mr-1"
+          class="mr-1 mb-1"
         >
           {{ category }}
         </b-form-tag>

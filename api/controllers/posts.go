@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"forum/api/config"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/api/utils"
-	"forum/config"
 	"net/http"
 	"time"
 )

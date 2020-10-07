@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"forum/api/config"
 	"forum/api/models"
 	"forum/api/repository"
-	"forum/config"
 	"net/http"
 	"time"
 )

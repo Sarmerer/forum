@@ -105,11 +105,12 @@
         >
           <b-button
             :disabled="
-              editorLength < minCommentLength ||
+              editor.editingContent == comment.content ||
+                editorLength < minCommentLength ||
                 editorLength > maxCommentLength ||
                 editor.requesting
             "
-            variant="success"
+            variant="outline-success"
             @click="updateComment(comment.id, comment.content)"
           >
             Save

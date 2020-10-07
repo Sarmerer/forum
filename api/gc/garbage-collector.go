@@ -2,11 +2,11 @@ package gc
 
 import (
 	"fmt"
+	"forum/api/config"
 	"forum/api/logger"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
-	"forum/config"
 	"time"
 )
 

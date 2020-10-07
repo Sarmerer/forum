@@ -2,11 +2,11 @@ package api
 
 import (
 	"fmt"
+	"forum/api/config"
 	"forum/api/gc"
 	"forum/api/logger"
 	"forum/api/repository"
 	"forum/api/router"
-	"forum/config"
 	"log"
 	"net/http"
 )

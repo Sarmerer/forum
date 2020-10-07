@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"forum/config"
+	"forum/api/config"
 )
 
 var DB *sql.DB

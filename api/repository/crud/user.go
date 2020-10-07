@@ -3,9 +3,9 @@ package crud
 import (
 	"database/sql"
 	"errors"
+	"forum/api/config"
 	"forum/api/models"
 	"forum/api/repository"
-	"forum/config"
 	"net/http"
 	"time"
 )

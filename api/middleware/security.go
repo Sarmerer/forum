@@ -3,11 +3,11 @@ package middleware
 import (
 	"context"
 	"errors"
+	"forum/api/config"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
 	"forum/api/utils"
-	"forum/config"
 	"net/http"
 )
 
