@@ -5,7 +5,9 @@
         <b-textarea
           type="text"
           class="textarea"
-          placeholder="Comment this post"
+          :placeholder="
+            comments.length == 0 ? 'Be the first to comment this post' : 'What you think?'
+          "
           v-model="form.comment"
           @keydown.enter.exact.prevent
           @keyup.enter.exact="leaveComment()"
@@ -34,7 +36,6 @@
         <small v-else style="color: red">{{ commentLength }}/{{ maxCommentLength }}</small>
       </div>
     </b-form>
-    <span class="ml-1" v-if="comments.length == 0">Be the first to comment this post</span>
     <div v-for="(comment, index) in comments" :key="index">
       <div style="margin: 0.3rem; position: relative">
         <div v-if="index != editor.editing">
@@ -131,7 +132,7 @@ import axios from "axios";
 import { mapGetters } from "vuex";
 export default {
   props: {
-    postID: { type: Number },
+    postID: { type: Number, required: true },
   },
   computed: {
     ...mapGetters({

@@ -33,6 +33,7 @@
       </template>
     </b-modal>
     <div class="card">
+      <Rating :object="post" />
       <h3 class="primary">{{ post.title }}</h3>
       <p style="color: white">{{ post.content }}</p>
       <div>
@@ -72,10 +73,14 @@
 <script>
 import axios from "axios";
 import { mapGetters } from "vuex";
+import Rating from "@/components/Rating";
 
 export default {
   props: {
-    postID: { type: Number },
+    postID: { type: Number, required: true },
+  },
+  components: {
+    Rating,
   },
   computed: {
     ...mapGetters({

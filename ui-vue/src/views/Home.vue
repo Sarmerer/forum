@@ -29,42 +29,7 @@
             tag="div"
             style="cursor: pointer"
           >
-            <div class="rating-column mr-2" style="text-align:center;">
-              <svg
-                style="display:block"
-                @click="rate($event, 'up', index)"
-                :disabled="rating.requesting"
-                width="1.5em"
-                height="1.5em"
-                viewBox="0 0 16 16"
-                class="bi bi-chevron-up"
-                :fill="post.post.your_reaction == 1 ? 'green' : 'white'"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"
-                />
-              </svg>
-              <span>{{ post.post.rating }}</span>
-              <span
-                ><svg
-                  style="display:block"
-                  @click="rate($event, 'down', index)"
-                  :disabled="rating.requesting"
-                  width="1.5em"
-                  height="1.5em"
-                  viewBox="0 0 16 16"
-                  class="bi bi-chevron-down"
-                  :fill="post.post.your_reaction == -1 ? 'red' : 'white'"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"
-                  /></svg
-              ></span>
-            </div>
+            <Rating :object="post.post" />
             <div style="max-width: 95%">
               <small
                 >by
@@ -131,6 +96,7 @@
 import axios from "axios";
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
+import Rating from "@/components/Rating";
 
 export default {
   name: "Home",
@@ -140,6 +106,7 @@ export default {
     }),
   },
   components: {
+    Rating,
     Error,
   },
   data() {
@@ -147,7 +114,6 @@ export default {
       posts: [],
       categories: [],
       deleting: false,
-      rating: { requesting: false },
       sorter: { byDate: false },
       error: { show: false, status: Number, message: String, callback: Function },
     };
@@ -157,32 +123,6 @@ export default {
     this.getCategories();
   },
   methods: {
-    async rate(e, reaction, index) {
-      e.preventDefault();
-      if (this.rating.requesting) return;
-      this.rating.requesting = true;
-      let self = this;
-      let r = reaction == "up" ? 1 : -1;
-      if (
-        (reaction == "up" && this.posts[index].post.your_reaction == 1) ||
-        (reaction == "down" && this.posts[index].post.your_reaction == -1)
-      ) {
-        r = 0;
-      }
-      await axios
-        .post("post/rate", { pid: self.posts[index].post.id, reaction: r })
-        .then((response) => {
-          self.posts[index].post.your_reaction = response.data.data.your_reaction;
-          self.posts[index].post.rating = response.data.data.rating;
-        })
-        .catch((error) => {
-          console.log(error);
-          //TODO show alert saying that you need to be logged in to rate
-        })
-        .finally(() => {
-          self.rating.requesting = false;
-        });
-    },
     async getPosts() {
       return await axios
         .get("posts")

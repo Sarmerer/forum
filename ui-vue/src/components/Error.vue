@@ -8,7 +8,7 @@
 <script>
 export default {
   props: {
-    errorData: Object,
+    errorData: { type: Object, required: true },
   },
 };
 </script>
