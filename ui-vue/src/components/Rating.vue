@@ -7,7 +7,7 @@
       height="1.5em"
       viewBox="0 0 16 16"
       class="bi bi-chevron-up"
-      :fill="object.your_reaction == 1 ? 'green' : 'white'"
+      :fill="yourReaction == 1 ? 'green' : 'white'"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
@@ -15,7 +15,7 @@
         d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"
       />
     </svg>
-    <span>{{ object.rating }}</span>
+    <span>{{ rating }}</span>
     <svg
       style="display:block"
       @click.prevent="rate('down')"
@@ -23,7 +23,7 @@
       height="1.5em"
       viewBox="0 0 16 16"
       class="bi bi-chevron-down"
-      :fill="object.your_reaction == -1 ? 'red' : 'white'"
+      :fill="yourReaction == -1 ? 'red' : 'white'"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
@@ -38,12 +38,20 @@ import axios from "axios";
 
 export default {
   props: {
-    object: {
-      type: Object,
+    postID: {
+      type: Number,
       required: true,
-      default: function() {
-        return { rating: 0, your_reaction: 0 };
-      },
+      default: -1,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    yourReaction: {
+      type: Number,
+      required: true,
+      default: 0,
     },
   },
   data() {
@@ -58,16 +66,20 @@ export default {
       let self = this;
       let r = reaction == "up" ? 1 : -1;
       if (
-        (reaction == "up" && this.object.your_reaction == 1) ||
-        (reaction == "down" && this.object.your_reaction == -1)
+        (reaction == "up" && this.yourReaction == 1) ||
+        (reaction == "down" && this.yourReaction == -1)
       ) {
         r = 0;
       }
       await axios
-        .post("post/rate", { pid: self.object.id, reaction: r })
+        .post("post/rate", { pid: self.postID, reaction: r })
         .then((response) => {
-          self.object.your_reaction = response.data.data.your_reaction;
-          self.object.rating = response.data.data.rating;
+          // self.yourReaction = response.data.data.your_reaction;
+          // self.rating = response.data.data.rating;
+          this.$emit("update", {
+            new_rating: response.data.data.rating,
+            new_your_reaction: response.data.data.your_reaction,
+          });
         })
         .catch((error) => {
           console.log(error);

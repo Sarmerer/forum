@@ -14,47 +14,26 @@ import (
 	"time"
 )
 
-type postResponse struct {
-	Post       *models.Post `json:"post"`
-	Categories interface{}  `json:"categories"`
-	Comments   interface{}  `json:"comments,omitempty"`
-}
-
-//TODO create SQL query that returns posts sorted by rating
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		uid    int64
-		posts  []models.Post
-		result []postResponse
-		err    error
+		repo  repository.PostRepo = crud.NewPostRepoCRUD()
+		uid   int64               = utils.GetUIDFromCtx(r)
+		posts []models.Post
+		err   error
 	)
-	uid = func() int64 {
-		if r.Context().Value("uid") != nil {
-			return r.Context().Value("uid").(int64)
-		}
-		return -1
-	}()
 	if posts, err = repo.FindAll(uid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	for i := 0; i < len(posts); i++ {
-		p := postResponse{Post: &posts[i]}
-		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
-			p.Categories = err
-		}
-		result = append(result, p)
-	}
-	response.Success(w, nil, result)
+	response.Success(w, nil, posts)
 }
 
 func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
+		uid    int64               = utils.GetUIDFromCtx(r)
 		input  models.InputPostFind
-		result []postResponse
-		posts  []models.Post
+		posts  interface{}
 		status int
 		err    error
 	)
@@ -65,11 +44,12 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	switch input.By {
 	case "id":
 		var post *models.Post
-		if post, status, err = repo.FindByID(input.ID); err != nil {
+		if post, status, err = repo.FindByID(input.ID, uid); err != nil {
 			response.Error(w, status, err)
 			return
 		}
-		posts = append(posts, *post)
+		response.Success(w, nil, post)
+		return
 	case "author":
 		if posts, err = repo.FindByAuthor(input.Author); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
@@ -84,14 +64,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("unknown search type"))
 		return
 	}
-	for i := 0; i < len(posts); i++ {
-		p := postResponse{Post: &posts[i]}
-		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
-			p.Categories = err
-		}
-		result = append(result, p)
-	}
-	response.Success(w, nil, result)
+	response.Success(w, nil, posts)
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +129,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if updatedPost, status, err = repo.FindByID(pid); err != nil {
+	if updatedPost, status, err = repo.FindByID(pid, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -187,7 +160,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = repo.FindByID(input.ID); err != nil {
+	if _, status, err = repo.FindByID(input.ID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}

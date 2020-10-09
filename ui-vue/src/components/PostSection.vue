@@ -33,7 +33,17 @@
       </template>
     </b-modal>
     <div class="card">
-      <Rating :object="post" />
+      <Rating
+        v-on:update="
+          (args) => {
+            post.rating = args.new_rating;
+            post.your_reaction = args.new_your_reaction;
+          }
+        "
+        :postID="post.id"
+        :rating="post.rating"
+        :yourReaction="post.your_reaction"
+      />
       <h3 class="primary">{{ post.title }}</h3>
       <p style="color: white">{{ post.content }}</p>
       <div>
@@ -105,20 +115,21 @@ export default {
           id: this.postID,
         })
         .then((response) => {
+          //TODO create error page for post
           //? because response.data.data is an array of objects
-          const result = response.data.data[0];
-          this.post = result.post;
+          const result = response.data.data;
+          this.post = result;
           if (result.replies) {
             this.comments = result.replies.sort(function(a, b) {
               return new Date(b.created) - new Date(a.created);
             });
           }
           result.categories.forEach((c) => {
-            //TODO create error page for post
             this.categories.push(c.name);
           });
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log(error);
           this.$router.push("/");
         });
     },

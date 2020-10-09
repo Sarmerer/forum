@@ -21,7 +21,7 @@ type UserRepo interface {
 
 type PostRepo interface {
 	FindAll(int64) ([]models.Post, error)
-	FindByID(int64) (*models.Post, int, error)
+	FindByID(int64, int64) (*models.Post, int, error)
 	FindByAuthor(int64) ([]models.Post, error)
 	FindByCategories([]string) ([]models.Post, error)
 

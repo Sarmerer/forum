@@ -24,8 +24,9 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid); err != nil {
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid, -1); err != nil {
 		response.Error(w, status, err)
+		return
 	}
 	if comments, err = repo.FindAll(pid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
@@ -50,7 +51,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PID); err != nil {
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}

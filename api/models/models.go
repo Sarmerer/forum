@@ -21,7 +21,7 @@ type Post struct {
 	Content       string     `json:"content"`
 	Created       string     `json:"created"`
 	Updated       string     `json:"updated"`
-	Categories    []Category `json:"category,omitempty"`
+	Categories    []Category `json:"categories,omitempty"`
 	Comments      []Comment  `json:"comments,omitempty"`
 	CommentsCount int        `json:"comments_count"`
 	Rating        int        `json:"rating"`

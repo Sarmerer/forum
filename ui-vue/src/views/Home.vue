@@ -22,27 +22,37 @@
           </div>
           <!-- Start of posts -->
           <router-link
-            :to="'/post/' + post.post.id"
+            :to="'/post/' + post.id"
             v-for="(post, index) in posts"
             :key="index"
             class="card post"
             tag="div"
             style="cursor: pointer"
           >
-            <Rating :object="post.post" />
+            <Rating
+              v-on:update="
+                (args) => {
+                  post.rating = args.new_rating;
+                  post.your_reaction = args.new_your_reaction;
+                }
+              "
+              :postID="post.id"
+              :rating="post.rating"
+              :yourReaction="post.your_reaction"
+            />
             <div style="max-width: 95%">
               <small
                 >by
-                <router-link :to="'/user/' + post.post.author_id" style="text-decoration: none;">
-                  {{ post.post.author_name }}
+                <router-link :to="'/user/' + post.author_id" style="text-decoration: none;">
+                  {{ post.author_name }}
                 </router-link>
-                <timeago :datetime="post.post.created" :auto-update="60"></timeago
+                <timeago :datetime="post.created" :auto-update="60"></timeago
               ></small>
               <h2 class="primary">
-                {{ post.post.title }}
+                {{ post.title }}
               </h2>
               <hr />
-              <p style="color: white">{{ post.post.content }}</p>
+              <p style="color: white">{{ post.content }}</p>
               <b-form-tag
                 v-for="(category, index) in post.categories"
                 disabled
@@ -54,10 +64,10 @@
                 {{ category.name }}
               </b-form-tag>
               <br />
-              <sub v-if="post.post.comments_count > 0"
+              <sub v-if="post.comments_count > 0"
                 ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
-                {{ post.post.comments_count }}
-                {{ post.post.comments_count == 1 ? "comment" : "comments" }}</sub
+                {{ post.comments_count }}
+                {{ post.comments_count == 1 ? "comment" : "comments" }}</sub
               >
             </div>
           </router-link>

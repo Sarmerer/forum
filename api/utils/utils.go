@@ -15,6 +15,13 @@ func ParseID(r *http.Request) (res int64, err error) {
 	return res, nil
 }
 
+func GetUIDFromCtx(r *http.Request) int64 {
+	if r.Context().Value("uid") != nil {
+		return r.Context().Value("uid").(int64)
+	}
+	return -1
+}
+
 func FormatRequest(r *http.Request) string {
 	// Create return string
 	var request []string
