@@ -31,6 +31,7 @@ type PostRepo interface {
 
 	RatePost(int64, int64, int) error
 	GetRating(int64, int64) (int, int, error)
+	DeleteAllReactions(int64) error
 }
 
 type CategoryRepo interface {

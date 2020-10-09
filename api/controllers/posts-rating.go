@@ -49,3 +49,14 @@ func GetRating(postID int64, uid int64) (int, int, error) {
 	}
 	return rating, yourReaction, nil
 }
+
+func DeleteReactionsForPost(pid int64) error {
+	var (
+		repo repository.PostRepo = crud.NewPostRepoCRUD()
+		err  error
+	)
+	if err = repo.DeleteAllReactions(pid); err != nil {
+		return err
+	}
+	return nil
+}

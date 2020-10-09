@@ -152,25 +152,29 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		input  models.InputID
+		pid    int64
 		status int
 		err    error
 	)
-	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if pid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = repo.FindByID(input.ID, -1); err != nil {
+	if _, status, err = repo.FindByID(pid, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if err = DeleteCommentsGroup(input.ID); err != nil {
+	if err = DeleteCommentsGroup(pid); err != nil {
 		fmt.Println(err)
 	}
-	if err = DeleteAllCategoriesForPost(input.ID); err != nil {
+	//TODO make proper logging here
+	if err = DeleteAllCategoriesForPost(pid); err != nil {
 		fmt.Println(err)
 	}
-	if status, err = repo.Delete(input.ID); err != nil {
+	if err = DeleteReactionsForPost(pid); err != nil {
+		fmt.Println(err)
+	}
+	if status, err = repo.Delete(pid); err != nil {
 		response.Error(w, status, err)
 		return
 	}

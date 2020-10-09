@@ -130,6 +130,7 @@
 <script>
 import axios from "axios";
 import { mapGetters } from "vuex";
+
 export default {
   props: {
     postID: { type: Number, required: true },

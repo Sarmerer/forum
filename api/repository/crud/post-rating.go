@@ -57,27 +57,23 @@ func (PostRepoCRUD) RatePost(postID, userID int64, reaction int) error {
 	return errors.New("could not set rating")
 }
 
-// func (PostRepoCRUD) UpdateRating(upORdown string, pid uint64) error {
-// 	var (
-// 		result sql.Result
-// 		err    error
-// 	)
-// 	switch upORdown {
-// 	case "up":
-// 		if result, err = repository.DB.Exec(
-// 			"UPDATE posts SET rating = rating + 1 WHERE id = ?",
-// 			pid,
-// 		); err != nil {
+func (PostRepoCRUD) DeleteAllReactions(pid int64) error {
+	var (
+		result       sql.Result
+		rowsAffected int64
+		err          error
+	)
+	if result, err = repository.DB.Exec(
+		"DELETE FROM reactions WHERE post_id_fkey = ?", pid,
+	); err != nil {
+		return err
+	}
 
-// 		}
-// 	case "down":
-// 		if result, err = repository.DB.Exec(
-// 			"UPDATE posts SET rating = rating - 1 WHERE id = ?",
-// 			pid,
-// 		); err != nil {
-
-// 		}
-// 	default:
-// 	}
-// 	return nil
-// }
+	if rowsAffected, err = result.RowsAffected(); err != nil {
+		return err
+	}
+	if rowsAffected > 0 {
+		return nil
+	}
+	return nil
+}

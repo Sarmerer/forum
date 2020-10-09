@@ -1,37 +1,5 @@
 <template>
   <div>
-    <b-modal
-      id="modal-1"
-      v-model="modal.show"
-      title="Delete this post?"
-      header-bg-variant="dark"
-      body-bg-variant="dark"
-      footer-bg-variant="dark"
-      body-class="position-static"
-    >
-      <p class="my-4">This action can <span style="color: red">NOT</span> be undone</p>
-      <template v-slot:modal-footer="{ hide }">
-        <b-button
-          :disabled="modal.deleting"
-          size="sm"
-          variant="outline-secondary"
-          @click="hide('forget')"
-        >
-          Cancel
-        </b-button>
-        <b-overlay
-          :show="modal.deleting"
-          rounded="sm"
-          spinner-small
-          spinner-variant="success"
-          class="d-inline-block"
-        >
-          <b-button :disabled="modal.deleting" size="sm" variant="success" @click="deletePost()">
-            Yes!
-          </b-button>
-        </b-overlay>
-      </template>
-    </b-modal>
     <div class="card">
       <Rating
         v-on:update="
@@ -58,23 +26,62 @@
           {{ category }}
         </b-form-tag>
         <div class="controls">
-          <b-button-group
-            v-if="user ? post.author_id == user.id || user.role > 0 : false"
-            size="sm"
+          <b-overlay
+            :show="modal.deleting"
+            rounded
+            opacity="0.5"
+            spinner-small
+            variant="light"
+            spinner-variant="primary"
+            class="d-inline-block"
           >
-            <b-button size="sm" lg="1" class="controls-button" variant="light">
-              <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
-            </b-button>
-            <b-button
-              size="sm"
-              variant="outline-danger"
-              lg="2"
-              @click="modal.show = !modal.show"
-              class="controls-button"
-            >
-              <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
-            </b-button>
-          </b-button-group>
+            <transition name="fade">
+              <b-button-group
+                v-if="(user ? post.author_id == user.id || user.role > 0 : false) && !modal.show"
+                size="sm"
+              >
+                <b-button size="sm" lg="1" class="controls-button" variant="light" title="Edit">
+                  <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
+                </b-button>
+                <b-button
+                  size="sm"
+                  variant="outline-danger"
+                  lg="2"
+                  @click="modal.show = !modal.show"
+                  class="controls-button"
+                  title="Delete"
+                >
+                  <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
+                </b-button>
+              </b-button-group>
+
+              <b-button-group
+                v-if="(user ? post.author_id == user.id || user.role > 0 : false) && modal.show"
+                size="sm"
+              >
+                <b-button
+                  size="sm"
+                  variant="outline-success"
+                  lg="2"
+                  class="confirm"
+                  @click="deletePost()"
+                  title="Confirm"
+                >
+                  <img src="@/assets/svg/post/confirm.svg" alt="delete" srcset="" />
+                </b-button>
+                <b-button
+                  size="sm"
+                  lg="1"
+                  variant="outline-danger"
+                  @click="modal.show = !modal.show"
+                  class="confirm"
+                  title="Dismiss"
+                >
+                  <img src="@/assets/svg/post/dismiss.svg" alt="edit" srcset="" />
+                </b-button>
+              </b-button-group>
+            </transition>
+          </b-overlay>
         </div>
       </div>
     </div>
@@ -124,9 +131,11 @@ export default {
               return new Date(b.created) - new Date(a.created);
             });
           }
-          result.categories.forEach((c) => {
-            this.categories.push(c.name);
-          });
+          if (result.categories) {
+            result.categories.forEach((c) => {
+              this.categories.push(c.name);
+            });
+          }
         })
         .catch((error) => {
           console.log(error);
@@ -158,6 +167,11 @@ export default {
   top: 5px;
   right: 10px;
 }
+.confirm {
+  box-shadow: none;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+}
 .controls-button {
   background-color: transparent;
   border-color: transparent;
@@ -166,5 +180,12 @@ export default {
   box-shadow: none;
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
+}
+
+.fade-enter-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
