@@ -35,7 +35,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		}
 		return -1
 	}()
-	if posts, err = repo.FindAll(); err != nil {
+	if posts, err = repo.FindAll(uid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -43,12 +43,6 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		p := postResponse{Post: &posts[i]}
 		if p.Categories, err = GetCategoriesByPostID(posts[i].ID); err != nil {
 			p.Categories = err
-		}
-		if p.Comments, err = CountComments(posts[i].ID); err != nil {
-			p.Comments = err
-		}
-		if p.Post.Rating, p.Post.YourReaction, err = GetRating(p.Post.ID, uid); err != nil {
-			fmt.Println(err)
 		}
 		result = append(result, p)
 	}

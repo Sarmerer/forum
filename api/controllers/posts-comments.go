@@ -15,7 +15,7 @@ import (
 func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
-		comments []models.PostComment
+		comments []models.Comment
 		pid      int64
 		status   int
 		err      error
@@ -58,7 +58,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	reply := &models.PostComment{
+	reply := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
 		Post:       input.PID,
@@ -75,7 +75,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo         repository.CommentRepo = crud.NewCommentRepoCRUD()
-		updatedReply *models.PostComment
+		updatedReply *models.Comment
 		status       int
 		err          error
 	)

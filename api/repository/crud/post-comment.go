@@ -19,10 +19,10 @@ func NewCommentRepoCRUD() *CommentRepoCRUD {
 }
 
 //FindAll returns all replies for the specified post
-func (CommentRepoCRUD) FindAll(postID int64) ([]models.PostComment, error) {
+func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
 	var (
 		rows    *sql.Rows
-		comments []models.PostComment
+		comments []models.Comment
 		err     error
 	)
 	if rows, err = repository.DB.Query(
@@ -33,7 +33,7 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.PostComment, error) {
 		return nil, nil
 	}
 	for rows.Next() {
-		var r models.PostComment
+		var r models.Comment
 		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.Post, &r.Edited)
 		comments = append(comments, r)
 	}
@@ -41,9 +41,9 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.PostComment, error) {
 }
 
 //FindByID returns a specific reply from the database
-func (CommentRepoCRUD) FindByID(rid int64) (*models.PostComment, int, error) {
+func (CommentRepoCRUD) FindByID(rid int64) (*models.Comment, int, error) {
 	var (
-		r   models.PostComment
+		r   models.Comment
 		err error
 	)
 	if err = repository.DB.QueryRow(
@@ -60,7 +60,7 @@ func (CommentRepoCRUD) FindByID(rid int64) (*models.PostComment, int, error) {
 }
 
 //Create adds a new reply to the database
-func (CommentRepoCRUD) Create(r *models.PostComment) error {
+func (CommentRepoCRUD) Create(r *models.Comment) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -83,7 +83,7 @@ func (CommentRepoCRUD) Create(r *models.PostComment) error {
 }
 
 //Update updates existing reply in the database
-func (CommentRepoCRUD) Update(r *models.PostComment) error {
+func (CommentRepoCRUD) Update(r *models.Comment) error {
 	var (
 		result       sql.Result
 		rowsAffected int64

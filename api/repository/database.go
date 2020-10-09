@@ -45,8 +45,7 @@ func CheckDBIntegrity() (err error) {
 			title			 TEXT,
 			content			 TEXT,
 			created			 TEXT,
-			updated			 TEXT,
-			rating			 INTEGER
+			updated			 TEXT
 		)`)
 	if err != nil {
 		return err

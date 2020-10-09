@@ -20,18 +20,52 @@ func NewPostRepoCRUD() PostRepoCRUD {
 }
 
 //FindAll returns all posts in the database
-func (PostRepoCRUD) FindAll() ([]models.Post, error) {
+func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
 		err   error
 	)
-	if rows, err = repository.DB.Query("SELECT * FROM posts ORDER BY created DESC"); err != nil {
+	if rows, err = repository.DB.Query(
+		`SELECT
+		*,
+		(
+		   SELECT
+			  TOTAL(reaction) 
+		   FROM
+			  reactions 
+		   WHERE
+			  post_id_fkey = p.id 
+		)
+		AS rating,
+		IFNULL (( 
+		SELECT
+		   reaction 
+		FROM
+		   reactions 
+		WHERE
+		   user_id_fkey = $1 
+		   AND post_id_fkey = p.id), 0) AS yor_reaction,
+		   (
+			  SELECT
+				 count(id) 
+			  FROM
+				 comments 
+			  WHERE
+				 post_id_fkey = p.id
+		   )
+		   AS comments_count 
+		FROM
+		   posts p 
+		ORDER BY
+		   rating DESC`,
+		uid,
+	); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -46,7 +80,7 @@ func (PostRepoCRUD) FindByID(pid int64) (*models.Post, int, error) {
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM posts WHERE id = ?", pid,
 	).Scan(
-		&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating,
+		&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -70,7 +104,7 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -91,7 +125,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 		}
 	}
 	if rows, err = repository.DB.Query(
-		`SELECT p.id, p.author_fkey, p.author_name_fkey, p.title, p.content, p.created, p.updated, p.rating
+		`SELECT p.id, p.author_fkey, p.author_name_fkey, p.title, p.content, p.created, p.updated
 		FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p
 			ON p.id = pcb.post_id_fkey
@@ -108,7 +142,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating)
+		rows.Scan(&p.ID, &p.AuthorID, p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -123,8 +157,8 @@ func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"INSERT INTO posts (author_fkey,author_name_fkey, title, content, created, updated, rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		post.AuthorID, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), post.Rating,
+		"INSERT INTO posts (author_fkey,author_name_fkey, title, content, created, updated) VALUES (?, ?, ?, ?, ?, ?)",
+		post.AuthorID, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
 	); err != nil {
 		return 0, err
 	}
@@ -150,8 +184,8 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE posts SET author_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ?, rating = ? WHERE id = ?",
-		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.Rating, post.ID,
+		"UPDATE posts SET author_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ? WHERE id = ?",
+		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.ID,
 	); err != nil {
 		return err
 	}

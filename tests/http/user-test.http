@@ -10,11 +10,14 @@ GET {{baseURL}}/api/user
 
 ### Sign up
 
-POST {{baseURL}}/api/auth/signup
-    ?login=admin
-    &password=admin
-    &email=admin
-    &API_KEY={{API_KEY}}
+POST {{baseURL}}/api/auth/signup HTTP/1.1
+Content-Type: application/json
+
+{
+    "login":"admin",
+    "emal":"admin",
+    "password":"password"
+}
 
 ### Sign in
 

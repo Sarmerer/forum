@@ -54,9 +54,10 @@
                 {{ category.name }}
               </b-form-tag>
               <br />
-              <sub v-if="post.comments > 0"
+              <sub v-if="post.post.comments_count > 0"
                 ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
-                {{ post.comments }} {{ post.comments == 1 ? "comment" : "comments" }}</sub
+                {{ post.post.comments_count }}
+                {{ post.post.comments_count == 1 ? "comment" : "comments" }}</sub
               >
             </div>
           </router-link>

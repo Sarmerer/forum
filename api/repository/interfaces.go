@@ -20,7 +20,7 @@ type UserRepo interface {
 }
 
 type PostRepo interface {
-	FindAll() ([]models.Post, error)
+	FindAll(int64) ([]models.Post, error)
 	FindByID(int64) (*models.Post, int, error)
 	FindByAuthor(int64) ([]models.Post, error)
 	FindByCategories([]string) ([]models.Post, error)
@@ -41,10 +41,10 @@ type CategoryRepo interface {
 }
 
 type CommentRepo interface {
-	FindAll(int64) ([]models.PostComment, error)
-	FindByID(int64) (*models.PostComment, int, error)
-	Create(*models.PostComment) error
-	Update(*models.PostComment) error
+	FindAll(int64) ([]models.Comment, error)
+	FindByID(int64) (*models.Comment, int, error)
+	Create(*models.Comment) error
+	Update(*models.Comment) error
 	Delete(int64) error
 	DeleteGroup(int64) error
 	Count(int64) (string, error)
