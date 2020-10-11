@@ -25,7 +25,7 @@ API receives HTTP requests with `JSON` body and no query parameters. But there a
 
 ### Auth
 #### Sign In
-```json
+```yaml
 {
   url: /api/auth/signin,
   method: "POST",
@@ -38,7 +38,7 @@ API receives HTTP requests with `JSON` body and no query parameters. But there a
 }
 ```
 #### Sign Up
-```json
+```yaml
 {
   url: /api/auth/signup,
   method: "POST",
@@ -52,7 +52,7 @@ API receives HTTP requests with `JSON` body and no query parameters. But there a
 }
 ```
 #### Sign Out
-```json
+```yaml
 {
   url: /api/auth/signout,
   method: "POST"
@@ -60,13 +60,13 @@ API receives HTTP requests with `JSON` body and no query parameters. But there a
 ```
 #### Me
 Returns data about user account. It is being called after a Sign In attempt, returned data being stored in Vuex store.
-```json
+```yaml
 {
   url: /api/auth/me,
   method: "GET",
   permissions: ["account owner"]
   response: {
-    id: Number,
+    id: Int64,
     login: String,
     password: String, //TODO clean up
     email: String,
@@ -82,14 +82,14 @@ Returns data about user account. It is being called after a Sign In attempt, ret
 
 ### User
 #### Get all users
-```json
+```yaml
 {
   url: /api/users,
   method: "GET",
   permissions: ["account owner", "moder", "admin"],
   response: [
     {
-      id: Number,
+      id: Int64,
       login: String,
       password: String, //TODO clean up
       email: String,
@@ -105,13 +105,13 @@ Returns data about user account. It is being called after a Sign In attempt, ret
 }
 ```
 #### Get user by ID
-```json
+```yaml
 {
   url: /api/user?:id,
   method: "GET",
   permissions: ["everyone"],
   response: {
-    id: Number,
+    id: Int64,
     login: String,
     password: String, //TODO clean up
     email: String,
@@ -125,7 +125,7 @@ Returns data about user account. It is being called after a Sign In attempt, ret
 }
 ```
 #### Update user
-```json
+```yaml
 {
   url: /api/user/update?:id,
   method: "PUT",
@@ -142,7 +142,7 @@ Returns data about user account. It is being called after a Sign In attempt, ret
 }
 ```
 #### Delete user
-```json
+```yaml
 {
   url: /api/user/delete?:id,
   method: "DELETE",
@@ -156,47 +156,48 @@ Returns data about user account. It is being called after a Sign In attempt, ret
 ```
 
 ### Post
-```javascript
+```yaml
 {
-	"url":"/api/posts",
-	"methhod":"GET",
-	"response":[
-		{
-			"id":Number,
-			"author_id":Number,
-			"author_name":String,
-			"title":String,
-			"content":String,
-			"created":Date,
-			"Updated":Date,
-			"categories":[
-				{
-					"id":Number,
-					"name":String,
-					"use_count":Number // indicates how many posts use this category
-        },
-        ...,
-		    "comments":[
-				{
-					"id":Number,
-					"author_id":Number,
-					"post_id":Number,
-          "author_name":String,
-					"content":String,
-					"created":Date,
-					"edited":Number // 0 or 1 Boolean indicates wheter comment was edited
-        },
-        ...,
-      ],
-      "comments_count":Number,
-			"rating":Number,
-			"your_reaction":Number // -1, 0 or 1, indicates your reaction highlite like dislike or neither
-		},
-		...
-	]
+  url: /api/posts,
+  methhod: "GET",
+  response: [
+    {
+     id: Int64,
+     author_id: int64,
+     author_name: String,
+     title: String,
+     content: String,
+     created: Stringified Date,
+     Updated: Stringified Date,
+     categories: [
+       {
+         id: Int32,
+         name: String,
+         use_count: Int64 // indicates how many posts use this category
+       }
+       ...
+     ]
+     comments: [
+       {
+         id: Int64,
+         author_id: Int64,
+         post_id: Int64, // post id, to which comment bolongs
+         author_name: String,
+         content: String,
+         created: Stringified Date,
+         edited: Int32 // 0 or 1 Boolean indicates wheter comment was edited
+       }
+       ...
+     ]
+     comments_count: Int32,
+     rating: Int32,
+     your_reaction: Int32 // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
+    },
+    ...
+  ]
 }
 ```
-```json
+```yaml
 {
   url: /api/post/find,
   methhod: "GET",
@@ -206,8 +207,8 @@ Returns data about user account. It is being called after a Sign In attempt, ret
         type: String,
         variants: ["id", "author", "categories"]
       },
-      id: Number, // if by == "id"
-      author: Number, //if by == "author"
+      id: Int64, // if by == "id"
+      author: Int64, //if by == "author"
       categories: Array of Strings // if by == "categories"
     }
     response: { // can be Object or Array of Object, depending on search type
@@ -216,25 +217,25 @@ Returns data about user account. It is being called after a Sign In attempt, ret
   }
 }
 ```
-```json
+```yaml
 {
   url: /api/post/create,
   methhod: "POST",
 }
 ```
-```json
+```yaml
 {
   url: /api/post/update,
   methhod: "PUT",
 }
 ```
-```json
+```yaml
 {
   url: /api/post/delete,
   methhod: "DELETE",
 }
 ```
-```json
+```yaml
 {
   url: /api/post/rate,
   methhod: "POST",
@@ -242,29 +243,29 @@ Returns data about user account. It is being called after a Sign In attempt, ret
 ```
 
 ### Categories
- ```json
+ ```yaml
  {
  URI: /api/categories,
  }
  ```
 
 ### Comments
- ```json
+ ```yaml
  {
  URI: /api/comments,
  }
  ```
- ```json
+ ```yaml
  {
 URI:  /api/comment/add,
  }
  ```
- ```json
+ ```yaml
  {
  URI: /api/comment/update,
  }
  ```
- ```json
+ ```yaml
  {
  URI: /api/comment/delete,
  }
@@ -276,10 +277,10 @@ URI:  /api/comment/add,
 
  #### Post
 
- ```json
+ ```yaml
 {
-  id: Number,
-  author_id: Number,
+  id: Int64,
+  author_id: int64,
   author_name: String,
   title: String,
   content: String,
@@ -287,26 +288,26 @@ URI:  /api/comment/add,
   Updated: Stringified Date,
   categories: [
     {
-      id: Number,
+      id: Int32,
       name: String,
-      use_count: Number // indicates how many posts use this category
+      use_count: Int64 // indicates how many posts use this category
     },
     ...
   ],
   comments: [
     {
-      id: Number,
-      author_id: Number,
-      post_id: Number, // post id, to which comment bolongs
+      id: Int64,
+      author_id: Int64,
+      post_id: Int64, // post id, to which comment bolongs
       author_name: String,
       content: String,
       created: Stringified Date,
-      edited: Number // 0 or 1 Boolean indicates wheter comment was edited
+      edited: Int32 // 0 or 1 Boolean indicates wheter comment was edited
     },
     ...
   ],
-  comments_count: Number,
-  rating: Number,
-  your_reaction: Number // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
+  comments_count: Int32,
+  rating: Int32,
+  your_reaction: Int32 // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
 }
  ```
