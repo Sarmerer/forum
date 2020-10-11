@@ -6,7 +6,11 @@ docker: ## Build and run development docker container
 prod: ## Build and run production docker container
 	docker build -t sarmerer/forum .
 	docker run -d -p 4433:4433 sarmerer/forum
-run_server:
+go:
 	bash -c "go run main.go"
-run_client:
-	cd ./ui/app && ng serve --open
+vue:
+	cd ./ui-vue && npm run serve
+push:
+	git add .
+	git commit -m "$m"
+	git push

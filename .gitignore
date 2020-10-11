@@ -1,9 +1,6 @@
-# ---> VisualStudioCode
+/ui/app/src/environments
+/database
 .vscode/settings.json
 .VSCodeCounter
-# ---> security purposes
-/ssl
-.env
-/ui/app/src/environments
-# ---> node
 /node_modules
+/ssl
