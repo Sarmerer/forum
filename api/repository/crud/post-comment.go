@@ -34,7 +34,7 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
 	}
 	for rows.Next() {
 		var r models.Comment
-		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.Post, &r.Edited)
+		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited)
 		comments = append(comments, r)
 	}
 	return comments, nil
@@ -49,7 +49,7 @@ func (CommentRepoCRUD) FindByID(rid int64) (*models.Comment, int, error) {
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM comments WHERE id = ?", rid,
 	).Scan(
-		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.Post, &r.Edited,
+		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -68,7 +68,7 @@ func (CommentRepoCRUD) Create(r *models.Comment) error {
 	)
 	if result, err = repository.DB.Exec(
 		"INSERT INTO comments (author_fkey, author_name_fkey, content, created, post_id_fkey, edited) VALUES (?, ?, ?, ?, ?, ?)",
-		r.AuthorID, r.AuthorName, r.Content, time.Now().Format(config.TimeLayout), r.Post, 0,
+		r.AuthorID, r.AuthorName, r.Content, time.Now().Format(config.TimeLayout), r.PostID, 0,
 	); err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (CommentRepoCRUD) Update(r *models.Comment) error {
 	)
 	if result, err = repository.DB.Exec(
 		"UPDATE comments SET author_fkey = ?, author_name_fkey = ?, content = ?, created = ?, post_id_fkey = ?, edited = ? WHERE id = ?",
-		r.AuthorID, r.AuthorName, r.Content, r.Created, r.Post, 1, r.ID,
+		r.AuthorID, r.AuthorName, r.Content, r.Created, r.PostID, 1, r.ID,
 	); err != nil {
 		return err
 	}

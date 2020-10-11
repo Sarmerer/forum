@@ -24,6 +24,6 @@ type InputPostCreateUpdate struct {
 type InputPostFind struct {
 	By         string   `json:"by"`
 	ID         int64    `json:"id"`
-	Author     int64    `json:"author"`
+	AuthorID   int64    `json:"author"`
 	Categories []string `json:"categories"`
 }

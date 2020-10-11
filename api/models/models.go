@@ -40,6 +40,6 @@ type Comment struct {
 	AuthorName string `json:"author_name"`
 	Content    string `json:"content"`
 	Created    string `json:"created"`
-	Post       int64  `json:"post"`
+	PostID       int64  `json:"post"`
 	Edited     int    `json:"edited"`
 }

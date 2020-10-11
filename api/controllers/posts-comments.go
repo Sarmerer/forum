@@ -62,7 +62,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	reply := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
-		Post:       input.PID,
+		PostID:       input.PID,
 		AuthorID:   uid,
 		AuthorName: author.DisplayName,
 	}
