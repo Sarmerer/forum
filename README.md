@@ -66,7 +66,7 @@ Returns data about user account. It is being called after a Sign In attempt, ret
   method: "GET",
   permissions: ["account owner"]
   response: {
-    id: Int64,
+    id: int,
     login: String,
     password: String, //TODO clean up
     email: String,
@@ -89,7 +89,7 @@ Returns data about user account. It is being called after a Sign In attempt, ret
   permissions: ["account owner", "moder", "admin"],
   response: [
     {
-      id: Int64,
+      id: int,
       login: String,
       password: String, //TODO clean up
       email: String,
@@ -111,7 +111,7 @@ Returns data about user account. It is being called after a Sign In attempt, ret
   method: "GET",
   permissions: ["everyone"],
   response: {
-    id: Int64,
+    id: int,
     login: String,
     password: String, //TODO clean up
     email: String,
@@ -162,8 +162,8 @@ Returns data about user account. It is being called after a Sign In attempt, ret
   methhod: "GET",
   response: [
     {
-     id: Int64,
-     author_id: int64,
+     id: int,
+     author_id: int,
      author_name: String,
      title: String,
      content: String,
@@ -171,27 +171,27 @@ Returns data about user account. It is being called after a Sign In attempt, ret
      Updated: Stringified Date,
      categories: [
        {
-         id: Int32,
+         id: int,
          name: String,
-         use_count: Int64 // indicates how many posts use this category
+         use_count: int // indicates how many posts use this category
        }
        ...
      ]
      comments: [
        {
-         id: Int64,
-         author_id: Int64,
-         post_id: Int64, // post id, to which comment bolongs
+         id: int,
+         author_id: int,
+         post_id: int, // post id, to which comment bolongs
          author_name: String,
          content: String,
          created: Stringified Date,
-         edited: Int32 // 0 or 1 Boolean indicates wheter comment was edited
+         edited: int // 0 or 1 Boolean indicates wheter comment was edited
        }
        ...
      ]
-     comments_count: Int32,
-     rating: Int32,
-     your_reaction: Int32 // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
+     comments_count: int,
+     rating: int,
+     your_reaction: int // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
     },
     ...
   ]
@@ -207,8 +207,8 @@ Returns data about user account. It is being called after a Sign In attempt, ret
         type: String,
         variants: ["id", "author", "categories"]
       },
-      id: Int64, // if by == "id"
-      author: Int64, //if by == "author"
+      id: int, // if by == "id"
+      author: int, //if by == "author"
       categories: Array of Strings // if by == "categories"
     }
     response: { // can be Object or Array of Object, depending on search type
@@ -279,8 +279,8 @@ URI:  /api/comment/add,
 
  ```yaml
 {
-  id: Int64,
-  author_id: int64,
+  id: int,
+  author_id: int,
   author_name: String,
   title: String,
   content: String,
@@ -288,26 +288,26 @@ URI:  /api/comment/add,
   Updated: Stringified Date,
   categories: [
     {
-      id: Int32,
+      id: int,
       name: String,
-      use_count: Int64 // indicates how many posts use this category
+      use_count: int // indicates how many posts use this category
     },
     ...
   ],
   comments: [
     {
-      id: Int64,
-      author_id: Int64,
-      post_id: Int64, // post id, to which comment bolongs
+      id: int,
+      author_id: int,
+      post_id: int, // post id, to which comment bolongs
       author_name: String,
       content: String,
       created: Stringified Date,
-      edited: Int32 // 0 or 1 Boolean indicates wheter comment was edited
+      edited: int // 0 or 1 Boolean indicates wheter comment was edited
     },
     ...
   ],
-  comments_count: Int32,
-  rating: Int32,
-  your_reaction: Int32 // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
+  comments_count: int,
+  rating: int,
+  your_reaction: int // -1, 0 or 1, indicates your reaction to highlite like, dislike or neither
 }
  ```

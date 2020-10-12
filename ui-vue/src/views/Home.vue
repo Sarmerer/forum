@@ -17,7 +17,8 @@
           </div>
           <div v-if="posts.length > 0" class="card">
             <b-button @click="sortPosts()"
-              >sort by date: {{ sorter.byDate ? "ascending" : "descending" }}</b-button
+              >sort by date:
+              {{ sorter.byDate ? "ascending" : "descending" }}</b-button
             >
           </div>
           <!-- Start of posts -->
@@ -43,7 +44,10 @@
             <div style="max-width: 95%">
               <small
                 >by
-                <router-link :to="'/user/' + post.author_id" style="text-decoration: none;">
+                <router-link
+                  :to="'/user/' + post.author_id"
+                  style="text-decoration: none;"
+                >
                   {{ post.author_name }}
                 </router-link>
                 <timeago :datetime="post.created" :auto-update="60"></timeago
@@ -65,7 +69,11 @@
               </b-form-tag>
               <br />
               <sub v-if="post.comments_count > 0"
-                ><img src="@/assets/svg/post/comments.svg" alt="comments" srcset="" />
+                ><img
+                  src="@/assets/svg/post/comments.svg"
+                  alt="comments"
+                  srcset=""
+                />
                 {{ post.comments_count }}
                 {{ post.comments_count == 1 ? "comment" : "comments" }}</sub
               >
@@ -126,7 +134,12 @@ export default {
       categories: [],
       deleting: false,
       sorter: { byDate: false },
-      error: { show: false, status: Number, message: String, callback: Function },
+      error: {
+        show: false,
+        status: Number,
+        message: String,
+        callback: Function,
+      },
     };
   },
   created() {

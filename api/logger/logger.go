@@ -14,7 +14,7 @@ func InitLogs(instance string, err error) {
 }
 
 func HTTPLogs(status, elapsed, host, method, path string) {
-	log.Printf("|%s|\t%10s|\t%s |%s %s", status, elapsed, host, method, path)
+	log.Printf("|%s|\t%10s | %s |%s %s", status, elapsed, host, method, path)
 }
 
 func ServerLogs(instance string, message string, err error) {

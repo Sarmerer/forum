@@ -29,16 +29,16 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		input  models.InputID
+		uid    int64
 		user   *models.User
 		status int
 		err    error
 	)
-	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if uid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if user, status, err = repo.FindByID(input.ID); err != nil {
+	if user, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}

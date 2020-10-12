@@ -9,10 +9,10 @@ import (
 
 // Router contains a map of API routes, with their handlrers
 type Router struct {
-	handlers map[string]*handler
+	handlers map[string]*routeHandler
 }
 
-type handler struct {
+type routeHandler struct {
 	Handler func(http.ResponseWriter, *http.Request)
 	Method  string
 }
@@ -20,27 +20,35 @@ type handler struct {
 // New creates an instance of Router
 func New() *Router {
 	router := new(Router)
-	router.handlers = make(map[string]*handler)
+	router.handlers = make(map[string]*routeHandler)
 	return router
 }
 
-// ServeHTTP is called for every request, it finds an API route, matching request path, and calls the handler for that path
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	f, found := r.handlers[req.URL.Path]
+// ServeHTTP is called for every request, it finds an API endpoint, matching request path, and calls the handler for that path
+func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	route, found := router.handlers[req.Method+":"+req.URL.Path]
 	if !found {
-		logger.HTTPLogs(logger.PaintStatus(http.StatusNotFound), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
-		response.Error(w, http.StatusNotFound, errors.New("page not found"))
+		pageNotFound(w, req)
 		return
 	}
-	if f.Method != req.Method && req.Method != http.MethodOptions {
-		logger.HTTPLogs(logger.PaintStatus(http.StatusMethodNotAllowed), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
-		response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
+	if route.Method != req.Method && req.Method != http.MethodOptions {
+		wrongMethod(w, req)
 		return
 	}
-	f.Handler(w, req)
+	route.Handler(w, req)
 }
 
 // HandleFunc adds a route pattern to the router
-func (r *Router) HandleFunc(path, method string, h http.HandlerFunc) {
-	r.handlers[path] = &handler{h, method}
+func (router *Router) HandleFunc(path, method string, h http.HandlerFunc) {
+	router.handlers[method+":"+path] = &routeHandler{h, method}
+}
+
+func pageNotFound(w http.ResponseWriter, req *http.Request) {
+	logger.HTTPLogs(logger.PaintStatus(http.StatusNotFound), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
+	response.Error(w, http.StatusNotFound, errors.New("page not found"))
+}
+
+func wrongMethod(w http.ResponseWriter, req *http.Request) {
+	logger.HTTPLogs(logger.PaintStatus(http.StatusMethodNotAllowed), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
+	response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
 }

@@ -30,24 +30,11 @@ func RatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if result.Rating, result.YourReaction, err = GetRating(input.PID, uid); err != nil {
+	if result.Rating, result.YourReaction, err = repo.GetRating(input.PID, uid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	response.Success(w, "post has been rated", result)
-}
-
-func GetRating(postID int64, uid int64) (int, int, error) {
-	var (
-		repo         repository.PostRepo = crud.NewPostRepoCRUD()
-		rating       int
-		yourReaction int
-		err          error
-	)
-	if rating, yourReaction, err = repo.GetRating(postID, uid); err != nil {
-		return 0, 0, err
-	}
-	return rating, yourReaction, nil
 }
 
 func DeleteReactionsForPost(pid int64) error {

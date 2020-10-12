@@ -6,10 +6,9 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 import axios from "axios";
-import "./assets/styles.scss";
+import "./assets/styles.scss"; // Global styles
 
 import VueTimeago from "vue-timeago";
-
 Vue.use(VueTimeago, {
   name: "Timeago", // Component name, `Timeago` by default
   locale: "en", // Default locale
@@ -18,7 +17,7 @@ Vue.use(VueTimeago, {
 Vue.config.productionTip = false;
 axios.defaults.baseURL = "/api/";
 axios.defaults.withCredinentials = true;
-store.dispatch("auth/attempt", localStorage.getItem("ilgn")).then(() => {
+store.dispatch("auth/attempt").then(() => {
   new Vue({
     router,
     store,

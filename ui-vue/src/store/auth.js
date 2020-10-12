@@ -3,7 +3,7 @@ import axios from "axios";
 export default {
   namespaced: true,
   state: {
-    user: null
+    user: null,
   },
   getters: {
     authenticated(state) {
@@ -11,30 +11,33 @@ export default {
     },
     user(state) {
       return state.user;
-    }
+    },
   },
   mutations: {
     setUser(state, user) {
       state.user = user;
-    }
+    },
   },
   actions: {
     async signIn({ dispatch }, credentials) {
-      let response = await axios.post(`auth/signin`, credentials);
-      dispatch("attempt", response.data.data);
+      await axios
+        .post(`auth/signin`, credentials)
+        .then(() => {
+          dispatch("attempt");
+        })
+        .catch((error) => console.log(error));
     },
     async signOut({ commit }) {
+      //FIXME fix case when you log in from a new place, and then try to log out from the first session
       return axios.post("auth/signout").then(() => {
         commit("setUser", null);
       });
     },
     async attempt({ commit }) {
-      try {
-        let response = await axios.get("auth/me");
-        commit("setUser", response.data.data);
-      } catch (error) {
-        commit("setUser", null);
-      }
-    }
-  }
+      return await axios
+        .get("auth/me")
+        .then((response) => commit("setUser", response.data.data))
+        .catch(() => commit("setUser", null));
+    },
+  },
 };

@@ -27,9 +27,6 @@ func (mux *Router) SetupRoutes() {
 		if route.NeedAuth {
 			seq = append(seq, middleware.CheckUserAuth)
 		}
-		if route.SelfOnly {
-			seq = append(seq, middleware.SelfActionOnly)
-		}
 		mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, seq...))
 	}
 }
@@ -61,7 +58,6 @@ var apiRoutes = []route{
 		Handler:  controllers.LogOut,
 		Method:   http.MethodPost,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -69,7 +65,6 @@ var apiRoutes = []route{
 		Handler:  controllers.Me,
 		Method:   http.MethodGet,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 
@@ -82,23 +77,20 @@ var apiRoutes = []route{
 		Handler:  controllers.GetUser,
 		Method:   http.MethodGet,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: false,
 	},
 	{
 		URI:      "/api/users",
 		Handler:  controllers.GetUsers,
 		Method:   http.MethodGet,
-		MinRole:  0,
-		SelfOnly: false,
-		NeedAuth: false,
+		MinRole:  1,
+		NeedAuth: true,
 	},
 	{
 		URI:      "/api/user/update",
 		Handler:  controllers.UpdateUser,
 		Method:   http.MethodPut,
 		MinRole:  0,
-		SelfOnly: true,
 		NeedAuth: true,
 	},
 	{
@@ -106,7 +98,6 @@ var apiRoutes = []route{
 		Handler:  controllers.DeleteUser,
 		Method:   http.MethodDelete,
 		MinRole:  0,
-		SelfOnly: true,
 		NeedAuth: true,
 	},
 
@@ -119,7 +110,6 @@ var apiRoutes = []route{
 		Handler:  controllers.FindPost,
 		Method:   http.MethodPost,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: false,
 	},
 	{
@@ -127,7 +117,6 @@ var apiRoutes = []route{
 		Handler:  controllers.GetPosts,
 		Method:   http.MethodGet,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: false,
 	},
 	{
@@ -135,7 +124,6 @@ var apiRoutes = []route{
 		Handler:  controllers.CreatePost,
 		Method:   http.MethodPost,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -143,7 +131,6 @@ var apiRoutes = []route{
 		Handler:  controllers.UpdatePost,
 		Method:   http.MethodPut,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -151,7 +138,6 @@ var apiRoutes = []route{
 		Handler:  controllers.DeletePost,
 		Method:   http.MethodDelete,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -159,7 +145,6 @@ var apiRoutes = []route{
 		Handler:  controllers.RatePost,
 		Method:   http.MethodPost,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	/* -------------------------------------------------------------------------- */
@@ -170,7 +155,6 @@ var apiRoutes = []route{
 		Handler:  controllers.GetAllCategories,
 		Method:   http.MethodGet,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: false,
 	},
 	/* -------------------------------------------------------------------------- */
@@ -182,7 +166,6 @@ var apiRoutes = []route{
 		Handler:  controllers.GetComments,
 		Method:   http.MethodGet,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: false,
 	},
 	{
@@ -190,7 +173,6 @@ var apiRoutes = []route{
 		Handler:  controllers.CreateComment,
 		Method:   http.MethodPost,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -198,7 +180,6 @@ var apiRoutes = []route{
 		Handler:  controllers.UpdateComment,
 		Method:   http.MethodPut,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 	{
@@ -206,7 +187,6 @@ var apiRoutes = []route{
 		Handler:  controllers.DeleteComment,
 		Method:   http.MethodDelete,
 		MinRole:  0,
-		SelfOnly: false,
 		NeedAuth: true,
 	},
 }
