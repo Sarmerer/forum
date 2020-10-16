@@ -37,11 +37,11 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.CommentRepo = crud.NewCommentRepoCRUD()
-		uid    int64                  = r.Context().Value("uid").(int64)
-		author *models.User
-		status int
-		err    error
+		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
+		userCtx models.UserCtx         = utils.GetUIDFromCtx(r)
+		author  *models.User
+		status  int
+		err     error
 	)
 	input := struct {
 		PID     int64  `json:"pid"`
@@ -55,15 +55,15 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if author, status, err = crud.NewUserRepoCRUD().FindByID(uid); err != nil {
+	if author, status, err = crud.NewUserRepoCRUD().FindByID(userCtx.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	reply := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
-		PostID:       input.PID,
-		AuthorID:   uid,
+		PostID:     input.PID,
+		AuthorID:   userCtx.ID,
 		AuthorName: author.DisplayName,
 	}
 	if err = repo.Create(reply); err != nil {

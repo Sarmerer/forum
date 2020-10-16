@@ -2,17 +2,19 @@ package controllers
 
 import (
 	"encoding/json"
+	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
+	"forum/api/utils"
 	"net/http"
 )
 
 func RatePost(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo repository.PostRepo = crud.NewPostRepoCRUD()
-		uid  int64               = r.Context().Value("uid").(int64)
-		err  error
+		repo    repository.PostRepo = crud.NewPostRepoCRUD()
+		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		err     error
 	)
 	input := struct {
 		PID      int64 `json:"pid"`
@@ -26,11 +28,11 @@ func RatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if err = repo.RatePost(input.PID, uid, input.Reaction); err != nil {
+	if err = repo.RatePost(input.PID, userCtx.ID, input.Reaction); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if result.Rating, result.YourReaction, err = repo.GetRating(input.PID, uid); err != nil {
+	if result.Rating, result.YourReaction, err = repo.GetRating(input.PID, userCtx.ID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

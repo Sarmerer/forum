@@ -7,14 +7,14 @@ import (
 	"net/http"
 )
 
-func (UserRepoCRUD) ValidateSession(session string) (uid int64, status int, err error) {
-	if err = repository.DB.QueryRow("SELECT id FROM users WHERE session_id = ?", session).Scan(&uid); err != nil {
+func (UserRepoCRUD) ValidateSession(session string) (uid int64, role, status int, err error) {
+	if err = repository.DB.QueryRow("SELECT id, role FROM users WHERE session_id = ?", session).Scan(&uid, &role); err != nil {
 		if err != sql.ErrNoRows {
-			return uid, http.StatusInternalServerError, err
+			return uid, role, http.StatusInternalServerError, err
 		}
-		return 0, http.StatusUnauthorized, errors.New("user not authorized")
+		return -1, -1, http.StatusUnauthorized, errors.New("user not authorized")
 	}
-	return uid, http.StatusOK, nil
+	return uid, role, http.StatusOK, nil
 }
 
 func (UserRepoCRUD) UpdateSession(id int64, newSession string) error {

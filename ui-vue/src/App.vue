@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <div id="nav">
-      <b-navbar toggleable="lg" type="light" style="background: #278ea5">
+      <b-navbar
+        toggleable="lg"
+        type="light"
+        style="background: rgba(255, 255, 255, 0.05)"
+      >
         <b-navbar-brand href="#">forum</b-navbar-brand>
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
         <b-collapse id="nav-collapse" is-nav>
@@ -9,7 +13,9 @@
             <b-nav-item><router-link to="/">Home</router-link></b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav>
-            <b-nav-item><router-link to="/post/new">New post</router-link></b-nav-item>
+            <b-nav-item
+              ><router-link to="/post/new">New post</router-link></b-nav-item
+            >
           </b-navbar-nav>
           <b-navbar-nav v-if="!authenticated" class="ml-auto">
             <Login class="ml-auto"></Login>

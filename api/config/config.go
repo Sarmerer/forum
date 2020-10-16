@@ -21,6 +21,8 @@ const (
 	SessionCookieName = "sid"               // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
 	SessionExpiration = 14 * 24 * time.Hour // SessionExpiration defines the cookie life time
 
+	UserCtxVarName = "userData" // Used when setting request context in middleware
+
 	RoleUser  = 0
 	RoleModer = 1
 	RoleAdmin = 2

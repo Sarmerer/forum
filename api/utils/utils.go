@@ -3,6 +3,8 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"forum/api/config"
+	"forum/api/models"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,11 +17,11 @@ func ParseID(r *http.Request) (res int64, err error) {
 	return res, nil
 }
 
-func GetUIDFromCtx(r *http.Request) int64 {
-	if r.Context().Value("uid") != nil {
-		return r.Context().Value("uid").(int64)
+func GetUIDFromCtx(r *http.Request) models.UserCtx {
+	if r.Context().Value(config.UserCtxVarName) != nil {
+		return r.Context().Value(config.UserCtxVarName).(models.UserCtx)
 	}
-	return -1
+	return models.UserCtx{ID: -1, Role: -1}
 }
 
 func FormatRequest(r *http.Request) string {

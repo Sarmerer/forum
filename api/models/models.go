@@ -1,5 +1,10 @@
 package models
 
+type UserCtx struct {
+	ID   int64
+	Role int
+}
+
 type User struct {
 	ID          int64  `json:"id"`
 	Login       string `json:"login"`
@@ -40,6 +45,6 @@ type Comment struct {
 	AuthorName string `json:"author_name"`
 	Content    string `json:"content"`
 	Created    string `json:"created"`
-	PostID       int64  `json:"post"`
+	PostID     int64  `json:"post"`
 	Edited     int    `json:"edited"`
 }

@@ -9,6 +9,7 @@ import (
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
+	"forum/api/utils"
 	"net/http"
 )
 
@@ -79,12 +80,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 func LogOut(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64               = r.Context().Value("uid").(int64)
-		cookie *http.Cookie
-		err    error
+		repo    repository.UserRepo = crud.NewUserRepoCRUD()
+		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		cookie  *http.Cookie
+		err     error
 	)
-	if err = repo.UpdateSession(uid, ""); err != nil {
+	if err = repo.UpdateSession(userCtx.ID, ""); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -102,13 +103,13 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 
 func Me(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64               = r.Context().Value("uid").(int64)
-		user   *models.User
-		status int
-		err    error
+		repo    repository.UserRepo = crud.NewUserRepoCRUD()
+		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		user    *models.User
+		status  int
+		err     error
 	)
-	if user, status, err = repo.FindByID(uid); err != nil {
+	if user, status, err = repo.FindByID(userCtx.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

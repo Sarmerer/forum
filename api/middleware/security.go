@@ -4,38 +4,38 @@ import (
 	"context"
 	"errors"
 	"forum/api/config"
+	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
 	"forum/api/response"
-	"forum/api/utils"
 	"net/http"
 )
 
 func SetContext(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
-			repo   repository.UserRepo = crud.NewUserRepoCRUD()
-			cookie *http.Cookie
-			uid    int64
-			status int
-			ctx    context.Context
-			err    error
+			repo    repository.UserRepo = crud.NewUserRepoCRUD()
+			cookie  *http.Cookie
+			userCtx models.UserCtx
+			status  int
+			ctx     context.Context
+			err     error
 		)
 		if cookie, err = r.Cookie(config.SessionCookieName); err != nil {
 			if err != http.ErrNoCookie {
 				response.Error(w, http.StatusBadRequest, err)
 			}
-			uid = -1
-			ctx = context.WithValue(r.Context(), "uid", uid)
+			userCtx = models.UserCtx{ID: -1, Role: -1}
+			ctx = context.WithValue(r.Context(), config.UserCtxVarName, userCtx)
 			next(w, r.WithContext(ctx))
 		} else {
-			if uid, status, err = repo.ValidateSession(cookie.Value); err != nil {
+			if userCtx.ID, userCtx.Role, status, err = repo.ValidateSession(cookie.Value); err != nil {
 				if err != nil && status != http.StatusUnauthorized {
 					response.Error(w, status, err)
 					return
 				}
 			}
-			ctx = context.WithValue(r.Context(), "uid", uid)
+			ctx = context.WithValue(r.Context(), config.UserCtxVarName, userCtx)
 			next(w, r.WithContext(ctx))
 		}
 	}
@@ -56,7 +56,7 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 			response.Error(w, http.StatusUnauthorized, errors.New("user not authorized"))
 			return
 		}
-		if _, status, err = repo.ValidateSession(cookie.Value); err != nil {
+		if _, _, status, err = repo.ValidateSession(cookie.Value); err != nil {
 			response.Error(w, status, err)
 			return
 		}
@@ -64,30 +64,30 @@ func CheckUserAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func SelfActionOnly(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var (
-			repo         repository.UserRepo = crud.NewUserRepoCRUD()
-			requestorUID int64               = r.Context().Value("uid").(int64)
-			queryUID     int64
-			role         int
-			status       int
-			err          error
-		)
-		if queryUID, err = utils.ParseID(r); err != nil {
-			response.Error(w, http.StatusBadRequest, err)
-			return
-		}
-		if queryUID != requestorUID {
+// func RequestorIsAccountOwner(next http.HandlerFunc) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		var (
+// 			repo         repository.UserRepo = crud.NewUserRepoCRUD()
+// 			requestorUID int64               = r.Context().Value(config.UserCtxVarName).(int64)
+// 			queryUID     int64
+// 			role         int
+// 			status       int
+// 			err          error
+// 		)
+// 		if queryUID, err = utils.ParseID(r); err != nil {
+// 			response.Error(w, http.StatusBadRequest, err)
+// 			return
+// 		}
+// 		if queryUID != requestorUID {
 
-			if role, status, err = repo.GetRole(requestorUID); err != nil {
-				response.Error(w, status, err)
-				return
-			} else if role < config.RoleAdmin {
-				response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
-				return
-			}
-		}
-		next(w, r)
-	}
-}
+// 			if role, status, err = repo.GetRole(requestorUID); err != nil {
+// 				response.Error(w, status, err)
+// 				return
+// 			} else if role < config.RoleAdmin {
+// 				response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
+// 				return
+// 			}
+// 		}
+// 		next(w, r)
+// 	}
+// }

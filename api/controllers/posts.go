@@ -16,12 +16,12 @@ import (
 
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo  repository.PostRepo = crud.NewPostRepoCRUD()
-		uid   int64               = utils.GetUIDFromCtx(r)
-		posts []models.Post
-		err   error
+		repo    repository.PostRepo = crud.NewPostRepoCRUD()
+		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		posts   []models.Post
+		err     error
 	)
-	if posts, err = repo.FindAll(uid); err != nil {
+	if posts, err = repo.FindAll(userCtx.ID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -30,12 +30,12 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 
 func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		uid    int64               = utils.GetUIDFromCtx(r)
-		input  models.InputPostFind
-		posts  interface{}
-		status int
-		err    error
+		repo    repository.PostRepo = crud.NewPostRepoCRUD()
+		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		input   models.InputPostFind
+		posts   interface{}
+		status  int
+		err     error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -44,7 +44,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	switch input.By {
 	case "id":
 		var post *models.Post
-		if post, status, err = repo.FindByID(input.ID, uid); err != nil {
+		if post, status, err = repo.FindByID(input.ID, userCtx.ID); err != nil {
 			response.Error(w, status, err)
 			return
 		}
@@ -69,27 +69,27 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		uid    int64               = r.Context().Value("uid").(int64)
-		author *models.User
-		input  models.InputPostCreateUpdate
-		post   models.Post
-		pid    int64
-		status int
-		err    error
+		repo    repository.PostRepo = crud.NewPostRepoCRUD()
+		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		author  *models.User
+		input   models.InputPostCreateUpdate
+		post    models.Post
+		pid     int64
+		status  int
+		err     error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if author, status, err = crud.NewUserRepoCRUD().FindByID(uid); err != nil {
+	if author, status, err = crud.NewUserRepoCRUD().FindByID(userCtx.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	post = models.Post{
 		Title:      input.Title,
 		Content:    input.Content,
-		AuthorID:   uid,
+		AuthorID:   userCtx.ID,
 		AuthorName: author.DisplayName,
 		Created:    time.Now().Format(config.TimeLayout),
 		Updated:    time.Now().Format(config.TimeLayout),
