@@ -38,7 +38,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		userCtx models.UserCtx         = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx         = utils.GetUserFromCtx(r)
 		author  *models.User
 		status  int
 		err     error

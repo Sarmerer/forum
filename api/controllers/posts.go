@@ -17,7 +17,7 @@ import (
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		posts   []models.Post
 		err     error
 	)
@@ -31,7 +31,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		input   models.InputPostFind
 		posts   interface{}
 		status  int
@@ -70,7 +70,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		author  *models.User
 		input   models.InputPostCreateUpdate
 		post    models.Post

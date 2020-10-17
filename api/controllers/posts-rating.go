@@ -13,7 +13,7 @@ import (
 func RatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		err     error
 	)
 	input := struct {

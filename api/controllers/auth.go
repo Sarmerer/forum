@@ -81,7 +81,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 func LogOut(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.UserRepo = crud.NewUserRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		cookie  *http.Cookie
 		err     error
 	)
@@ -104,7 +104,7 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 func Me(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.UserRepo = crud.NewUserRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUIDFromCtx(r)
+		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		user    *models.User
 		status  int
 		err     error

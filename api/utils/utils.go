@@ -17,7 +17,7 @@ func ParseID(r *http.Request) (res int64, err error) {
 	return res, nil
 }
 
-func GetUIDFromCtx(r *http.Request) models.UserCtx {
+func GetUserFromCtx(r *http.Request) models.UserCtx {
 	if r.Context().Value(config.UserCtxVarName) != nil {
 		return r.Context().Value(config.UserCtxVarName).(models.UserCtx)
 	}
