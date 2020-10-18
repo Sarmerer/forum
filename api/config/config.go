@@ -12,8 +12,9 @@ const (
 	APILink   = "http://localhost:4433"
 	ClientURL = "http://127.0.0.1:8081"
 
-	DatabaseDriver = "sqlite3"
-	DatabasePath   = "./database/forum.db"
+	DatabaseDriver   = "sqlite3"
+	DatabasePath     = "./database"
+	DatabaseFileName = "forum.db"
 
 	TimeLayout = "2006-01-02 15:04:05" // TimeLayout defines the standartd time layout. All time variables are formatted corresponding to it
 	GCInterval = 24 * time.Hour        // GCInterval defines the interval after which garbage collector will run

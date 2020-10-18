@@ -3,12 +3,13 @@ package repository
 import (
 	"database/sql"
 	"forum/api/config"
+	"os"
 )
 
 var DB *sql.DB
 
 func InitDB() (err error) {
-	if DB, err = sql.Open(config.DatabaseDriver, config.DatabasePath); err != nil {
+	if DB, err = sql.Open(config.DatabaseDriver, config.DatabasePath+"/"+config.DatabaseFileName); err != nil {
 		return err
 	}
 	DB.SetMaxIdleConns(100)
@@ -18,9 +19,14 @@ func InitDB() (err error) {
 	return nil
 }
 
-// CheckDBIntegrity creates necessary tables in the database, if they do not exist already
+// CheckDBIntegrity create database directory and tables, if they don't exist already
 func CheckDBIntegrity() (err error) {
-	_, err = DB.Exec(
+	if _, err = os.Stat(config.DatabasePath); os.IsNotExist(err) {
+		if err = os.Mkdir(config.DatabasePath, 0755); err != nil {
+			return err
+		}
+	}
+	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS users (
 			id 	 	 	 INTEGER PRIMARY KEY,
 			login     	 TEXT,
@@ -32,12 +38,11 @@ func CheckDBIntegrity() (err error) {
 			last_online  TEXT,
 			session_id	 TEXT,
 			role 		 INTEGER
-		)`)
-	if err != nil {
+		)`); err != nil {
 		return err
 	}
 
-	_, err = DB.Exec(
+	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts (
 			id				 INTEGER PRIMARY KEY,
 			author_fkey		 INTEGER REFERENCES users(id),
@@ -46,31 +51,28 @@ func CheckDBIntegrity() (err error) {
 			content			 TEXT,
 			created			 TEXT,
 			updated			 TEXT
-		)`)
-	if err != nil {
+		)`); err != nil {
 		return err
 	}
 
-	_, err = DB.Exec(
+	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS categories (
 			id	 INTEGER PRIMARY KEY,
 			name TEXT
-		)`)
-	if err != nil {
+		)`); err != nil {
 		return err
 	}
 
-	_, err = DB.Exec(
+	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts_categories_bridge (
 			id				 INTEGER PRIMARY KEY,
 			post_id_fkey	 INTEGER REFERENCES posts(id),
 			category_id_fkey INTEGER REFERENCES categories(id)
-		)`)
-	if err != nil {
+		)`); err != nil {
 		return err
 	}
 
-	_, err = DB.Exec(
+	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS comments (
 			id			 	 INTEGER PRIMARY KEY,
 			author_fkey	 	 INTEGER REFERENCES users(id),
@@ -79,19 +81,17 @@ func CheckDBIntegrity() (err error) {
 			created		 	 TEXT,
 			post_id_fkey 	 INTEGER REFERENCES posts(id),
 			edited           INTEGER
-		)`)
-	if err != nil {
+		)`); err != nil {
 		return err
 	}
 
-	_, err = DB.Exec(
+	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS reactions (
 			id			 INTEGER PRIMARY KEY,
 			post_id_fkey INTEGER REFERENCES posts(id),
 			user_id_fkey INTEGER REFERENCES users(id),
 			reaction	 INTEGER
-		)`)
-	if err != nil {
+		)`); err != nil {
 		return err
 	}
 

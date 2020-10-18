@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"forum/api/models"
 	"forum/api/repository"
 	"forum/api/repository/crud"
@@ -59,6 +60,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	name = r.FormValue("name")
 	if uid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if !requestorIsAccountOwner(r, uid) {
+		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
 		return
 	}
 
