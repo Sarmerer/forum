@@ -71,26 +71,20 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
 		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
-		author  *models.User
 		input   models.InputPostCreateUpdate
 		post    models.Post
 		pid     int64
-		status  int
 		err     error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if author, status, err = crud.NewUserRepoCRUD().FindByID(userCtx.ID); err != nil {
-		response.Error(w, status, err)
-		return
-	}
 	post = models.Post{
 		Title:      input.Title,
 		Content:    input.Content,
 		AuthorID:   userCtx.ID,
-		AuthorName: author.DisplayName,
+		AuthorName: userCtx.DisplayName,
 		Created:    time.Now().Format(config.TimeLayout),
 		Updated:    time.Now().Format(config.TimeLayout),
 		Rating:     0,
@@ -132,7 +126,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestorIsEntityOwner(utils.GetUserFromCtx(r), post.AuthorID) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), post.AuthorID) {
 		response.Error(w, http.StatusForbidden, errors.New("this post doesn't belong to you"))
 		return
 	}
@@ -169,7 +163,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestorIsEntityOwner(utils.GetUserFromCtx(r), post.AuthorID) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), post.AuthorID) {
 		response.Error(w, http.StatusForbidden, errors.New("this post doesn't belong to you"))
 		return
 	}

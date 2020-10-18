@@ -1,8 +1,9 @@
 package models
 
 type UserCtx struct {
-	ID   int64
-	Role int
+	ID          int64
+	DisplayName string
+	Role        int
 }
 
 type User struct {

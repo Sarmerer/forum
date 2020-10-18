@@ -40,7 +40,6 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
 		userCtx models.UserCtx         = utils.GetUserFromCtx(r)
-		author  *models.User
 		status  int
 		err     error
 	)
@@ -56,18 +55,14 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if author, status, err = crud.NewUserRepoCRUD().FindByID(userCtx.ID); err != nil {
-		response.Error(w, status, err)
-		return
-	}
-	reply := &models.Comment{
+	comment := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
 		PostID:     input.PID,
 		AuthorID:   userCtx.ID,
-		AuthorName: author.DisplayName,
+		AuthorName: userCtx.DisplayName,
 	}
-	if err = repo.Create(reply); err != nil {
+	if err = repo.Create(comment); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -94,7 +89,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
 		response.Error(w, http.StatusForbidden, errors.New("this comment doesn't belong to you"))
 		return
 	}
@@ -124,7 +119,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
 		response.Error(w, http.StatusForbidden, errors.New("this comment doesn't belong to you"))
 		return
 	}

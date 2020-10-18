@@ -26,11 +26,11 @@ func SetContext(next http.HandlerFunc) http.HandlerFunc {
 			if err != http.ErrNoCookie {
 				response.Error(w, http.StatusBadRequest, err)
 			}
-			userCtx = models.UserCtx{ID: -1, Role: -1}
+			userCtx = models.UserCtx{ID: -1, Role: -1, DisplayName: ""}
 			ctx = context.WithValue(r.Context(), config.UserCtxVarName, userCtx)
 			next(w, r.WithContext(ctx))
 		} else {
-			if userCtx.ID, userCtx.Role, status, err = repo.ValidateSession(cookie.Value); err != nil {
+			if userCtx, status, err = repo.ValidateSession(cookie.Value); err != nil {
 				if err != nil && status != http.StatusUnauthorized {
 					response.Error(w, status, err)
 					return
