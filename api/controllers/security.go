@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//generateUUID generates the cookie
 func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
 	var newUUID string
 	if err != nil {
@@ -26,12 +25,10 @@ func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
 		HttpOnly: true}
 }
 
-//hash hashes the password
 func hash(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), 8)
 }
 
-//verifyPassword verifyes the password
 func verifyPassword(hash, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }

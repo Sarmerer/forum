@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"forum/api/models"
 	"forum/api/repository"
@@ -63,7 +62,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !requestorIsAccountOwner(r, uid) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), uid) {
 		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
 		return
 	}
@@ -87,20 +86,25 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		input  models.InputID
+		uid    int64
 		status int
 		err    error
 	)
-	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
+	if uid, err = utils.ParseID(r); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if _, status, err = repo.FindByID(input.ID); err != nil {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), uid) {
+		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
+		return
+	}
+
+	if _, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if status, err = repo.Delete(input.ID); err != nil {
+	if status, err = repo.Delete(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}

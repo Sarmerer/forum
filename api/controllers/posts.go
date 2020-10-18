@@ -111,14 +111,12 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo        repository.PostRepo = crud.NewPostRepoCRUD()
-		input       models.InputPostCreateUpdate
-		name        string
-		content     string
-		pid         int64
-		updatedPost *models.Post
-		status      int
-		err         error
+		repo   repository.PostRepo = crud.NewPostRepoCRUD()
+		input  models.InputPostCreateUpdate
+		pid    int64
+		post   *models.Post
+		status int
+		err    error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -129,19 +127,24 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if updatedPost, status, err = repo.FindByID(pid, -1); err != nil {
+	if post, status, err = repo.FindByID(pid, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 
-	updatedPost.Updated = time.Now().Format(config.TimeLayout)
+	if requestorIsEntityOwner(utils.GetUserFromCtx(r), post.AuthorID) {
+		response.Error(w, http.StatusForbidden, errors.New("this post doesn't belong to you"))
+		return
+	}
+
+	post.Updated = time.Now().Format(config.TimeLayout)
 	if input.Title != "" {
-		updatedPost.Title = name
+		post.Title = input.Title
 	}
 	if input.Content != "" {
-		updatedPost.Content = content
+		post.Content = input.Content
 	}
-	if err = repo.Update(updatedPost); err != nil {
+	if err = repo.Update(post); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -153,6 +156,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
 		pid    int64
+		post   *models.Post
 		status int
 		err    error
 	)
@@ -160,10 +164,16 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = repo.FindByID(pid, -1); err != nil {
+	if post, status, err = repo.FindByID(pid, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
+
+	if requestorIsEntityOwner(utils.GetUserFromCtx(r), post.AuthorID) {
+		response.Error(w, http.StatusForbidden, errors.New("this post doesn't belong to you"))
+		return
+	}
+
 	if err = DeleteCommentsGroup(pid); err != nil {
 		fmt.Println(err)
 	}

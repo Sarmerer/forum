@@ -77,18 +77,18 @@ var apiRoutes = []route{
 	/* -------------------------------------------------------------------------- */
 
 	{
-		URI:      "/api/user",
-		Handler:  controllers.GetUser,
-		Method:   http.MethodGet,
-		MinRole:  config.RoleUser,
-		NeedAuth: false,
-	},
-	{
 		URI:      "/api/users",
 		Handler:  controllers.GetUsers,
 		Method:   http.MethodGet,
 		MinRole:  config.RoleAdmin,
 		NeedAuth: true,
+	},
+	{
+		URI:      "/api/user",
+		Handler:  controllers.GetUser,
+		Method:   http.MethodGet,
+		MinRole:  config.RoleUser,
+		NeedAuth: false,
 	},
 	{
 		URI:      "/api/user/update",

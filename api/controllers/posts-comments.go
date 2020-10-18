@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"forum/api/config"
 	"forum/api/models"
 	"forum/api/repository"
@@ -75,10 +76,10 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo         repository.CommentRepo = crud.NewCommentRepoCRUD()
-		updatedReply *models.Comment
-		status       int
-		err          error
+		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
+		comment *models.Comment
+		status  int
+		err     error
 	)
 	input := struct {
 		RID     int64  `json:"id"`
@@ -88,13 +89,18 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if updatedReply, status, err = repo.FindByID(input.RID); err != nil {
+	if comment, status, err = repo.FindByID(input.RID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 
-	updatedReply.Content = input.Content
-	if err = repo.Update(updatedReply); err != nil {
+	if requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
+		response.Error(w, http.StatusForbidden, errors.New("this comment doesn't belong to you"))
+		return
+	}
+
+	comment.Content = input.Content
+	if err = repo.Update(comment); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -103,20 +109,27 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.CommentRepo = crud.NewCommentRepoCRUD()
-		rid    int64
-		status int
-		err    error
+		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
+		cid     int64
+		comment *models.Comment
+		status  int
+		err     error
 	)
-	if rid, err = utils.ParseID(r); err != nil {
+	if cid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = repo.FindByID(rid); err != nil {
+	if comment, status, err = repo.FindByID(cid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if err = repo.Delete(rid); err != nil {
+
+	if requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
+		response.Error(w, http.StatusForbidden, errors.New("this comment doesn't belong to you"))
+		return
+	}
+
+	if err = repo.Delete(cid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

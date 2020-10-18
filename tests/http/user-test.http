@@ -16,7 +16,7 @@ Content-Type: application/json
 {
     "login":"admin",
     "emal":"admin",
-    "password":"password"
+    "password":"admin"
 }
 
 ### Sign in
@@ -26,7 +26,7 @@ Content-Type: application/json
 
 {
     "login":"admin",
-    "password": "admin"
+    "password": "password"
 }
     
 ### Sign out
@@ -36,7 +36,7 @@ POST {{baseURL}}/api/auth/signout
 
 ### Update user
 
-PUT https://localhost:4433/api/user/update
+PUT {{baseURL}}/api/user/update
     ?ID=2
     &name=admin44
     &API_KEY={{API_KEY}}
@@ -44,7 +44,6 @@ PUT https://localhost:4433/api/user/update
 
 ### Delete user
 
-DELETE https://localhost:4433/api/user/delete
-    ?ID=1
-    &API_KEY={{API_KEY}}
+DELETE {{baseURL}}/api/user/delete
+    ?id=11
 
