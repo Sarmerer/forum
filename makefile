@@ -7,7 +7,7 @@ prod: ## Build and run production docker container
 	docker build -t sarmerer/forum .
 	docker run -d -p 4433:4433 sarmerer/forum
 go:
-	bash -c "go run main.go"
+	cd api && bash -c  "go run main.go"
 vue:
 	cd ./ui-vue && npm run serve
 push:

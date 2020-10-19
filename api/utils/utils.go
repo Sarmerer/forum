@@ -3,8 +3,8 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"forum/api/config"
-	"forum/api/models"
+	"forum/config"
+	"github.com/sarmerer/forum/api/models"
 	"net/http"
 	"strconv"
 	"strings"
