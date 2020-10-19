@@ -1,12 +1,15 @@
 <template>
   <div class="card">
-    <b-form @submit="leaveComment">
+    <!-- Comment form -->
+    <b-form v-if="authenticated" @submit="leaveComment">
       <b-input-group class="mt-1 mb-1">
         <b-textarea
           type="text"
           class="textarea"
           :placeholder="
-            comments.length == 0 ? 'Be the first to comment this post' : 'What you think?'
+            comments.length == 0
+              ? 'Be the first to comment this post'
+              : 'What you think?'
           "
           v-model="form.comment"
           @keydown.enter.exact.prevent
@@ -23,19 +26,41 @@
               v-if="commentLength >= minCommentLength"
               variant="outline-light"
               type="submit"
-              :disabled="!(commentLength > minCommentLength && commentLength < maxCommentLength)"
+              :disabled="
+                !(
+                  commentLength > minCommentLength &&
+                  commentLength < maxCommentLength
+                )
+              "
               >Say</b-button
             >
           </transition>
         </b-input-group-append>
       </b-input-group>
       <div v-if="commentLength > 0">
-        <small v-if="commentLength >= minCommentLength && commentLength <= maxCommentLength"
+        <small
+          v-if="
+            commentLength >= minCommentLength &&
+              commentLength <= maxCommentLength
+          "
           >{{ commentLength }}/{{ maxCommentLength }}</small
         >
-        <small v-else style="color: red">{{ commentLength }}/{{ maxCommentLength }}</small>
+        <small v-else style="color: red"
+          >{{ commentLength }}/{{ maxCommentLength }}</small
+        >
       </div>
     </b-form>
+    <!-- End of comment form -->
+    <div v-if="!authenticated" class="border border-dark rounded p-2">
+      <span>Want to leave a comment?</span>
+      <b-button class="float-right" size="sm" variant="success"
+        >Sign Up</b-button
+      >
+      <b-button class="float-right mr-1" size="sm" variant="outline-primary"
+        >Sign In</b-button
+      >
+    </div>
+    <!-- Post comments -->
     <div v-for="(comment, index) in comments" :key="index">
       <div style="margin: 0.3rem; position: relative">
         <div v-if="index != editor.editing">
@@ -93,10 +118,15 @@
             max-rows="10"
             style="margin-bottom: 0px; display: block; width: 85%"
           ></b-form-textarea>
-          <small v-if="editorLength > minCommentLength && editorLength < maxCommentLength"
+          <small
+            v-if="
+              editorLength > minCommentLength && editorLength < maxCommentLength
+            "
             >{{ editorLength }}/{{ maxCommentLength }}</small
           >
-          <small v-else style="color: red">{{ editorLength }}/{{ maxCommentLength }}</small>
+          <small v-else style="color: red"
+            >{{ editorLength }}/{{ maxCommentLength }}</small
+          >
         </div>
         <b-button-group
           size="sm"
@@ -125,6 +155,7 @@
         </b-button-group>
       </div>
     </div>
+    <!-- End of post comments -->
   </div>
 </template>
 <script>
@@ -138,6 +169,7 @@ export default {
   computed: {
     ...mapGetters({
       user: "auth/user",
+      authenticated: "auth/authenticated",
     }),
     commentLength() {
       return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
@@ -188,7 +220,10 @@ export default {
     },
     async leaveComment(e) {
       if (e) e.preventDefault();
-      if (this.commentLength < this.minCommentLength || this.commentLength > this.maxCommentLength)
+      if (
+        this.commentLength < this.minCommentLength ||
+        this.commentLength > this.maxCommentLength
+      )
         return;
       this.editor.editing = -1;
       return await axios
@@ -202,7 +237,10 @@ export default {
         });
     },
     async updateComment(actualID, oldCommentContent) {
-      if (this.editorLength < this.minCommentLength || this.editorLength > this.maxCommentLength)
+      if (
+        this.editorLength < this.minCommentLength ||
+        this.editorLength > this.maxCommentLength
+      )
         return;
       if (this.editor.editingContent == oldCommentContent) {
         this.comments[this.editor.editing].content = this.editor.editingContent;
@@ -218,7 +256,9 @@ export default {
         })
         .then(() => {
           console.log(this.comments);
-          this.comments[this.editor.editing].content = this.editor.editingContent;
+          this.comments[
+            this.editor.editing
+          ].content = this.editor.editingContent;
           this.comments[this.editor.editing].edited = 1;
           this.editor.editing = -1;
         })

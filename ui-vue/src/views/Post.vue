@@ -20,7 +20,12 @@
             placeholder="Enter title"
           ></b-form-input>
         </b-form-group>
-        <b-form-group id="input-group-2" label="Content:" label-for="input-2" fluid>
+        <b-form-group
+          id="input-group-2"
+          label="Content:"
+          label-for="input-2"
+          fluid
+        >
           <b-form-textarea
             id="textarea-auto-height"
             v-model="form.content"
@@ -33,7 +38,11 @@
         </b-form-group>
 
         <label for="tags-basic">Type a new tag and press enter</label>
-        <b-form-tags input-id="tags-basic" remove-on-delete v-model="form.categories"></b-form-tags>
+        <b-form-tags
+          input-id="tags-basic"
+          remove-on-delete
+          v-model="form.categories"
+        ></b-form-tags>
         <br />
         <b-button type="submit" variant="primary">Submit</b-button>
       </b-form>
