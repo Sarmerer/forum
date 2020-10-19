@@ -14,11 +14,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
-	Init()
-	Run()
-}
-
 // Init does necessary preparations to successfully run the API
 func Init() {
 	log.Println("Starting server...")
@@ -40,4 +35,9 @@ func Run() {
 	log.Printf("Listening https://localhost:%d\n", config.APIPort)
 	////log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.APIPort), mux))
+}
+
+func main() {
+	Init()
+	Run()
 }
