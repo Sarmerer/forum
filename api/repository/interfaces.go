@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"forum/api/models"
+	"github.com/sarmerer/forum/api/models"
 )
 
 type UserRepo interface {

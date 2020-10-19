@@ -3,8 +3,9 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/api/repository"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/repository"
 )
 
 func (UserRepoCRUD) GetRole(id int64) (int, int, error) {

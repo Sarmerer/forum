@@ -2,8 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"forum/api/config"
 	"os"
+
+	"github.com/sarmerer/forum/api/config"
 )
 
 var DB *sql.DB

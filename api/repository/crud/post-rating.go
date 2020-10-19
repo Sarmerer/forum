@@ -3,7 +3,8 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/api/repository"
+
+	"github.com/sarmerer/forum/api/repository"
 )
 
 func (PostRepoCRUD) GetRating(postID int64, currentUser int64) (int, int, error) {

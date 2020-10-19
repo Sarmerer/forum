@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"forum/api/config"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/config"
 )
 
 func SetHeaders(next http.HandlerFunc) http.HandlerFunc {

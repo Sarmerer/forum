@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"fmt"
-	"forum/api/config"
 	"net/http"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
 
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"

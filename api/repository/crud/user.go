@@ -3,11 +3,12 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/api/config"
-	"forum/api/models"
-	"forum/api/repository"
 	"net/http"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
 )
 
 //UserRepoCRUD helps performing CRUD operations

@@ -1,8 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/gc"
+	"github.com/sarmerer/forum/api/logger"
+	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/router"
+
 	_ "github.com/mattn/go-sqlite3"
-	logger "github.com/sarmerer/api/logger"
 )
 
 func main() {

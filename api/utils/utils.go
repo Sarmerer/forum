@@ -3,11 +3,13 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"forum/config"
-	"github.com/sarmerer/forum/api/models"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/sarmerer/forum/api/config"
+
+	"github.com/sarmerer/forum/api/models"
 )
 
 func ParseID(r *http.Request) (res int64, err error) {

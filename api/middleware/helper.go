@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"forum/api/repository"
-	"forum/api/repository/crud"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/repository/crud"
 )
 
 type Middlewares func(http.HandlerFunc) http.HandlerFunc

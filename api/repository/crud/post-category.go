@@ -3,8 +3,9 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/api/models"
-	"forum/api/repository"
+
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
 )
 
 //categoryRepoCRUD helps performing CRUD operations

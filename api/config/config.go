@@ -13,7 +13,7 @@ const (
 	ClientURL = "http://127.0.0.1:8081"
 
 	DatabaseDriver   = "sqlite3"
-	DatabasePath     = "./database"
+	DatabasePath     = "../database"
 	DatabaseFileName = "forum.db"
 
 	TimeLayout = "2006-01-02 15:04:05" // TimeLayout defines the standartd time layout. All time variables are formatted corresponding to it

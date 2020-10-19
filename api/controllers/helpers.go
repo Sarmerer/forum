@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"forum/api/config"
-	"forum/api/models"
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/models"
 )
 
 // requestorIsEntityOwner takes requestor's ID and role from the request context,

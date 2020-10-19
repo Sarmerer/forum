@@ -2,12 +2,13 @@ package gc
 
 import (
 	"fmt"
-	"forum/api/config"
-	"forum/api/logger"
-	"forum/api/models"
-	"forum/api/repository"
-	"forum/api/repository/crud"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/logger"
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/repository/crud"
 )
 
 // Start starts the garbage collector service,

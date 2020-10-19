@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"forum/api/config"
-	"forum/api/models"
-	"forum/api/repository"
-	"forum/api/repository/crud"
-	"forum/api/response"
-	"forum/api/utils"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/repository/crud"
+	"github.com/sarmerer/forum/api/response"
+	"github.com/sarmerer/forum/api/utils"
 )
 
 //LogIn signs the user in if exists

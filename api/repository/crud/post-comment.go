@@ -3,11 +3,12 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/api/config"
-	"forum/api/models"
-	"forum/api/repository"
 	"net/http"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
 )
 
 //CommentRepoCRUD helps performing CRUD operations
@@ -21,9 +22,9 @@ func NewCommentRepoCRUD() *CommentRepoCRUD {
 //FindAll returns all replies for the specified post
 func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
 	var (
-		rows    *sql.Rows
+		rows     *sql.Rows
 		comments []models.Comment
-		err     error
+		err      error
 	)
 	if rows, err = repository.DB.Query(
 		"SELECT * FROM comments WHERE post_id_fkey = ? ORDER BY created DESC", postID); err != nil {

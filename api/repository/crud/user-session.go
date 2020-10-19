@@ -3,9 +3,10 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"forum/api/models"
-	"forum/api/repository"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
 )
 
 func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, status int, err error) {

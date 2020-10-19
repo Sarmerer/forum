@@ -2,9 +2,10 @@ package router
 
 import (
 	"errors"
-	"forum/api/logger"
-	"forum/api/response"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/logger"
+	"github.com/sarmerer/forum/api/response"
 )
 
 // Router contains a map of API routes, with their handlrers

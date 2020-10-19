@@ -1,10 +1,11 @@
 package router
 
 import (
-	"forum/api/config"
-	"forum/api/controllers"
-	"forum/api/middleware"
 	"net/http"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/controllers"
+	"github.com/sarmerer/forum/api/middleware"
 )
 
 type route struct {

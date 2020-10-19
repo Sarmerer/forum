@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"forum/api/config"
-	"forum/api/models"
-	"forum/api/repository"
 	"net/http"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
 )
 
 //PostRepoCRUD helps performing CRUD operations
