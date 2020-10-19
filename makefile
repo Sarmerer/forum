@@ -10,6 +10,8 @@ go:
 	cd api && bash -c  "go run main.go"
 vue:
 	cd ./ui && npm i && npm run serve
+vue-build:
+	cd ./ui && npm i && npm run build
 push:
 	git add .
 	git commit -m "$m"
