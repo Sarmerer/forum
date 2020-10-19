@@ -10,6 +10,11 @@ import (
 var DB *sql.DB
 
 func InitDB() (err error) {
+	if _, err = os.Stat(config.DatabasePath); os.IsNotExist(err) {
+		if err = os.Mkdir(config.DatabasePath, 0755); err != nil {
+			return err
+		}
+	}
 	if DB, err = sql.Open(config.DatabaseDriver, config.DatabasePath+"/"+config.DatabaseFileName); err != nil {
 		return err
 	}
@@ -22,11 +27,6 @@ func InitDB() (err error) {
 
 // CheckDBIntegrity create database directory and tables, if they don't exist already
 func CheckDBIntegrity() (err error) {
-	if _, err = os.Stat(config.DatabasePath); os.IsNotExist(err) {
-		if err = os.Mkdir(config.DatabasePath, 0755); err != nil {
-			return err
-		}
-	}
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS users (
 			id 	 	 	 INTEGER PRIMARY KEY,

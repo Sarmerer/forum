@@ -9,7 +9,7 @@ prod: ## Build and run production docker container
 go:
 	cd api && bash -c  "go run main.go"
 vue:
-	cd ./ui-vue && npm run serve
+	cd ./ui && npm i && npm run serve
 push:
 	git add .
 	git commit -m "$m"
