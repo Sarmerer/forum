@@ -34,7 +34,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		if match {
-			if req.Method != route.Method || req.Method != http.MethodOptions {
+			if req.Method != route.Method && req.Method != http.MethodOptions {
 				wrongMethod(w, req)
 				return
 			}
