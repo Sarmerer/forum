@@ -10,10 +10,10 @@ var ()
 const (
 	APIPort   = 4433
 	APILink   = "http://localhost:4433"
-	ClientURL = "http://127.0.0.1:8081"
+	ClientURL = "https://forum-sarmerer.herokuapp.com"
 
 	DatabaseDriver   = "sqlite3"
-	DatabasePath     = "../database"
+	DatabasePath     = "./database"
 	DatabaseFileName = "forum.db"
 
 	TimeLayout = "2006-01-02 15:04:05" // TimeLayout defines the standartd time layout. All time variables are formatted corresponding to it

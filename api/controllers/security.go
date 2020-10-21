@@ -23,7 +23,9 @@ func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
 		Value:    newUUID,
 		Expires:  time.Now().Add(config.SessionExpiration),
 		Path:     "/",
-		HttpOnly: true}
+		Secure:   true,
+		HttpOnly: true,
+	}
 }
 
 func hash(password string) ([]byte, error) {
