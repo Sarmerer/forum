@@ -15,7 +15,7 @@ Vue.use(VueTimeago, {
 });
 
 Vue.config.productionTip = false;
-axios.defaults.baseURL = "/api/";
+axios.defaults.baseURL = "https://forum-api-sarmerer.herokuapp.com/api/";
 axios.defaults.withCredinentials = true;
 store.dispatch("auth/attempt").then(() => {
   new Vue({
