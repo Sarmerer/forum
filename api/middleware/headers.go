@@ -13,7 +13,6 @@ func SetHeaders(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Origin", config.ClientURL)
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
 		//CORS handler
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(200)
