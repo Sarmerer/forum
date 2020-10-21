@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/gc"
@@ -32,9 +33,13 @@ func Init() {
 func Run() {
 	mux := router.New()
 	mux.SetupRoutes()
-	log.Printf("Listening https://localhost:%d\n", config.APIPort)
+	port := config.APIPort
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+	log.Printf("Listening https://localhost:%s\n", port)
 	////log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.APIPort), mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), mux))
 }
 
 func main() {

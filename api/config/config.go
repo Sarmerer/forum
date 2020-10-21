@@ -8,7 +8,7 @@ var ()
 
 // API config
 const (
-	APIPort   = 4433
+	APIPort   = "4433"
 	APILink   = "http://localhost:4433"
 	ClientURL = "https://forum-sarmerer.herokuapp.com"
 
