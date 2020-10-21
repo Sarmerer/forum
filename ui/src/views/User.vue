@@ -8,7 +8,8 @@
         srcset=""
       />
       <h3 class="primary">
-        {{ user.display_name }} <b-badge v-if="user.role == 2" variant="primary">Admin</b-badge>
+        {{ user.display_name }}
+        <b-badge v-if="user.role == 2" variant="primary">Admin</b-badge>
       </h3>
       <p>User info</p>
     </div>
@@ -16,6 +17,9 @@
 </template>
 <script>
 import axios from "axios";
+
+axios.defaults.withCredentials = true;
+
 export default {
   data() {
     return {

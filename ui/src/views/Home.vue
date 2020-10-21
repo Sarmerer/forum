@@ -117,6 +117,8 @@ import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
 
+axios.defaults.withCredentials = true;
+
 export default {
   name: "Home",
   computed: {

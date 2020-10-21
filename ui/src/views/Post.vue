@@ -70,6 +70,9 @@ import axios from "axios";
 import CommentsSection from "@/components/CommentsSection";
 import PostSection from "@/components/PostSection";
 import { mapGetters } from "vuex";
+
+axios.defaults.withCredentials = true;
+
 export default {
   components: {
     PostSection,

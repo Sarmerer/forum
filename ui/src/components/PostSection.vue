@@ -37,10 +37,19 @@
           >
             <transition name="fade">
               <b-button-group
-                v-if="(user ? post.author_id == user.id || user.role > 0 : false) && !modal.show"
+                v-if="
+                  (user ? post.author_id == user.id || user.role > 0 : false) &&
+                    !modal.show
+                "
                 size="sm"
               >
-                <b-button size="sm" lg="1" class="controls-button" variant="light" title="Edit">
+                <b-button
+                  size="sm"
+                  lg="1"
+                  class="controls-button"
+                  variant="light"
+                  title="Edit"
+                >
                   <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
                 </b-button>
                 <b-button
@@ -51,12 +60,19 @@
                   class="controls-button"
                   title="Delete"
                 >
-                  <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
+                  <img
+                    src="@/assets/svg/post/delete.svg"
+                    alt="delete"
+                    srcset=""
+                  />
                 </b-button>
               </b-button-group>
 
               <b-button-group
-                v-if="(user ? post.author_id == user.id || user.role > 0 : false) && modal.show"
+                v-if="
+                  (user ? post.author_id == user.id || user.role > 0 : false) &&
+                    modal.show
+                "
                 size="sm"
               >
                 <b-button
@@ -67,7 +83,11 @@
                   @click="deletePost()"
                   title="Confirm"
                 >
-                  <img src="@/assets/svg/post/confirm.svg" alt="delete" srcset="" />
+                  <img
+                    src="@/assets/svg/post/confirm.svg"
+                    alt="delete"
+                    srcset=""
+                  />
                 </b-button>
                 <b-button
                   size="sm"
@@ -77,7 +97,11 @@
                   class="confirm"
                   title="Dismiss"
                 >
-                  <img src="@/assets/svg/post/dismiss.svg" alt="edit" srcset="" />
+                  <img
+                    src="@/assets/svg/post/dismiss.svg"
+                    alt="edit"
+                    srcset=""
+                  />
                 </b-button>
               </b-button-group>
             </transition>
@@ -91,6 +115,8 @@
 import axios from "axios";
 import { mapGetters } from "vuex";
 import Rating from "@/components/Rating";
+
+axios.defaults.withCredentials = true;
 
 export default {
   props: {
