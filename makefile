@@ -16,3 +16,5 @@ push:
 	git add .
 	git commit -m "$m"
 	git push -u origin master
+go-deploy:
+	./api/deploy.sh
