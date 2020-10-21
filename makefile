@@ -17,4 +17,12 @@ push:
 	git commit -m "$m"
 	git push -u origin master
 go-deploy:
-	./api/deploy.sh
+	heroku git:remote -a forum-api-sarmerer
+	git add api
+	git commit -m "deploy"
+	git subtree push --prefix api heroku master
+vue-deploy:
+	heroku git:remote -a forum-sarmerer
+	git add .
+	git commit -m "deploy"
+	git subtree push --prefix ui heroku master
