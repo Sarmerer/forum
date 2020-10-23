@@ -23,7 +23,7 @@ func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
 		Value:    newUUID,
 		Expires:  time.Now().Add(config.SessionExpiration),
 		Path:     "/",
-		Domain:   "herokuapp.com",
+		Domain:   "forum-sarmerer.herokuapp.com",
 		Secure:   true,
 		HttpOnly: true,
 	}
