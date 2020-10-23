@@ -43,7 +43,7 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 	// Heroku uses Go 1.12, which didin't support SameSite attribute,
 	// so I have to set that attribute manually.
-	w.Header().Set("Set-Cookie", cookie.String()+"; SameSite=None")
+	w.Header().Set("Set-Cookie", cookie.String()+"; SameSite=None; Domain=.herokuapp.com")
 	response.Success(w, fmt.Sprint("user is logged in"), nil)
 }
 
