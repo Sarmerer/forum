@@ -26,58 +26,66 @@
             :to="'/post/' + post.id"
             v-for="(post, index) in posts"
             :key="index"
-            class="card post"
+            class="card"
             tag="div"
             style="cursor: pointer"
           >
-            <Rating
-              v-on:update="
-                (args) => {
-                  post.rating = args.new_rating;
-                  post.your_reaction = args.new_your_reaction;
-                }
-              "
-              :postID="post.id"
-              :rating="post.rating"
-              :yourReaction="post.your_reaction"
-            />
-            <div style="max-width: 95%">
-              <small
-                >by
-                <router-link
-                  :to="'/user/' + post.author_id"
-                  style="text-decoration: none;"
-                >
-                  {{ post.author_name }}
-                </router-link>
-                <timeago :datetime="post.created" :auto-update="60"></timeago
-              ></small>
-              <h2 class="primary">
-                {{ post.title }}
-              </h2>
-              <hr />
-              <p style="color: white">{{ post.content }}</p>
-              <b-form-tag
-                v-for="(category, index) in post.categories"
-                disabled
-                :key="index"
-                :title="category.name"
-                variant="dark"
-                class="mr-1 mb-1"
-              >
-                {{ category.name }}
-              </b-form-tag>
-              <br />
-              <sub v-if="post.comments_count > 0"
-                ><img
-                  src="@/assets/svg/post/comments.svg"
-                  alt="comments"
-                  srcset=""
+            <b-row>
+              <b-col cols="1">
+                <Rating
+                  v-if="!isMobile()"
+                  v-on:update="
+                    args => {
+                      post.rating = args.new_rating;
+                      post.your_reaction = args.new_your_reaction;
+                    }
+                  "
+                  :postID="post.id"
+                  :rating="post.rating"
+                  :yourReaction="post.your_reaction"
                 />
-                {{ post.comments_count }}
-                {{ post.comments_count == 1 ? "comment" : "comments" }}</sub
-              >
-            </div>
+              </b-col>
+              <b-col cols="11" style="margin-left: -40px;">
+                <small
+                  >by
+                  <router-link
+                    :to="'/user/' + post.author_id"
+                    style="text-decoration: none;"
+                  >
+                    {{ post.author_name }}
+                  </router-link>
+                  <timeago :datetime="post.created" :auto-update="60"></timeago
+                ></small>
+                <h3 class="primary">
+                  {{ post.title }}
+                </h3>
+                <p style="color: white">{{ post.content }}</p>
+                <b-form-tag
+                  v-for="(category, index) in post.categories"
+                  disabled
+                  :key="index"
+                  :title="category.name"
+                  variant="dark"
+                  class="mr-1 mb-1"
+                >
+                  {{ category.name }}
+                </b-form-tag>
+                <br />
+                <sub v-if="post.comments_count > 0"
+                  ><img
+                    src="@/assets/svg/post/comments.svg"
+                    alt="comments"
+                    srcset=""
+                  />
+                  {{ post.comments_count }}
+                  {{ post.comments_count == 1 ? "comment" : "comments" }}</sub
+                >
+                <!-- TO-DO: Make this look decent -->
+                <!-- <sub v-if="isMobile()"
+                  ><Rating style="flex-direction:row; margin:0;"
+                /></sub> -->
+              </b-col>
+            </b-row>
           </router-link>
           <!-- End of posts -->
         </div>
@@ -121,12 +129,12 @@ export default {
   name: "Home",
   computed: {
     ...mapGetters({
-      user: "auth/user",
-    }),
+      user: "auth/user"
+    })
   },
   components: {
     Rating,
-    Error,
+    Error
   },
   data() {
     return {
@@ -138,8 +146,8 @@ export default {
         show: false,
         status: Number,
         message: String,
-        callback: Function,
-      },
+        callback: Function
+      }
     };
   },
   created() {
@@ -150,11 +158,11 @@ export default {
     async getPosts() {
       return await axios
         .get("posts")
-        .then((response) => {
+        .then(response => {
           this.error.show = false;
           this.posts = response.data.data || [];
         })
-        .catch((error) => {
+        .catch(error => {
           this.error.show = true;
           this.error.status = error.response.status;
           this.error.message = error.response.statusText;
@@ -164,10 +172,10 @@ export default {
     async getCategories() {
       return await axios
         .get("categories")
-        .then((response) => {
+        .then(response => {
           this.categories = response.data.data || [];
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
         });
     },
@@ -185,7 +193,18 @@ export default {
       }
       this.sorter.byDate = !this.sorter.byDate;
     },
-  },
+    isMobile() {
+      if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        )
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>

@@ -20,7 +20,12 @@
             placeholder="Enter title"
           ></b-form-input>
         </b-form-group>
-        <b-form-group id="input-group-2" label="Content:" label-for="input-2" fluid>
+        <b-form-group
+          id="input-group-2"
+          label="Content:"
+          label-for="input-2"
+          fluid
+        >
           <b-form-textarea
             id="textarea-auto-height"
             v-model="form.content"
@@ -33,7 +38,11 @@
         </b-form-group>
 
         <label for="tags-basic">Type a new tag and press enter</label>
-        <b-form-tags input-id="tags-basic" remove-on-delete v-model="form.categories"></b-form-tags>
+        <b-form-tags
+          input-id="tags-basic"
+          remove-on-delete
+          v-model="form.categories"
+        ></b-form-tags>
         <br />
         <b-button type="submit" variant="primary">Submit</b-button>
       </b-form>
@@ -42,15 +51,17 @@
       </b-card>
     </div>
     <div v-else class="columns">
-      <div class="info-col">
-        <div class="card">
-          <h3 class="primary">AUTHOR</h3>
-          <p>Author info</p>
-        </div>
-      </div>
       <div class="post-col">
         <PostSection :postID="postID" />
         <CommentsSection :postID="postID" />
+      </div>
+      <div class="info-col">
+        <div class="card">
+          <p>1 reply</p>
+          <p>1 participant</p>
+          <p>Last reply from:</p>
+          <p>Last activity:</p>
+        </div>
       </div>
     </div>
   </div>
@@ -64,12 +75,12 @@ import { mapGetters } from "vuex";
 export default {
   components: {
     PostSection,
-    CommentsSection,
+    CommentsSection
   },
   computed: {
     ...mapGetters({
-      user: "auth/user",
-    }),
+      user: "auth/user"
+    })
   },
   data() {
     return {
@@ -78,8 +89,8 @@ export default {
         title: "",
         amount: 1,
         content: "",
-        categories: [],
-      },
+        categories: []
+      }
     };
   },
   methods: {
@@ -90,14 +101,14 @@ export default {
           .post("post/create", {
             title: this.form.title,
             content: this.form.content,
-            categories: this.form.categories,
+            categories: this.form.categories
           })
-          .then((response) => {
+          .then(response => {
             console.log(response.data);
             this.resetForm();
             this.$router.push("/post/" + response.data.data);
           })
-          .catch((error) => {
+          .catch(error => {
             alert(error.response.data.code + " " + error.response.data.message);
           });
       }
@@ -106,7 +117,7 @@ export default {
       this.form.title = "";
       this.form.content = "";
       this.form.categories = [];
-    },
+    }
   },
   watch: {
     "$route.params": {
@@ -114,9 +125,9 @@ export default {
         const { id } = newID;
         this.postID = Number.parseInt(id);
       },
-      immediate: true,
-    },
-  },
+      immediate: true
+    }
+  }
 };
 </script>
 <style lang="scss">

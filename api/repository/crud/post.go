@@ -150,7 +150,7 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 		 )
 		 AS comments_count 
 		FROM posts p
-			WHERE p.author_id_fkey = $1`,
+			WHERE p.author_fkey = $1`,
 		uid,
 	); err != nil {
 		return nil, err
