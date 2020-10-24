@@ -68,7 +68,7 @@ func (CommentRepoCRUD) Create(r *models.Comment) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"INSERT INTO comments (author_fkey, author_name_fkey, content, created, post_id_fkey, edited) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO comments (author_id_fkey, author_name_fkey, content, created, post_id_fkey, edited) VALUES (?, ?, ?, ?, ?, ?)",
 		r.AuthorID, r.AuthorName, r.Content, time.Now().Format(config.TimeLayout), r.PostID, 0,
 	); err != nil {
 		return err
@@ -91,7 +91,7 @@ func (CommentRepoCRUD) Update(r *models.Comment) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE comments SET author_fkey = ?, author_name_fkey = ?, content = ?, created = ?, post_id_fkey = ?, edited = ? WHERE id = ?",
+		"UPDATE comments SET author_id_fkey = ?, author_name_fkey = ?, content = ?, created = ?, post_id_fkey = ?, edited = ? WHERE id = ?",
 		r.AuthorID, r.AuthorName, r.Content, r.Created, r.PostID, 1, r.ID,
 	); err != nil {
 		return err

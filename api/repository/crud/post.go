@@ -182,7 +182,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 		}
 	}
 	if rows, err = repository.DB.Query(
-		`SELECT p.id, p.author_fkey, p.author_name_fkey, p.title, p.content, p.created, p.updated
+		`SELECT p.id, p.author_id_fkey, p.author_name_fkey, p.title, p.content, p.created, p.updated
 		FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p
 			ON p.id = pcb.post_id_fkey
@@ -214,7 +214,7 @@ func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"INSERT INTO posts (author_fkey,author_name_fkey, title, content, created, updated) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO posts (author_id_fkey,author_name_fkey, title, content, created, updated) VALUES (?, ?, ?, ?, ?, ?)",
 		post.AuthorID, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
 	); err != nil {
 		return 0, err
@@ -241,7 +241,7 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE posts SET author_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ? WHERE id = ?",
+		"UPDATE posts SET author_id_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ? WHERE id = ?",
 		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.ID,
 	); err != nil {
 		return err
