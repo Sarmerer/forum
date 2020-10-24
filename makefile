@@ -2,21 +2,24 @@ push:
 	git add .
 	git commit -m "$m"
 	git push -u origin master
+git-status:
+	@status=$$(git status --porcelain); \
+	if [ ! -z "$${status}" ]; \
+	then \
+		echo "There are uncommited changes, commit them before deploy."; \
+		exit 1; \
+	fi
 
 go:
 	cd api && bash -c  "go run main.go"
-go-deploy:
+go-deploy: git-status
 	heroku git:remote -a forum-api-sarmerer
-	git add .
-	git commit -m "go deploy"
 	git subtree push --prefix api heroku master
 
 vue:
 	cd ./ui && npm i && npm run serve
 vue-build:
 	cd ./ui && npm i && npm run build
-vue-deploy:
+vue-deploy: git-status
 	heroku git:remote -a forum-sarmerer
-	git add .
-	git commit -m "vue deploy"
 	git subtree push --prefix ui heroku master
