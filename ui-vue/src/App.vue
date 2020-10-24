@@ -32,7 +32,7 @@
       ></router-link>
       <router-link to="/post/new"><b-icon icon="pen"></b-icon></router-link>
       <div v-if="!authenticated">
-        <Login></Login>
+        <Login />
       </div>
       <div v-if="authenticated">
         <Me />
