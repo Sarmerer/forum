@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div id="nav">
+    <!-- <div id="nav">
       <b-navbar
         toggleable="lg"
         type="light"
@@ -25,8 +25,25 @@
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
+    </div> -->
+    <div class="sidenav">
+      <router-link to="/"
+        ><span class="primary"><b-icon icon="chat-left-dots"></b-icon></span
+      ></router-link>
+      <router-link to="/post/new"><b-icon icon="pen"></b-icon></router-link>
+      <div v-if="!authenticated">
+        <Login></Login>
+      </div>
+      <div v-if="authenticated">
+        <Me />
+      </div>
+      <!-- <a href="#about"><b-icon icon="person"></b-icon></a>
+      <a href="#about"><b-icon icon="gear"></b-icon></a>
+      <router-link to="/post/new"
+        ><b-icon icon="door-open"></b-icon
+      ></router-link> -->
     </div>
-    <router-view />
+    <router-view class="main" />
   </div>
 </template>
 <script>
@@ -38,12 +55,42 @@ export default {
   name: "App",
   computed: {
     ...mapGetters({
-      authenticated: "auth/authenticated",
-    }),
+      authenticated: "auth/authenticated"
+    })
   },
   components: {
     Login,
-    Me,
-  },
+    Me
+  }
 };
 </script>
+<style lang="scss">
+.sidenav {
+  height: 100%;
+  width: 65px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 30px;
+}
+
+.sidenav a {
+  padding: 10px 8px 10px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 65px;
+  margin-top: 30px;
+}
+</style>

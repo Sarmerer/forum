@@ -7,6 +7,10 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 import "./assets/styles.scss"; // Global styles
+import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue';
+
+Vue.use(BootstrapVue)
+Vue.use(BootstrapVueIcons)
 
 import VueTimeago from "vue-timeago";
 Vue.use(VueTimeago, {
