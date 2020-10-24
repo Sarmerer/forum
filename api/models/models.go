@@ -47,5 +47,5 @@ type Comment struct {
 	Content    string `json:"content"`
 	Created    string `json:"created"`
 	PostID     int64  `json:"post"`
-	Edited     int    `json:"edited"`
+	Edited     bool   `json:"edited"`
 }

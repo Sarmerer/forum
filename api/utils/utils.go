@@ -26,6 +26,17 @@ func GetUserFromCtx(r *http.Request) models.UserCtx {
 	return models.UserCtx{ID: -1, Role: -1}
 }
 
+func ParseFlags(args []string) []string {
+	var res []string
+	for _, arg := range args {
+		if _, ok := config.Flags[arg]; ok {
+			*config.Flags[arg].State = true
+			res = append(res, config.Flags[arg].Message)
+		}
+	}
+	return res
+}
+
 func FormatRequest(r *http.Request) string {
 	var request []string
 	url := fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto)

@@ -11,6 +11,7 @@ import (
 	"github.com/sarmerer/forum/api/logger"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/router"
+	"github.com/sarmerer/forum/api/utils"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -27,6 +28,12 @@ func Init() {
 
 	err = repository.CheckDBIntegrity()
 	logger.InitLogs("Database integrity", err)
+
+	flags := utils.ParseFlags(os.Args[1:])
+	for _, flag := range flags {
+		logger.Log("Config", flag)
+	}
+	config.Init()
 }
 
 // Run sets up API routes and then starts to listen for requests
@@ -37,7 +44,7 @@ func Run() {
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
 	}
-	log.Printf("Listening https://localhost:%s\n", port)
+	log.Printf("Listening %s:%s\n", config.APIURL, port)
 	////log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), mux))
 }

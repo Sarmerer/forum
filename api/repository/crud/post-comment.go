@@ -44,18 +44,24 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
 //FindByID returns a specific reply from the database
 func (CommentRepoCRUD) FindByID(rid int64) (*models.Comment, int, error) {
 	var (
-		r   models.Comment
-		err error
+		r      models.Comment
+		edited int
+		err    error
 	)
 	if err = repository.DB.QueryRow(
 		"SELECT * FROM comments WHERE id = ?", rid,
 	).Scan(
-		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited,
+		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &edited,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusBadRequest, errors.New("reply not found")
+	}
+	if edited == 1 {
+		r.Edited = true
+	} else {
+		r.Edited = false
 	}
 	return &r, http.StatusOK, nil
 }

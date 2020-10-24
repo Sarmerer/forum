@@ -4,13 +4,25 @@ import (
 	"time"
 )
 
-var ()
+type Flag struct {
+	Message string
+	State   *bool
+}
+
+// Actual config variables
+var (
+	ClientURL = clientURLTest
+	APIURL    = apiURLTest
+	Flags     = map[string]*Flag{"--prod": {"production mode is on", &production}}
+)
 
 // API config
 const (
-	APIPort   = "4433"
-	APILink   = "http://localhost:4433"
-	ClientURL = "https://forum-sarmerer.herokuapp.com"
+	APIPort       = "4433"
+	apiURLTest    = "http://localhost:4433"
+	apiURLProd    = "https://forum-api-sarmerer.herokuapp.com"
+	clientURLTest = "http://localhost:8081"
+	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 
 	DatabaseDriver   = "sqlite3"
 	DatabasePath     = "./database"
@@ -29,6 +41,11 @@ const (
 	RoleAdmin = 2
 )
 
+// Flags
+var (
+	production = false
+)
+
 // API response messages
 const (
 	// Auth endpoints
@@ -38,3 +55,10 @@ const (
 
 	ErrorWrongCreds = "wrong login or password"
 )
+
+func Init() {
+	if production {
+		ClientURL = clientURLProd
+		APIURL = apiURLProd
+	}
+}

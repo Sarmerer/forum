@@ -30,7 +30,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, route := range router.routes {
 		match, err := regexp.MatchString(route.Pattern, req.URL.Path)
 		if err != nil {
-			logger.ServerLogs("Router", "", err)
+			logger.CheckErrAndLog("Router", "", err)
 			return
 		}
 		if match {
