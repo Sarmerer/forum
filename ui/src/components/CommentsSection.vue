@@ -69,7 +69,7 @@
           </p>
           <small v-b-tooltip.hover :title="comment.created"
             ><timeago :datetime="comment.created" :auto-update="60"></timeago>
-            <small v-if="comment.edited == 1"> edited</small>
+            <small v-if="comment.edited"> edited</small>
           </small>
           <b-button-group
             v-if="
@@ -247,7 +247,7 @@ export default {
         return;
       if (this.editor.editingContent == oldCommentContent) {
         this.comments[this.editor.editing].content = this.editor.editingContent;
-        this.comments[this.editor.editing].edited = 1;
+        this.comments[this.editor.editing].edited = true;
         this.editor.editing = -1;
         return;
       }
@@ -262,7 +262,7 @@ export default {
           this.comments[
             this.editor.editing
           ].content = this.editor.editingContent;
-          this.comments[this.editor.editing].edited = 1;
+          this.comments[this.editor.editing].edited = true;
           this.editor.editing = -1;
         })
         .catch((error) => {
@@ -280,7 +280,7 @@ export default {
         created: Date.now(),
         content: this.form.comment,
         post: this.postID,
-        edited: 0,
+        edited: false,
       };
       this.comments = [comment, ...this.comments];
     },
