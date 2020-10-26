@@ -96,8 +96,19 @@
         <div class="info-col">
           <div class="card">
             <h3 class="primary">RECENT</h3>
-            <!-- <hr /> -->
-            <p>col 2</p>
+            <router-link
+              :to="'/post/' + post.id"
+              v-for="(post, index) in posts.slice(0, 5)"
+              :key="index"
+              tag="div"
+              style="cursor: pointer"
+              ><p>{{ post.title }}</p>
+              <small
+                ><timeago
+                  :datetime="post.created"
+                  :auto-update="10"
+                ></timeago></small
+            ></router-link>
           </div>
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
