@@ -1,13 +1,13 @@
 <template>
   <div class="home ">
-    <!-- <div class="hero-image">
+    <div class="hero-image">
       <div class="hero-text">
         <h1>
           WELCOME<br />
           TO <span class="primary">FORUM</span>
         </h1>
       </div>
-    </div> -->
+    </div>
 
     <div class="main-content">
       <div class="columns">
@@ -16,7 +16,7 @@
             <Error v-if="error.show" :errorData="error" />
           </div>
           <div v-if="posts.length > 0" class="card">
-            <b-button @click="sortPosts()"
+            <b-button @click="sortDisplayPosts()"
               >sort by date:
               {{ sorter.byDate ? "ascending" : "descending" }}</b-button
             >
@@ -46,19 +46,9 @@
                 />
               </b-col>
               <b-col cols="11" style="margin-left: -40px;">
-                <small
-                  >by
-                  <router-link
-                    :to="'/user/' + post.author_id"
-                    style="text-decoration: none;"
-                  >
-                    {{ post.author_name }}
-                  </router-link>
-                  <timeago :datetime="post.created" :auto-update="60"></timeago
-                ></small>
-                <h3 class="primary">
+                <h5>
                   {{ post.title }}
-                </h3>
+                </h5>
                 <p style="color: white">{{ post.content }}</p>
                 <b-form-tag
                   v-for="(category, index) in post.categories"
@@ -70,29 +60,43 @@
                 >
                   {{ category.name }}
                 </b-form-tag>
-                <br />
-                <sub v-if="post.comments_count > 0"
-                  ><img
-                    src="@/assets/svg/post/comments.svg"
-                    alt="comments"
-                    srcset=""
-                  />
-                  {{ post.comments_count }}
-                  {{ post.comments_count == 1 ? "comment" : "comments" }}</sub
-                >
-                <!-- TO-DO: Make this look decent -->
-                <!-- <sub v-if="isMobile()"
-                  ><Rating style="flex-direction:row; margin:0;"
-                /></sub> -->
               </b-col>
             </b-row>
+            <div class="post-footer">
+              <small class="ml-3">
+                <img
+                  src="@/assets/svg/post/comments.svg"
+                  alt="comments"
+                  srcset=""
+                />
+                {{ post.comments_count }}
+                <!-- {{ post.comments_count == 1 ? "comment" : "comments" }} -->
+              </small>
+
+              <!-- TO-DO: Make this look decent -->
+              <small v-if="isMobile()"
+                ><Rating style="flex-direction:row; margin:0;"
+              /></small>
+              <small
+                >by
+                <router-link
+                  :to="'/user/' + post.author_id"
+                  style="text-decoration: none;"
+                  class="secondary"
+                >
+                  {{ post.author_name }}
+                </router-link>
+                <timeago :datetime="post.created" :auto-update="60"></timeago
+              ></small>
+            </div>
           </router-link>
           <!-- End of posts -->
         </div>
+
         <div class="info-col">
           <div class="card">
             <h3 class="primary">RECENT</h3>
-            <hr />
+            <!-- <hr /> -->
             <p>col 2</p>
           </div>
           <div class="card">
@@ -179,7 +183,7 @@ export default {
           console.log(error);
         });
     },
-    sortPosts() {
+    sortDisplayPosts() {
       if (this.sorter.byDate) {
         this.posts
           .sort((a, b) => {
@@ -188,7 +192,7 @@ export default {
           .reverse();
       } else {
         this.posts.sort((a, b) => {
-          return new Date(b.post.created) - new Date(a.post.created);
+          return new Date(b.created) - new Date(a.created);
         });
       }
       this.sorter.byDate = !this.sorter.byDate;
@@ -212,7 +216,7 @@ export default {
 .hero-image {
   background-image: url("../assets/img/home-hero.jpg");
   box-shadow: 0 5px 6px 2px rgba(10, 10, 10, 0.3);
-  height: 25%;
+  height: 200px;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -265,7 +269,12 @@ a.card {
   flex-grow: 0.4;
 }
 
-hr {
-  opacity: 0.3;
+.post-footer {
+  line-height: 36px;
+  overflow: hidden;
+  padding: 2px 18px 2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>

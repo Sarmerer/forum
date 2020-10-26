@@ -38,13 +38,4 @@ export default {
   }
 };
 </script>
-<style lang="scss" scoped>
-a {
-  cursor: pointer;
-  color: #818181 !important;
-}
 
-a:hover {
-  color: #f1f1f1 !important;
-}
-</style>

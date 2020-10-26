@@ -7,6 +7,14 @@ html {
   height: 100%;
   margin: 0;
   font-family: "Roboto Mono", monospace;
+  padding: 0 !important;
+}
+
+.card,
+.btn,
+.form-control {
+  border: 0;
+  border-radius: 0;
 }
 
 .primary {
@@ -28,6 +36,12 @@ html {
 .secondary {
   color: #21e6c1;
 }
+
+a.secondary:hover {
+  color: #21e6c1;
+  opacity: 0.6;
+}
+
 .textarea {
   background-color: #101010;
   color: gray;
