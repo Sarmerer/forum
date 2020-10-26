@@ -138,22 +138,8 @@ export default {
   color: #f1f1f1 !important;
 }
 
-/* .auth-modal .modal {
-  padding: 0 !important;
-}
-
-
-*/
-
 .auth-modal > .modal-dialog {
   max-width: 400px;
-  /* height: 100%;
-  margin: 0;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex; */
 }
 
 .auth-modal > .modal-dialog > .modal-content {
@@ -163,10 +149,6 @@ export default {
   background-image: url("../assets/img/home-hero.jpg");
   cursor: context-menu;
   padding: 30px 10px;
-  /* border: 0;
-  border-radius: 0;
-  min-height: 100%;
-  height: auto; */
 }
 
 .modal-button {
@@ -180,9 +162,4 @@ export default {
   background-color: #278ea5;
   opacity: 0.8;
 }
-
-/* form {
-  margin-left: 40px;
-  margin-right: 40px;
-} */
 </style>

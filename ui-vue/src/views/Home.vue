@@ -63,7 +63,7 @@
               </b-col>
             </b-row>
             <div class="post-footer">
-              <small class="ml-3">
+              <small>
                 <img
                   src="@/assets/svg/post/comments.svg"
                   alt="comments"
@@ -272,9 +272,16 @@ a.card {
 .post-footer {
   line-height: 36px;
   overflow: hidden;
-  padding: 2px 18px 2px 0;
+  padding: 2px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .columns {
+    margin: 0 2%;
+  }
 }
 </style>

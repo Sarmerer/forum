@@ -1,32 +1,33 @@
 <template>
   <div id="app">
-    <!-- <div id="nav">
-      <b-navbar
-        toggleable="lg"
-        type="light"
-        style="background: rgba(255, 255, 255, 0.05)"
-      >
-        <b-navbar-brand href="#">forum</b-navbar-brand>
-        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-        <b-collapse id="nav-collapse" is-nav>
-          <b-navbar-nav>
-            <b-nav-item><router-link to="/">Home</router-link></b-nav-item>
-          </b-navbar-nav>
-          <b-navbar-nav>
-            <b-nav-item
-              ><router-link to="/post/new">New post</router-link></b-nav-item
-            >
-          </b-navbar-nav>
-          <b-navbar-nav v-if="!authenticated" class="ml-auto">
-            <Login class="ml-auto"></Login>
-          </b-navbar-nav>
-          <b-navbar-nav v-else class="ml-auto">
-            <Me />
-          </b-navbar-nav>
-        </b-collapse>
+    <div v-if="isMobile()" id="nav">
+      <b-navbar type="dark" fixed="bottom">
+        <b-navbar-nav
+          ><b-nav-item>
+            <router-link to="/"
+              ><span class="primary"
+                ><b-icon
+                  icon="chat-left-dots"
+                ></b-icon></span></router-link></b-nav-item
+        ></b-navbar-nav>
+        <b-navbar-nav
+          ><b-nav-item>
+            <router-link to="/post/new"
+              ><b-icon icon="pen"></b-icon></router-link></b-nav-item
+        ></b-navbar-nav>
+        <b-navbar-nav v-if="!authenticated"
+          ><b-nav-item>
+            <div>
+              <Login /></div></b-nav-item
+        ></b-navbar-nav>
+        <b-navbar-nav v-if="authenticated"
+          ><b-nav-item>
+            <div>
+              <Me /></div></b-nav-item
+        ></b-navbar-nav>
       </b-navbar>
-    </div> -->
-    <div class="sidenav">
+    </div>
+    <div v-if="!isMobile()" class="sidenav">
       <router-link to="/"
         ><span class="primary"><b-icon icon="chat-left-dots"></b-icon></span
       ></router-link>
@@ -37,13 +38,8 @@
       <div v-if="authenticated">
         <Me />
       </div>
-      <!-- <a href="#about"><b-icon icon="person"></b-icon></a>
-      <a href="#about"><b-icon icon="gear"></b-icon></a>
-      <router-link to="/post/new"
-        ><b-icon icon="door-open"></b-icon
-      ></router-link> -->
     </div>
-    <router-view class="main" />
+    <router-view class="{'main': !isMobile()}" />
   </div>
 </template>
 <script>
@@ -61,6 +57,19 @@ export default {
   components: {
     Login,
     Me
+  },
+  methods: {
+    isMobile() {
+      if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        )
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 };
 </script>
@@ -89,8 +98,15 @@ export default {
   color: #f1f1f1;
 }
 
+.navbar {
+  background-color: #111;
+  justify-content: space-around;
+}
+// .navbar > .navbar-nav > .nav-link {
+//   color: #f1f1f1;
+// }
+
 .main {
   margin-left: 65px;
-  // margin-top: 30px;
 }
 </style>
