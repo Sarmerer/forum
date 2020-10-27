@@ -194,4 +194,11 @@ var apiRoutes = []route{
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
 	},
+	{
+		URI:      "/api/comment/rate",
+		Handler:  controllers.RateComment,
+		Method:   http.MethodPost,
+		MinRole:  config.RoleUser,
+		NeedAuth: true,
+	},
 }

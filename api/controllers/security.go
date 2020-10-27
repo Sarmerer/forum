@@ -11,21 +11,27 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
+func generateCookie(cookie *http.Cookie, err error) (string, string) {
 	var newUUID string
 	if err != nil {
 		newUUID = fmt.Sprint(uuid.NewV4())
 	} else {
 		newUUID = cookie.Value
 	}
-	return &http.Cookie{
+	newCookie := &http.Cookie{
 		Name:     config.SessionCookieName,
 		Value:    newUUID,
 		Expires:  time.Now().Add(config.SessionExpiration),
 		Path:     "/",
-		Secure:   true,
 		HttpOnly: true,
 	}
+	if config.Production {
+		cookie.Secure = true
+		// Heroku hosting uses Go version 1.12, which didin't support SameSite attribute,
+		// so I have to set that attribute manually.
+		return newCookie.String() + "; SameSite=None", newUUID
+	}
+	return newCookie.String(), newUUID
 }
 
 func hash(password string) ([]byte, error) {

@@ -27,3 +27,8 @@ type InputPostFind struct {
 	AuthorID   int64    `json:"author"`
 	Categories []string `json:"categories"`
 }
+
+type InputRate struct {
+	ID       int64 `json:"pid"`
+	Reaction int   `json:"reaction"`
+}

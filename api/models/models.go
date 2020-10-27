@@ -49,3 +49,8 @@ type Comment struct {
 	PostID     int64  `json:"post"`
 	Edited     bool   `json:"edited"`
 }
+
+type Rating struct {
+	Rating       int `json:"rating"`
+	YourReaction int `json:"your_reaction"`
+}

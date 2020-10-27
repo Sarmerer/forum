@@ -13,7 +13,7 @@ type Flag struct {
 var (
 	ClientURL = clientURLTest
 	APIURL    = apiURLTest
-	Flags     = map[string]*Flag{"--prod": {"production mode is on", &production}}
+	Flags     = map[string]*Flag{"--prod": {"production mode is on", &Production}}
 )
 
 // API config
@@ -43,7 +43,7 @@ const (
 
 // Flags
 var (
-	production = false
+	Production = false
 )
 
 // API response messages
@@ -57,7 +57,7 @@ const (
 )
 
 func Init() {
-	if production {
+	if Production {
 		ClientURL = clientURLProd
 		APIURL = apiURLProd
 	}
