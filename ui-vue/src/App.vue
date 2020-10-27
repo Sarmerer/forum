@@ -39,7 +39,8 @@
         <Me />
       </div>
     </div>
-    <router-view class="{'main': !isMobile()}" />
+    <!-- why the hack is this not working??? -->
+    <router-view class="{'main': !isMobile}" />
   </div>
 </template>
 <script>

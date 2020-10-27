@@ -5,11 +5,12 @@ html {
   background-color: #121212;
   color: rgba(255, 255, 255, 0.87);
   height: 100%;
-  margin: 0;
+  // margin: 0;
   font-family: "Roboto Mono", monospace;
   padding: 0 !important;
 }
 
+/* Make sure the borders are not rounded because of Bootstrap*/
 .card,
 .btn,
 .form-control {
@@ -17,6 +18,20 @@ html {
   border-radius: 0;
 }
 
+/* Global Form Control color scheme start */
+.form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid #278ea5;
+}
+/* Form Control color scheme end */
+
+/* Global Color scheme start*/
 .primary {
   color: #278ea5;
 }
@@ -52,3 +67,4 @@ a.secondary:hover {
   color: white;
   background-color: #121212;
 }
+/*Color scheme end*/
