@@ -162,8 +162,16 @@ func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`DELETE FROM comments
-		WHERE post_id_fkey = ?`, pid,
+		`BEGIN;
+		DELETE FROM comments_reactions
+		WHERE comment_id_fkey IN (
+				SELECT id
+				FROM comments
+				WHERE post_id_fkey = ?
+			);
+		DELETE FROM comments
+		WHERE post_id_fkey = ?;
+		COMMIT;`, pid,
 	); err != nil {
 		return err
 	}

@@ -34,7 +34,7 @@ func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
 		   SELECT
 			  TOTAL(reaction) 
 		   FROM
-			  reactions 
+		   	posts_reactions 
 		   WHERE
 			  post_id_fkey = p.id 
 		)
@@ -43,7 +43,7 @@ func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
 		SELECT
 		   reaction 
 		FROM
-		   reactions 
+			posts_reactions 
 		WHERE
 		   user_id_fkey = $1 
 		   AND post_id_fkey = p.id), 0) AS yor_reaction,
@@ -88,7 +88,7 @@ func (PostRepoCRUD) FindByID(pid int64, uid int64) (*models.Post, int, error) {
 		   SELECT
 			  TOTAL(reaction) 
 		   FROM
-			  reactions 
+		   	posts_reactions 
 		   WHERE
 			  post_id_fkey = p.id 
 		)
@@ -97,7 +97,7 @@ func (PostRepoCRUD) FindByID(pid int64, uid int64) (*models.Post, int, error) {
 		SELECT
 		   reaction 
 		FROM
-		   reactions 
+			posts_reactions 
 		WHERE
 		   user_id_fkey = ? 
 		   AND post_id_fkey = p.id), 0) AS yor_reaction FROM posts p WHERE p.id = ?`,
@@ -126,13 +126,13 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 		`SELECT *,
 		(
 			SELECT TOTAL(reaction)
-			FROM reactions
+			FROM posts_reactions
 			WHERE post_id_fkey = p.id
 		) AS rating,
 		IFNULL (
 			(
 				SELECT reaction
-				FROM reactions
+				FROM posts_reactions
 				WHERE user_id_fkey = $1
 					AND post_id_fkey = p.id
 			),

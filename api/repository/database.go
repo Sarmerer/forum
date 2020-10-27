@@ -84,7 +84,7 @@ func CheckDBIntegrity() (err error) {
 	}
 
 	if _, err = DB.Exec(
-		`CREATE TABLE IF NOT EXISTS reactions (
+		`CREATE TABLE IF NOT EXISTS posts_reactions (
 			id			 INTEGER PRIMARY KEY,
 			post_id_fkey INTEGER REFERENCES posts(id),
 			user_id_fkey INTEGER REFERENCES users(id),
@@ -93,5 +93,14 @@ func CheckDBIntegrity() (err error) {
 		return err
 	}
 
+	if _, err = DB.Exec(
+		`CREATE TABLE IF NOT EXISTS comments_reactions (
+			id			 INTEGER PRIMARY KEY,
+			comment_id_fkey INTEGER REFERENCES comments(id),
+			user_id_fkey INTEGER REFERENCES users(id),
+			reaction	 INTEGER
+		)`); err != nil {
+		return err
+	}
 	return nil
 }

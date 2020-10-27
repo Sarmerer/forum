@@ -8,16 +8,16 @@ import (
 	"github.com/sarmerer/forum/api/repository"
 )
 
-//categoryRepoCRUD helps performing CRUD operations
-type categoryRepoCRUD struct{}
+//CategoryRepoCRUD helps performing CRUD operations
+type CategoryRepoCRUD struct{}
 
 //NewCategoryRepoCRUD creates an instance of CategoryModel
 //FIXME wrong categories amount after COUNT
-func NewCategoryRepoCRUD() categoryRepoCRUD {
-	return categoryRepoCRUD{}
+func NewCategoryRepoCRUD() CategoryRepoCRUD {
+	return CategoryRepoCRUD{}
 }
 
-func (categoryRepoCRUD) FindAll() ([]models.Category, error) {
+func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
@@ -43,7 +43,7 @@ func (categoryRepoCRUD) FindAll() ([]models.Category, error) {
 }
 
 //FindByPostID returns all categories belonging to  a post
-func (categoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
+func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
@@ -69,7 +69,7 @@ func (categoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 
 //Find returns a specific category from the database
 //TODO implment search for all post with such categories here
-func (categoryRepoCRUD) Find(id int) (*models.Category, error) {
+func (CategoryRepoCRUD) Find(id int) (*models.Category, error) {
 	var category models.Category
 	rows, err := repository.DB.Query("SELECT * FROM categories WHERE id = ?", id)
 	if err != nil {
@@ -83,7 +83,7 @@ func (categoryRepoCRUD) Find(id int) (*models.Category, error) {
 
 //Create adds a new category to the database
 //FIXME category being duplicated, when creating new post with existing category
-func (categoryRepoCRUD) Create(postID int64, categories []string) (err error) {
+func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 	var (
 		cid    int64
 		result sql.Result
@@ -124,7 +124,7 @@ func (categoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 
 //Delete deletes category from the database
 //TODO also delete category from the brige table
-func (categoryRepoCRUD) Delete(cid int) error {
+func (CategoryRepoCRUD) Delete(cid int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -151,7 +151,7 @@ func (categoryRepoCRUD) Delete(cid int) error {
 	return errors.New("could not delete the category")
 }
 
-func (categoryRepoCRUD) DeleteGroup(pid int64) error {
+func (CategoryRepoCRUD) DeleteGroup(pid int64) error {
 	var err error
 	if _, err = repository.DB.Exec(
 		`DELETE FROM posts_categories_bridge

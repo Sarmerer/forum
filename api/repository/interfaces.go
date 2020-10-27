@@ -29,7 +29,7 @@ type PostRepo interface {
 	Update(*models.Post) error
 	Delete(int64) (int, error)
 
-	RatePost(int64, int64, int) error
+	Rate(int64, int64, int) error
 	GetRating(int64, int64) (int, int, error)
 	DeleteAllReactions(int64) error
 }
@@ -49,4 +49,8 @@ type CommentRepo interface {
 	Delete(int64) error
 	DeleteGroup(int64) error
 	Count(int64) (string, error)
+
+	Rate(int64, int64, int) error
+	GetRating(int64, int64) (int, int, error)
+	DeleteAllReactions(int64) error
 }
