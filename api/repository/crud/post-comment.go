@@ -27,7 +27,10 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
 		err      error
 	)
 	if rows, err = repository.DB.Query(
-		"SELECT * FROM comments WHERE post_id_fkey = ? ORDER BY created DESC", postID); err != nil {
+		`SELECT *
+		FROM comments
+		WHERE post_id_fkey = ?
+		ORDER BY created DESC`, postID); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, err
 		}
@@ -49,7 +52,9 @@ func (CommentRepoCRUD) FindByID(rid int64) (*models.Comment, int, error) {
 		err    error
 	)
 	if err = repository.DB.QueryRow(
-		"SELECT * FROM comments WHERE id = ?", rid,
+		`SELECT *
+		FROM comments
+		WHERE id = ?`, rid,
 	).Scan(
 		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &edited,
 	); err != nil {
@@ -74,7 +79,15 @@ func (CommentRepoCRUD) Create(r *models.Comment) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"INSERT INTO comments (author_id_fkey, author_name_fkey, content, created, post_id_fkey, edited) VALUES (?, ?, ?, ?, ?, ?)",
+		`INSERT INTO comments (
+			author_id_fkey,
+			author_name_fkey,
+			content,
+			created,
+			post_id_fkey,
+			edited
+		)
+		VALUES (?, ?, ?, ?, ?, ?)`,
 		r.AuthorID, r.AuthorName, r.Content, time.Now().Format(config.TimeLayout), r.PostID, 0,
 	); err != nil {
 		return err
@@ -97,7 +110,14 @@ func (CommentRepoCRUD) Update(r *models.Comment) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE comments SET author_id_fkey = ?, author_name_fkey = ?, content = ?, created = ?, post_id_fkey = ?, edited = ? WHERE id = ?",
+		`UPDATE comments
+		SET author_id_fkey = ?,
+			author_name_fkey = ?,
+			content = ?,
+			created = ?,
+			post_id_fkey = ?,
+			edited = ?
+		WHERE id = ?`,
 		r.AuthorID, r.AuthorName, r.Content, r.Created, r.PostID, 1, r.ID,
 	); err != nil {
 		return err
@@ -120,7 +140,8 @@ func (CommentRepoCRUD) Delete(rid int64) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"DELETE FROM comments WHERE id = ?", rid,
+		`DELETE FROM comments
+		WHERE id = ?`, rid,
 	); err != nil {
 		return err
 	}
@@ -141,7 +162,8 @@ func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"DELETE FROM comments WHERE post_id_fkey = ?", pid,
+		`DELETE FROM comments
+		WHERE post_id_fkey = ?`, pid,
 	); err != nil {
 		return err
 	}
@@ -157,7 +179,9 @@ func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 
 func (CommentRepoCRUD) Count(pid int64) (comments string, err error) {
 	if err = repository.DB.QueryRow(
-		"SELECT count(id) FROM comments WHERE post_id_fkey = ?", pid,
+		`SELECT count(id)
+		FROM comments
+		WHERE post_id_fkey = ?`, pid,
 	).Scan(
 		&comments,
 	); err != nil {

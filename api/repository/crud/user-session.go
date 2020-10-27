@@ -11,7 +11,11 @@ import (
 
 func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, status int, err error) {
 	if err = repository.DB.QueryRow(
-		"SELECT id, role, display_name FROM users WHERE session_id = ?", sessionID,
+		`SELECT id,
+			role,
+			display_name
+		FROM users
+		WHERE session_id = ?`, sessionID,
 	).Scan(
 		&user.ID, &user.Role, &user.DisplayName,
 	); err != nil {
@@ -30,7 +34,9 @@ func (UserRepoCRUD) UpdateSession(id int64, newSession string) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"UPDATE users SET session_id = ? WHERE id = ?",
+		`UPDATE users
+		SET session_id = ?
+		WHERE id = ?`,
 		newSession, id,
 	); err != nil {
 		return err

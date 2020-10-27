@@ -14,7 +14,18 @@ func (PostRepoCRUD) GetRating(postID int64, currentUser int64) (int, int, error)
 		err          error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT TOTAL(reaction) AS rating, IFNULL ((SELECT reaction FROM reactions WHERE user_id_fkey = $1 AND post_id_fkey = $2), 0) AS yor_reaction FROM reactions WHERE post_id_fkey = $2`,
+		`SELECT TOTAL(reaction) AS rating,
+		IFNULL (
+			(
+				SELECT reaction
+				FROM reactions
+				WHERE user_id_fkey = $1
+					AND post_id_fkey = $2
+			),
+			0
+		) AS yor_reaction
+		FROM reactions
+		WHERE post_id_fkey = $2`,
 		currentUser, postID,
 	).Scan(&rating, &yourReaction); err != nil {
 		if err != sql.ErrNoRows {
@@ -34,16 +45,28 @@ func (PostRepoCRUD) RatePost(postID, userID int64, reaction int) error {
 	switch reaction {
 	case 0:
 		if result, err = repository.DB.Exec(
-			`DELETE FROM reactions WHERE post_id_fkey = ? AND user_id_fkey = ?`,
+			`DELETE FROM reactions
+			WHERE post_id_fkey = ?
+				AND user_id_fkey = ?`,
 			postID, userID,
 		); err != nil {
 			return err
 		}
 	default:
 		if result, err = repository.DB.Exec(
-			`INSERT OR REPLACE
-			INTO reactions(id, post_id_fkey, user_id_fkey, reaction)
-			VALUES ((SELECT id FROM reactions WHERE post_id_fkey = $1 AND user_id_fkey = $2), $1, $2, $3);`,
+			`INSERT
+			OR REPLACE INTO reactions(id, post_id_fkey, user_id_fkey, reaction)
+		VALUES (
+				(
+					SELECT id
+					FROM reactions
+					WHERE post_id_fkey = $1
+						AND user_id_fkey = $2
+				),
+				$1,
+				$2,
+				$3
+			);`,
 			postID, userID, reaction,
 		); err != nil {
 			return err
@@ -65,7 +88,8 @@ func (PostRepoCRUD) DeleteAllReactions(pid int64) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		"DELETE FROM reactions WHERE post_id_fkey = ?", pid,
+		`DELETE FROM reactions
+		WHERE post_id_fkey = ?`, pid,
 	); err != nil {
 		return err
 	}

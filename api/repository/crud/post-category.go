@@ -25,10 +25,10 @@ func (categoryRepoCRUD) FindAll() ([]models.Category, error) {
 	)
 	if rows, err = repository.DB.Query(
 		`SELECT COUNT(category_id_fkey) AS use_count,
-				category_id_fkey,
-				name
+			category_id_fkey,
+			name
 		FROM categories c
- 		LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
+			LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
 		GROUP BY category_id_fkey
 		ORDER BY name ASC`,
 	); err != nil {
@@ -51,10 +51,10 @@ func (categoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 	)
 	if rows, err = repository.DB.Query(
 		`SELECT category_id_fkey,
-				name
- 		FROM categories c
- 		LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = ?
- 		WHERE c.id = ctb.category_id_fkey`,
+			name
+		FROM categories c
+			LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = ?
+		WHERE c.id = ctb.category_id_fkey`,
 		postID,
 	); err != nil {
 		return nil, err
@@ -132,8 +132,10 @@ func (categoryRepoCRUD) Delete(cid int) error {
 	)
 	if result, err = repository.DB.Exec(
 		`BEGIN;
-		DELETE FROM categories WHERE id = $1;
-		DELETE FROM posts_categories_bridge WHERE category_id_fkey = $1;
+		DELETE FROM categories
+		WHERE id = $1;
+		DELETE FROM posts_categories_bridge
+		WHERE category_id_fkey = $1;
 		COMMIT;`,
 		cid,
 	); err != nil {
@@ -152,21 +154,20 @@ func (categoryRepoCRUD) Delete(cid int) error {
 func (categoryRepoCRUD) DeleteGroup(pid int64) error {
 	var err error
 	if _, err = repository.DB.Exec(
-		`DELETE
-		FROM posts_categories_bridge
+		`DELETE FROM posts_categories_bridge
 		WHERE post_id_fkey = ?`,
 		pid,
 	); err != nil {
 		return err
 	}
 	if _, err = repository.DB.Exec(
-		`DELETE
-		FROM categories
-		WHERE id IN
-			(SELECT c.id
-			 FROM categories c
-			 LEFT JOIN posts_categories_bridge pcb ON c.id = pcb.category_id_fkey
-			 WHERE pcb.category_id_fkey IS NULL)`,
+		`DELETE FROM categories
+		WHERE id IN (
+				SELECT c.id
+				FROM categories c
+					LEFT JOIN posts_categories_bridge pcb ON c.id = pcb.category_id_fkey
+				WHERE pcb.category_id_fkey IS NULL
+			)`,
 	); err != nil {
 		return err
 	}
