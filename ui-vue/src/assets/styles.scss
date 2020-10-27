@@ -18,6 +18,33 @@ html {
   border-radius: 0;
 }
 
+/* Responsive grid layout start */
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 17%;
+}
+
+.columns > * {
+  flex-basis: calc(calc(750px - 100%) * 999);
+}
+
+.main-col {
+  flex-grow: 1;
+}
+
+.info-col {
+  flex-grow: 0.4;
+}
+
+@media (max-width: 768px) {
+  .columns {
+    margin: 0 2%;
+  }
+}
+
+/* Responsive grid layout end */
+
 /* Global Form Control color scheme start */
 .form-control {
   background-color: rgba(255, 255, 255, 0.05);

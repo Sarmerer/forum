@@ -2,7 +2,7 @@
   <div>
     <div v-if="$route.params.id === 'new'" class="wrapper">
       <div class="columns">
-        <div class="post-col">
+        <div class="main-col">
           <b-form @submit="onSubmit">
             <b-form-group label-for="title">
               <b-form-input
@@ -59,7 +59,7 @@
       </div>
     </div>
     <div v-else class="columns">
-      <div class="post-col">
+      <div class="main-col">
         <PostSection :postID="postID" />
         <CommentsSection :postID="postID" />
       </div>
@@ -145,29 +145,11 @@ export default {
   margin: 0 25%;
 }
 
-.columns {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 17%;
-}
-
-.columns > * {
-  flex-basis: calc(calc(750px - 100%) * 999);
-}
-
 .card {
   margin: 20px;
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-}
-
-.post-col {
-  flex-grow: 1;
-}
-
-.info-col {
-  flex-grow: 0.4;
 }
 
 form .btn {

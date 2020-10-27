@@ -11,7 +11,7 @@
 
     <div class="main-content">
       <div class="columns">
-        <div class="post-col">
+        <div class="main-col">
           <div>
             <Error v-if="error.show" :errorData="error" />
           </div>
@@ -28,7 +28,7 @@
             :key="index"
             class="card"
             tag="div"
-            style="cursor: pointer"
+            style="cursor: pointer;"
           >
             <b-row>
               <b-col cols="1">
@@ -45,11 +45,11 @@
                   :yourReaction="post.your_reaction"
                 />
               </b-col>
-              <b-col cols="11" style="margin-left: -40px;">
+              <b-col cols="11" class="post-content">
                 <h5>
                   {{ post.title }}
                 </h5>
-                <p style="color: white">{{ post.content }}</p>
+                <p>{{ post.content }}</p>
                 <b-form-tag
                   v-for="(category, index) in post.categories"
                   disabled
@@ -74,16 +74,13 @@
               </small>
 
               <!-- TO-DO: Make this look decent -->
+              <!-- style is embedded here for responsiveness. MB fix later -->
               <small v-if="isMobile()"
                 ><Rating style="flex-direction:row; margin:0;"
               /></small>
               <small
                 >by
-                <router-link
-                  :to="'/user/' + post.author_id"
-                  style="text-decoration: none;"
-                  class="secondary"
-                >
+                <router-link :to="'/user/' + post.author_id" class="secondary">
                   {{ post.author_name }}
                 </router-link>
                 <timeago :datetime="post.created" :auto-update="60"></timeago
@@ -101,7 +98,6 @@
               v-for="(post, index) in posts.slice(0, 5)"
               :key="index"
               tag="div"
-              style="cursor: pointer"
               ><p>{{ post.title }}</p>
               <small
                 ><timeago
@@ -207,17 +203,6 @@ export default {
         });
       }
       this.sorter.byDate = !this.sorter.byDate;
-    },
-    isMobile() {
-      if (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        )
-      ) {
-        return true;
-      } else {
-        return false;
-      }
     }
   }
 };
@@ -244,40 +229,19 @@ export default {
   font-size: large;
 }
 
-.columns {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 17%;
-}
-
-.columns > * {
-  flex-basis: calc(calc(750px - 100%) * 999);
-}
-
 .card {
   margin: 20px;
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
 }
-.card.post {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-}
-.card.post.rating-column {
-  flex-grow: 1;
-}
-a.card {
-  color: inherit;
+
+.card a {
   text-decoration: none;
 }
-.post-col {
-  flex-grow: 1;
-}
 
-.info-col {
-  flex-grow: 0.4;
+.post-content {
+  margin-left: -40px;
 }
 
 .post-footer {
@@ -290,9 +254,9 @@ a.card {
   flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-  .columns {
-    margin: 0 2%;
+@media (max-width: 500px) {
+  .post-content {
+    margin-left: -20px;
   }
 }
 </style>

@@ -33,6 +33,7 @@
       ></router-link>
       <router-link to="/post/new"><b-icon icon="pen"></b-icon></router-link>
       <div v-if="!authenticated">
+        <a v-b-modal.auth-modal><b-icon icon="door-closed"></b-icon></a>
         <Login />
       </div>
       <div v-if="authenticated">
@@ -40,7 +41,7 @@
       </div>
     </div>
     <!-- why the hack is this not working??? -->
-    <router-view class="{'main': !isMobile}" />
+    <router-view />
   </div>
 </template>
 <script>
@@ -58,23 +59,10 @@ export default {
   components: {
     Login,
     Me
-  },
-  methods: {
-    isMobile() {
-      if (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        )
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    }
   }
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .sidenav {
   height: 100%;
   width: 65px;
@@ -102,12 +90,5 @@ export default {
 .navbar {
   background-color: #111;
   justify-content: space-around;
-}
-// .navbar > .navbar-nav > .nav-link {
-//   color: #f1f1f1;
-// }
-
-.main {
-  margin-left: 65px;
 }
 </style>

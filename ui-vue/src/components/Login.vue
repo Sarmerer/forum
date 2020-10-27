@@ -1,7 +1,5 @@
 <template>
   <div>
-    <a v-b-modal.auth-modal><b-icon icon="door-closed"></b-icon></a>
-
     <b-modal
       id="auth-modal"
       :modal-class="authmodal"

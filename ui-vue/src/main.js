@@ -7,15 +7,15 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 import "./assets/styles.scss"; // Global styles
-import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue';
+import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
 
-Vue.use(BootstrapVue)
-Vue.use(BootstrapVueIcons)
+Vue.use(BootstrapVue);
+Vue.use(BootstrapVueIcons);
 
 import VueTimeago from "vue-timeago";
 Vue.use(VueTimeago, {
   name: "Timeago", // Component name, `Timeago` by default
-  locale: "en", // Default locale
+  locale: "en" // Default locale
 });
 
 Vue.config.productionTip = false;
@@ -25,6 +25,24 @@ store.dispatch("auth/attempt").then(() => {
   new Vue({
     router,
     store,
-    render: (h) => h(App),
+    render: h => h(App)
   }).$mount("#app");
+});
+
+Vue.mixin({
+  methods: {
+    isMobile:  function() {
+      if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        )
+      ) {
+        return true;
+      } else {
+        //Margin-left is equal to the width of the .sidenav element
+        document.body.style.marginLeft = "65px";
+        return false;
+      }
+    }
+  }
 });
