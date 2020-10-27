@@ -1,8 +1,10 @@
 package crud
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -20,17 +22,31 @@ func NewCommentRepoCRUD() *CommentRepoCRUD {
 }
 
 //FindAll returns all replies for the specified post
-func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
+func (CommentRepoCRUD) FindAll(userID, postID int64) ([]models.Comment, error) {
 	var (
 		rows     *sql.Rows
 		comments []models.Comment
 		err      error
 	)
 	if rows, err = repository.DB.Query(
-		`SELECT *
-		FROM comments
-		WHERE post_id_fkey = ?
-		ORDER BY created DESC`, postID); err != nil {
+		`SELECT *,
+		(
+			SELECT TOTAL(reaction)
+			FROM comments_reactions
+			WHERE comment_id_fkey = c.id
+		) AS rating,
+		IFNULL (
+			(
+				SELECT reaction
+				FROM comments_reactions
+				WHERE user_id_fkey = $1
+					AND comment_id_fkey = c.id
+			),
+			0
+		) AS yor_reaction
+		FROM comments c
+	WHERE post_id_fkey = $2
+	ORDER BY created DESC`, userID, postID); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, err
 		}
@@ -38,14 +54,14 @@ func (CommentRepoCRUD) FindAll(postID int64) ([]models.Comment, error) {
 	}
 	for rows.Next() {
 		var r models.Comment
-		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited)
+		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited, &r.Rating, &r.YourReaction)
 		comments = append(comments, r)
 	}
 	return comments, nil
 }
 
 //FindByID returns a specific reply from the database
-func (CommentRepoCRUD) FindByID(rid int64) (*models.Comment, int, error) {
+func (CommentRepoCRUD) FindByID(cid int64) (*models.Comment, int, error) {
 	var (
 		r      models.Comment
 		edited int
@@ -54,7 +70,7 @@ func (CommentRepoCRUD) FindByID(rid int64) (*models.Comment, int, error) {
 	if err = repository.DB.QueryRow(
 		`SELECT *
 		FROM comments
-		WHERE id = ?`, rid,
+		WHERE id = ?`, cid,
 	).Scan(
 		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &edited,
 	); err != nil {
@@ -133,54 +149,70 @@ func (CommentRepoCRUD) Update(r *models.Comment) error {
 }
 
 //Delete deletes reply from the database
-func (CommentRepoCRUD) Delete(rid int64) error {
+func (CommentRepoCRUD) Delete(cid int64) error {
 	var (
-		result       sql.Result
-		rowsAffected int64
-		err          error
+		ctx context.Context
+		tx  *sql.Tx
+		err error
 	)
-	if result, err = repository.DB.Exec(
+	ctx = context.Background()
+	tx, err = repository.DB.BeginTx(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM comments_reactions
+		WHERE comment_id_fkey = $1`, cid)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments
-		WHERE id = ?`, rid,
-	); err != nil {
+		WHERE id = $1`, cid)
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
-
-	if rowsAffected, err = result.RowsAffected(); err != nil {
+	err = tx.Commit()
+	if err != nil {
 		return err
-	}
-	if rowsAffected > 0 {
-		return nil
 	}
 	return nil
 }
 
 func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 	var (
-		result       sql.Result
-		rowsAffected int64
-		err          error
+		ctx context.Context
+		tx  *sql.Tx
+		err error
 	)
-	if result, err = repository.DB.Exec(
-		`BEGIN;
-		DELETE FROM comments_reactions
-		WHERE comment_id_fkey IN (
+	ctx = context.Background()
+	tx, err = repository.DB.BeginTx(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM comments_reactions
+			WHERE comment_id_fkey IN (
 				SELECT id
 				FROM comments
-				WHERE post_id_fkey = ?
-			);
-		DELETE FROM comments
-		WHERE post_id_fkey = ?;
-		COMMIT;`, pid,
-	); err != nil {
+				WHERE post_id_fkey = $1
+			)`, pid)
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
-
-	if rowsAffected, err = result.RowsAffected(); err != nil {
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM comments
+		WHERE post_id_fkey = $1`, pid)
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
-	if rowsAffected > 0 {
-		return nil
+	err = tx.Commit()
+	if err != nil {
+		return err
 	}
 	return nil
 }

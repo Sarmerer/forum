@@ -74,7 +74,7 @@ export default {
         r = 0;
       }
       await axios
-        .post("post/rate", { pid: self.postID, reaction: r })
+        .post("post/rate", { id: self.postID, reaction: r })
         .then((response) => {
           // self.yourReaction = response.data.data.your_reaction;
           // self.rating = response.data.data.rating;

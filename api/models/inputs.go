@@ -29,6 +29,6 @@ type InputPostFind struct {
 }
 
 type InputRate struct {
-	ID       int64 `json:"pid"`
+	ID       int64 `json:"id"`
 	Reaction int   `json:"reaction"`
 }

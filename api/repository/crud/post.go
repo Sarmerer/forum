@@ -28,38 +28,28 @@ func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
 		err   error
 	)
 	if rows, err = repository.DB.Query(
-		`SELECT
-		*,
+		`SELECT *,
 		(
-		   SELECT
-			  TOTAL(reaction) 
-		   FROM
-		   	posts_reactions 
-		   WHERE
-			  post_id_fkey = p.id 
-		)
-		AS rating,
-		IFNULL (( 
-		SELECT
-		   reaction 
-		FROM
-			posts_reactions 
-		WHERE
-		   user_id_fkey = $1 
-		   AND post_id_fkey = p.id), 0) AS yor_reaction,
-		   (
-			  SELECT
-				 count(id) 
-			  FROM
-				 comments 
-			  WHERE
-				 post_id_fkey = p.id
-		   )
-		   AS comments_count 
-		FROM
-		   posts p 
-		ORDER BY
-		   rating DESC`,
+			SELECT TOTAL(reaction)
+			FROM posts_reactions
+			WHERE post_id_fkey = p.id
+		) AS rating,
+		IFNULL (
+			(
+				SELECT reaction
+				FROM posts_reactions
+				WHERE user_id_fkey = $1
+					AND post_id_fkey = p.id
+			),
+			0
+		) AS yor_reaction,
+		(
+			SELECT count(id)
+			FROM comments
+			WHERE post_id_fkey = p.id
+		) AS comments_count
+	FROM posts p
+	ORDER BY rating DESC`,
 		uid,
 	); err != nil {
 		return nil, err

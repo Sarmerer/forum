@@ -17,6 +17,7 @@ import (
 func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
+		userCtx  models.UserCtx         = utils.GetUserFromCtx(r)
 		comments []models.Comment
 		pid      int64
 		status   int
@@ -30,7 +31,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if comments, err = repo.FindAll(pid); err != nil {
+	if comments, err = repo.FindAll(userCtx.ID, pid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

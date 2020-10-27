@@ -63,6 +63,9 @@
     <!-- Post comments -->
     <div v-for="(comment, index) in comments" :key="index">
       <div style="margin: 0.3rem; position: relative">
+        <b-button @click="rate(comment.id, 'up')" size="sm">up</b-button>
+        <span>{{ comment.rating }}</span>
+        <b-button size="sm" @click="rate(comment.id, 'down')">down</b-button>
         <div v-if="index != editor.editing">
           <p style="margin-bottom: 0px; display: block; margin-right: 4rem">
             {{ comment.author_name }} says: {{ comment.content }}
@@ -185,6 +188,7 @@ export default {
     return {
       maxCommentLength: 200,
       minCommentLength: 5,
+      requesting: false,
       editor: { editing: -1, editingContent: "", requesting: false },
       deletingComment: false,
       comments: [],
@@ -204,7 +208,7 @@ export default {
           this.comments = response.data.data || [];
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     },
     async deleteComment(actualID, IDInList) {
@@ -216,7 +220,7 @@ export default {
           this.comments.splice(IDInList, 1);
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
           //TODO show alert
         })
         .finally(() => (this.deletingComment = false));
@@ -295,6 +299,32 @@ export default {
           console.log(error);
         }
       }, 10);
+    },
+    async rate(id, reaction) {
+      if (this.requesting) return;
+      this.requesting = true;
+      let self = this;
+      let r = reaction == "up" ? 1 : -1;
+      if (
+        (reaction == "up" && this.yourReaction == 1) ||
+        (reaction == "down" && this.yourReaction == -1)
+      ) {
+        r = 0;
+      }
+      await axios
+        .post("comment/rate", { id: id, reaction: r })
+        .then((response) => {
+          let comment = this.comments.find((c) => c.id == id);
+          comment.rating = response.data.data.rating;
+          comment.your_reaction = response.data.data.your_reaction;
+        })
+        .catch((error) => {
+          console.log(error);
+          //TODO show alert saying that you need to be logged in to rate
+        })
+        .finally(() => {
+          self.requesting = false;
+        });
     },
   },
 };

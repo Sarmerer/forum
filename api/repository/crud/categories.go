@@ -124,6 +124,7 @@ func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 
 //Delete deletes category from the database
 //TODO also delete category from the brige table
+// FIXME BEGIN COMMIT do not work for some reason
 func (CategoryRepoCRUD) Delete(cid int) error {
 	var (
 		result       sql.Result

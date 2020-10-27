@@ -42,7 +42,7 @@ type CategoryRepo interface {
 }
 
 type CommentRepo interface {
-	FindAll(int64) ([]models.Comment, error)
+	FindAll(int64, int64) ([]models.Comment, error)
 	FindByID(int64) (*models.Comment, int, error)
 	Create(*models.Comment) error
 	Update(*models.Comment) error
