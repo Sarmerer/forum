@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="$route.params.id === 'new'" class="wrapper">
+    <div v-if="$route.params.id === 'new'" class="grid">
       <div class="columns">
         <div class="main-col">
           <b-form @submit="onSubmit">
@@ -58,17 +58,27 @@
         </div>
       </div>
     </div>
-    <div v-else class="columns">
-      <div class="main-col">
-        <PostSection :postID="postID" />
-        <CommentsSection :postID="postID" />
-      </div>
-      <div class="info-col">
-        <div class="card">
-          <p>1 reply</p>
-          <p>1 participant</p>
-          <p>Last reply from:</p>
-          <p>Last activity:</p>
+    <div v-else class="grid">
+      <div class="columns">
+        <div v-if="isMobile()" class="info-col">
+          <div class="card">
+            <p>1 reply</p>
+            <p>1 participant</p>
+            <p>Last reply from:</p>
+            <p>Last activity:</p>
+          </div>
+        </div>
+        <div class="main-col">
+          <PostSection :postID="postID" />
+          <CommentsSection :postID="postID" />
+        </div>
+        <div v-if="!isMobile()" class="info-col">
+          <div class="card">
+            <p>1 reply</p>
+            <p>1 participant</p>
+            <p>Last reply from:</p>
+            <p>Last activity:</p>
+          </div>
         </div>
       </div>
     </div>
@@ -139,19 +149,6 @@ export default {
 };
 </script>
 <style lang="scss">
-.wrapper {
-  text-align: center;
-  width: 800px;
-  margin: 0 25%;
-}
-
-.card {
-  margin: 20px;
-  padding: 10px;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-}
-
 form .btn {
   background-color: #278ea5;
   border: none;

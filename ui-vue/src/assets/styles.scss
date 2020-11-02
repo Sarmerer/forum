@@ -18,11 +18,64 @@ html {
   border-radius: 0;
 }
 
+/* Sidenav and navbar */
+.sidenav {
+  height: 100%;
+  width: 65px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 30px;
+}
+
+.sidenav a {
+  cursor: pointer;
+  padding: 10px 8px 10px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181 !important;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1 !important;
+}
+.navbar {
+  background-color: #111;
+  justify-content: space-around;
+}
+
+.navbar a {
+  color: #818181 !important;
+}
+
+.navbar a:hover {
+  color: #f1f1f1 !important;
+}
+
+/* Card */
+.card {
+  margin: 20px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
+}
+
+.card a {
+  text-decoration: none;
+}
+
 /* Responsive grid layout start */
+.grid {
+  margin: 0 17%;
+}
+
 .columns {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 17%;
 }
 
 .columns > * {
@@ -38,8 +91,15 @@ html {
 }
 
 @media (max-width: 768px) {
-  .columns {
+  .grid {
     margin: 0 2%;
+  }
+  .main-col {
+    flex-grow: 1;
+  }
+
+  .info-col {
+    flex-grow: 0.4;
   }
 }
 
@@ -77,6 +137,9 @@ html {
 
 .secondary {
   color: #21e6c1;
+}
+.background-secondary {
+  background-color: #21e6c1;
 }
 
 a.secondary:hover {

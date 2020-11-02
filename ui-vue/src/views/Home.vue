@@ -9,7 +9,7 @@
       </div>
     </div>
 
-    <div class="main-content">
+    <div class="grid">
       <div class="columns">
         <div class="main-col">
           <div>
@@ -227,17 +227,6 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: large;
-}
-
-.card {
-  margin: 20px;
-  padding: 10px;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-}
-
-.card a {
-  text-decoration: none;
 }
 
 .post-content {

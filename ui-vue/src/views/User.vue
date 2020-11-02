@@ -1,22 +1,19 @@
 <template>
-  <div class="info-col">
-    <div class="card">
-      <img
-        style="width: 100px; height:100px; border-radius: 200px"
-        :src="user.avatar"
-        alt="avatar"
-        srcset=""
-      />
+  <div class="grid">
+    <div class="user-card">
+      <img :src="user.avatar" alt="avatar" />
       <h3 class="primary">
         {{ user.display_name }}
-        <b-badge v-if="user.role == 2" variant="primary">Admin</b-badge>
+        <b-badge v-if="user.role == 2" class="background-variant"
+          >Admin</b-badge
+        >
       </h3>
       <p>Last online: {{ user.last_online | formatDate }}</p>
     </div>
     <div class="user-info">
       <b-tabs pills card>
         <b-tab title="Posts" active>
-          <div class="post" v-for="(post, index) in posts" :key="index">
+          <div class="user-card" v-for="(post, index) in posts" :key="index">
             <h5>
               <strong>{{ post.title }}</strong>
             </h5>
@@ -24,7 +21,11 @@
           </div></b-tab
         >
         <b-tab title="Replies"
-          ><div class="post" v-for="(reply, index) in replies" :key="index">
+          ><div
+            class="user-card"
+            v-for="(reply, index) in replies"
+            :key="index"
+          >
             <h5>
               {{ reply.content }}
             </h5>
@@ -98,53 +99,23 @@ export default {
 };
 </script>
 <style lang="scss">
-.wrapper {
-  text-align: center;
-  width: 800px;
-  margin: 0 25%;
-}
-
-.columns {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 17%;
-}
-
-.columns > * {
-  flex-basis: calc(calc(750px - 100%) * 999);
-}
-
-.card {
-  margin: 20px 200px;
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-}
-
-.card-body {
-  padding: 0;
-}
-.user-info {
-  margin: 20px 200px;
-}
-.post {
+.user-card {
   margin: 15px 0;
   padding: 15px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
 }
 
-.post-col {
-  flex-grow: 1;
+.user-card img {
+  width: 100px;
+  height: 100px;
+  border-radius: 200px;
 }
 
-.info-col {
-  flex-grow: 0.4;
+.card-body {
+  padding: 0;
 }
 
-hr {
-  opacity: 0.3;
-}
 .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
   background-color: #278ea5;

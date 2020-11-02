@@ -3,8 +3,11 @@
     <router-link :to="'/user/' + user.id"
       ><b-icon icon="person"></b-icon
     ></router-link>
+
     <router-link to="/"><b-icon icon="gear"></b-icon></router-link>
+
     <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
+
     <!-- <b-dropdown id="dropdown-dropright" dropright class="m-md-2">
       <template #button-content>
         <b-icon icon="person"></b-icon>

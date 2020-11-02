@@ -127,15 +127,6 @@ export default {
 };
 </script>
 <style>
-.sidenav a {
-  cursor: pointer;
-  color: #818181 !important;
-}
-
-.sidenav a:hover {
-  color: #f1f1f1 !important;
-}
-
 .auth-modal > .modal-dialog {
   max-width: 400px;
 }

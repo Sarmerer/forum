@@ -1,5 +1,5 @@
 <template>
-  <div class="rating-column grid">
+  <div class="rating-column rating-col">
     <svg
       @click.prevent="rate('up')"
       width="1.5em"
@@ -92,7 +92,7 @@ export default {
 </script>
 
 <style lang="scss">
-.grid {
+.rating-col {
   display: flex;
   align-items: center;
   flex-direction: column;
