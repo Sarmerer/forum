@@ -8,6 +8,7 @@ html {
   // margin: 0;
   font-family: "Roboto Mono", monospace;
   padding: 0 !important;
+  cursor: default;
 }
 
 /* Make sure the borders are not rounded because of Bootstrap*/
@@ -156,5 +157,9 @@ a.secondary:hover {
 .textarea:focus {
   color: white;
   background-color: #121212;
+}
+
+.text-muted {
+  opacity: 0.7;
 }
 /*Color scheme end*/

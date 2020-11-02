@@ -98,13 +98,13 @@
               v-for="(post, index) in posts.slice(0, 5)"
               :key="index"
               tag="div"
-              ><p>{{ post.title }}</p>
-              <small
-                ><timeago
-                  :datetime="post.created"
-                  :auto-update="10"
-                ></timeago></small
-            ></router-link>
+              style="cursor: pointer;"
+              ><p>
+                {{ post.title }}<br /><small class="text-muted"
+                  ><timeago :datetime="post.created" :auto-update="10"></timeago
+                ></small>
+              </p>
+            </router-link>
           </div>
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
@@ -112,12 +112,16 @@
             <b-overlay variant="transparent" :show="deleting" rounded="sm">
               <span v-if="categories.length == 0">None</span>
               <b-container v-else>
-                <b-row>
+                <!-- <b-row>
                   <b-col>Name</b-col>
                   <b-col>Posts</b-col>
-                </b-row>
+                </b-row> -->
                 <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
-                  <b-col>{{ c.name }}</b-col>
+                  <b-col
+                    ><b-form-tag disabled variant="dark">{{
+                      c.name
+                    }}</b-form-tag></b-col
+                  >
                   <b-col>{{ c.use_count }}</b-col>
                 </b-row>
               </b-container>
