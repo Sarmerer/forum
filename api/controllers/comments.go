@@ -31,7 +31,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if comments, err = repo.FindAll(userCtx.ID, pid); err != nil {
+	if comments, err = repo.FindAll(pid, userCtx.ID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

@@ -21,6 +21,11 @@ type InputPostCreateUpdate struct {
 	Categories []string
 }
 
+type InputAllPosts struct {
+	PerPage     int `json:"per_page"`
+	CurrentPage int `json:"current_page"`
+}
+
 type InputPostFind struct {
 	By         string   `json:"by"`
 	ID         int64    `json:"id"`

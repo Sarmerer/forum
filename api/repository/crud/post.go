@@ -21,13 +21,13 @@ func NewPostRepoCRUD() PostRepoCRUD {
 }
 
 //FindAll returns all posts in the database
-func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
+func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Posts, error) {
 	var (
-		rows  *sql.Rows
-		posts []models.Post
-		err   error
+		posts  *sql.Rows
+		result models.Posts
+		err    error
 	)
-	if rows, err = repository.DB.Query(
+	if posts, err = repository.DB.Query(
 		`SELECT *,
 		(
 			SELECT TOTAL(reaction)
@@ -49,21 +49,28 @@ func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
 			WHERE post_id_fkey = p.id
 		) AS comments_count
 	FROM posts p
-	ORDER BY rating DESC`,
-		uid,
+	ORDER BY rating DESC
+	LIMIT $2
+	OFFSET $3`,
+		userID, perPage, (currentPage-1)*perPage,
 	); err != nil {
 		return nil, err
 	}
-	for rows.Next() {
+	for posts.Next() {
 		var err error
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
+		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
 		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 		}
-		posts = append(posts, p)
+		result.Posts = append(result.Posts, p)
 	}
-	return posts, nil
+	if err = repository.DB.QueryRow(
+		`SELECT COUNT(id) FROM posts`,
+	).Scan(&result.TotalRows); err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 //FindByID returns a specific post from the database

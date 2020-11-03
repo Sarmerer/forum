@@ -1,5 +1,5 @@
 <template>
-  <div class="home ">
+  <div class="home">
     <!-- <div class="hero-image">
       <div class="hero-text">
         <h1>
@@ -8,7 +8,15 @@
         </h1>
       </div>
     </div> -->
-
+    <b-pagination
+      v-model="pagination.currentPage"
+      :total-rows="pagination.totalPages"
+      :per-page="pagination.perPage"
+      aria-controls="my-table"
+      @change="handlePageChange"
+      first-number
+      last-number
+    ></b-pagination>
     <div class="main-content">
       <div class="columns">
         <div class="post-col">
@@ -24,8 +32,8 @@
           <!-- Start of posts -->
           <router-link
             :to="'/post/' + post.id"
-            v-for="(post, index) in posts"
-            :key="index"
+            v-for="post in posts"
+            :key="post.id"
             class="card post"
             tag="div"
             style="cursor: pointer"
@@ -90,20 +98,18 @@
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
             <!-- Start of categories -->
-            <b-overlay variant="transparent" :show="deleting" rounded="sm">
-              <span v-if="categories.length == 0">None</span>
-              <b-container v-else>
-                <b-row>
-                  <b-col>Name</b-col>
-                  <b-col>Posts</b-col>
-                </b-row>
-                <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
-                  <b-col>{{ c.name }}</b-col>
-                  <b-col>{{ c.use_count }}</b-col>
-                </b-row>
-              </b-container>
-              <!-- End of categories -->
-            </b-overlay>
+            <span v-if="categories.length == 0">None</span>
+            <b-container v-else>
+              <b-row>
+                <b-col>Name</b-col>
+                <b-col>Posts</b-col>
+              </b-row>
+              <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
+                <b-col>{{ c.name }}</b-col>
+                <b-col>{{ c.use_count }}</b-col>
+              </b-row>
+            </b-container>
+            <!-- End of categories -->
           </div>
         </div>
       </div>
@@ -134,8 +140,8 @@ export default {
     return {
       posts: [],
       categories: [],
-      deleting: false,
       sorter: { byDate: false },
+      pagination: { currentPage: 1, totalPages: 1, perPage: 5 },
       error: {
         show: false,
         status: Number,
@@ -145,16 +151,23 @@ export default {
     };
   },
   created() {
-    this.getPosts();
+    this.getPosts(1);
     this.getCategories();
   },
   methods: {
-    async getPosts() {
+    async handlePageChange(value) {
+      await this.getPosts(value);
+    },
+    async getPosts(currentPage) {
       return await axios
-        .get("posts")
+        .post("posts", {
+          per_page: this.pagination.perPage,
+          current_page: currentPage,
+        })
         .then((response) => {
           this.error.show = false;
-          this.posts = response.data.data || [];
+          this.posts = response.data.data.posts || [];
+          this.pagination.totalPages = response.data.data.total_rows || 5;
         })
         .catch((error) => {
           this.error.show = true;

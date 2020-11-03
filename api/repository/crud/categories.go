@@ -30,7 +30,8 @@ func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 		FROM categories c
 			LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
 		GROUP BY category_id_fkey
-		ORDER BY name ASC`,
+		ORDER BY name ASC
+		LIMIT 30`,
 	); err != nil {
 		return nil, err
 	}

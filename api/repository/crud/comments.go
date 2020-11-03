@@ -22,7 +22,7 @@ func NewCommentRepoCRUD() *CommentRepoCRUD {
 }
 
 //FindAll returns all replies for the specified post
-func (CommentRepoCRUD) FindAll(userID, postID int64) ([]models.Comment, error) {
+func (CommentRepoCRUD) FindAll(postID, userID int64) ([]models.Comment, error) {
 	var (
 		rows     *sql.Rows
 		comments []models.Comment

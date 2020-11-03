@@ -34,6 +34,11 @@ type Post struct {
 	YourReaction  int        `json:"your_reaction"`
 }
 
+type Posts struct {
+	Posts     []Post `json:"posts"`
+	TotalRows int    `json:"total_rows"`
+}
+
 type Category struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`

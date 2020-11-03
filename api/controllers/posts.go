@@ -18,15 +18,20 @@ import (
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
-		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
-		posts   []models.Post
+		input   models.InputAllPosts
+		userCtx models.UserCtx = utils.GetUserFromCtx(r)
+		result  *models.Posts
 		err     error
 	)
-	if posts, err = repo.FindAll(userCtx.ID); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+	if result, err = repo.FindAll(userCtx.ID, input.PerPage, input.CurrentPage); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	response.Success(w, nil, posts)
+	response.Success(w, nil, result)
 }
 
 func FindPost(w http.ResponseWriter, r *http.Request) {

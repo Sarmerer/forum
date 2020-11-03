@@ -95,14 +95,24 @@ export default {
     };
   },
   methods: {
+    rndStr(len) {
+      let text = " ";
+      let chars = "abcdefghijklmnopqrstuvwxyz";
+
+      for (let i = 0; i < len; i++) {
+        text += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      return text;
+    },
     onSubmit(e) {
       e.preventDefault();
       for (let i = 0; i < this.form.amount; i++) {
         axios
           .post("post/create", {
-            title: this.form.title,
-            content: this.form.content,
-            categories: this.form.categories,
+            title: this.rndStr(20),
+            content: this.rndStr(50),
+            categories: [this.rndStr(4), this.rndStr(4)],
           })
           .then((response) => {
             console.log(response.data);

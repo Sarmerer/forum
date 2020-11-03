@@ -120,7 +120,7 @@ var apiRoutes = []route{
 	{
 		URI:      "/api/posts",
 		Handler:  controllers.GetPosts,
-		Method:   http.MethodGet,
+		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,
 	},
