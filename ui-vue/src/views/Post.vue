@@ -2,7 +2,7 @@
   <div>
     <div v-if="$route.params.id === 'new'" class="grid">
       <div class="columns">
-        <div class="main-col">
+        <div class="main-col" id="new-post">
           <b-form @submit="onSubmit">
             <b-form-group label-for="title">
               <b-form-input
@@ -41,8 +41,9 @@
               input-id="tags-basic"
               remove-on-delete
               v-model="form.categories"
+              tag-variant="dark"
             ></b-form-tags>
-            <b-button type="submit">Submit</b-button>
+            <b-button type="submit" class="mt-3">Submit</b-button>
           </b-form>
           <!-- <b-card class="mt-3" header="Form Data Result">
         <pre class="m-0" style="color: white">{{ form }}</pre>
@@ -158,5 +159,26 @@ form .btn {
 form .btn:hover {
   background-color: #278ea5;
   opacity: 0.8;
+}
+
+#new-post {
+  margin: 20px;
+}
+
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #222222;
 }
 </style>

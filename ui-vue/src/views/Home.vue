@@ -1,5 +1,5 @@
 <template>
-  <div class="home ">
+  <div class="home">
     <div class="hero-image">
       <div class="hero-text">
         <h1>
@@ -16,11 +16,22 @@
             <Error v-if="error.show" :errorData="error" />
           </div>
           <div v-if="posts.length > 0" class="card">
-            <b-button @click="sortDisplayPosts()"
-              >sort by date:
-              {{ sorter.byDate ? "ascending" : "descending" }}</b-button
-            >
+            <ul id="filters">
+              <li v-if="sorter.byDate">
+                <b-icon
+                  icon="sort-down-alt"
+                  @click="sortDisplayPosts()"
+                ></b-icon>
+              </li>
+              <li v-else>
+                <b-icon icon="sort-up" @click="sortDisplayPosts()"></b-icon>
+              </li>
+              <li>
+                <b-icon icon="heart"></b-icon>
+              </li>
+            </ul>
           </div>
+
           <!-- Start of posts -->
           <router-link
             :to="'/post/' + post.id"
@@ -245,6 +256,18 @@ export default {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+
+ul#filters {
+  padding: 0;
+  margin: 0;
+}
+
+ul#filters li {
+  display: inline;
+  padding: 7px;
+  font-size: 22px;
+  cursor: pointer;
 }
 
 @media (max-width: 500px) {

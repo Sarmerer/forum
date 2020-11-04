@@ -3,12 +3,13 @@
     <router-link to="/"
       ><span class="primary"><b-icon icon="chat-left-dots"></b-icon></span
     ></router-link>
-    <router-link to="/post/new"><b-icon icon="pen"></b-icon></router-link>
     <div v-if="!authenticated">
       <a v-b-modal.auth-modal><b-icon icon="door-closed"></b-icon></a>
       <Login />
     </div>
     <div v-if="authenticated">
+      <router-link to="/post/new"><b-icon icon="pen"></b-icon></router-link>
+
       <router-link :to="'/user/' + user.id"
         ><b-icon icon="person"></b-icon
       ></router-link>

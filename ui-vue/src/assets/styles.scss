@@ -112,11 +112,18 @@ html {
   color: white;
 }
 
+.b-form-tags.focus,
 .form-control:focus {
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
   border: 1px solid #278ea5;
 }
+
+.form-control input {
+  background-color: transparent;
+  color: white;
+}
+
 /* Form Control color scheme end */
 
 /* Global Color scheme start*/

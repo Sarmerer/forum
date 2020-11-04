@@ -8,7 +8,7 @@
               icon="chat-left-dots"
             ></b-icon></span></router-link></b-nav-item
     ></b-navbar-nav>
-    <b-navbar-nav
+    <b-navbar-nav v-if="authenticated"
       ><b-nav-item>
         <router-link to="/post/new"
           ><b-icon icon="pen"></b-icon></router-link></b-nav-item
