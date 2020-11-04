@@ -2,12 +2,13 @@ package gc
 
 import (
 	"fmt"
-	"forum/api/config"
-	"forum/api/logger"
-	"forum/api/models"
-	"forum/api/repository"
-	"forum/api/repository/crud"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/logger"
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/repository/crud"
 )
 
 // Start starts the garbage collector service,
@@ -29,20 +30,20 @@ func garbageCollector() {
 		counter := 0
 		start := time.Now()
 		if users, err = um.FindAll(); err != nil {
-			logger.ServerLogs("Garbage collector", "", err)
+			logger.CheckErrAndLog("Garbage collector", "", err)
 			return
 		}
 		for _, user := range users {
 			if lastOnline, err = time.Parse(config.TimeLayout, user.LastOnline); err != nil {
-				logger.ServerLogs("Garbage collector", "time parsing error", err)
+				logger.CheckErrAndLog("Garbage collector", "time parsing error", err)
 			}
 			if time.Now().After(lastOnline.Add(config.SessionExpiration)) {
 				if err = um.UpdateSession(user.ID, ""); err != nil {
-					logger.ServerLogs("Garbage collector", "session closing error", err)
+					logger.CheckErrAndLog("Garbage collector", "session closing error", err)
 				}
 				counter++
 			}
 		}
-		logger.ServerLogs("Garbage collector", fmt.Sprintf("closed %v sessions. Took %s", counter, time.Since(start)), nil)
+		logger.CheckErrAndLog("Garbage collector", fmt.Sprintf("closed %v sessions. Took %s", counter, time.Since(start)), nil)
 	}
 }

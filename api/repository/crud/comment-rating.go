@@ -7,7 +7,7 @@ import (
 	"github.com/sarmerer/forum/api/repository"
 )
 
-func (PostRepoCRUD) GetRating(postID int64, currentUser int64) (int, int, error) {
+func (CommentRepoCRUD) GetRating(commentID int64, currentUser int64) (int, int, error) {
 	var (
 		rating       int
 		yourReaction int
@@ -18,25 +18,25 @@ func (PostRepoCRUD) GetRating(postID int64, currentUser int64) (int, int, error)
 		IFNULL (
 			(
 				SELECT reaction
-				FROM posts_reactions
+				FROM comments_reactions
 				WHERE user_id_fkey = $1
-					AND post_id_fkey = $2
+					AND comment_id_fkey = $2
 			),
 			0
 		) AS yor_reaction
-		FROM posts_reactions
-		WHERE post_id_fkey = $2`,
-		currentUser, postID,
+		FROM comments_reactions
+		WHERE comment_id_fkey = $2`,
+		currentUser, commentID,
 	).Scan(&rating, &yourReaction); err != nil {
 		if err != sql.ErrNoRows {
 			return 0, 0, err
 		}
-		return 0, 0, errors.New("post not found")
+		return 0, 0, errors.New("comment not found")
 	}
 	return rating, yourReaction, nil
 }
 
-func (PostRepoCRUD) Rate(postID, userID int64, reaction int) error {
+func (CommentRepoCRUD) Rate(commentID, userID int64, reaction int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -45,29 +45,29 @@ func (PostRepoCRUD) Rate(postID, userID int64, reaction int) error {
 	switch reaction {
 	case 0:
 		if result, err = repository.DB.Exec(
-			`DELETE FROM posts_reactions
-			WHERE post_id_fkey = ?
+			`DELETE FROM comments_reactions
+			WHERE comment_id_fkey = ?
 				AND user_id_fkey = ?`,
-			postID, userID,
+			commentID, userID,
 		); err != nil {
 			return err
 		}
 	default:
 		if result, err = repository.DB.Exec(
 			`INSERT
-			OR REPLACE INTO posts_reactions(id, post_id_fkey, user_id_fkey, reaction)
+			OR REPLACE INTO comments_reactions(id, comment_id_fkey, user_id_fkey, reaction)
 		VALUES (
 				(
 					SELECT id
-					FROM posts_reactions
-					WHERE post_id_fkey = $1
+					FROM comments_reactions
+					WHERE comment_id_fkey = $1
 						AND user_id_fkey = $2
 				),
 				$1,
 				$2,
 				$3
 			);`,
-			postID, userID, reaction,
+			commentID, userID, reaction,
 		); err != nil {
 			return err
 		}
@@ -81,15 +81,16 @@ func (PostRepoCRUD) Rate(postID, userID int64, reaction int) error {
 	return errors.New("could not set rating")
 }
 
-func (PostRepoCRUD) DeleteAllReactions(pid int64) error {
+func (CommentRepoCRUD) DeleteAllReactions(cid int64) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		err          error
 	)
+
 	if result, err = repository.DB.Exec(
-		`DELETE FROM posts_reactions
-		WHERE post_id_fkey = ?`, pid,
+		`DELETE FROM comments_reactions
+		WHERE comment_id_fkey = ?`, cid,
 	); err != nil {
 		return err
 	}

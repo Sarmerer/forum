@@ -1,12 +1,15 @@
 <template>
   <div class="card">
-    <b-form @submit="leaveComment">
+    <!-- Comment form -->
+    <b-form v-if="authenticated" @submit="leaveComment">
       <b-input-group class="mt-1 mb-1">
         <b-textarea
           type="text"
           class="textarea"
           :placeholder="
-            comments.length == 0 ? 'Be the first to comment this post' : 'What you think?'
+            comments.length == 0
+              ? 'Be the first to comment this post'
+              : 'What you think?'
           "
           v-model="form.comment"
           @keydown.enter.exact.prevent
@@ -23,28 +26,53 @@
               v-if="commentLength >= minCommentLength"
               variant="outline-light"
               type="submit"
-              :disabled="!(commentLength > minCommentLength && commentLength < maxCommentLength)"
+              :disabled="
+                !(
+                  commentLength > minCommentLength &&
+                  commentLength < maxCommentLength
+                )
+              "
               >Say</b-button
             >
           </transition>
         </b-input-group-append>
       </b-input-group>
       <div v-if="commentLength > 0">
-        <small v-if="commentLength >= minCommentLength && commentLength <= maxCommentLength"
+        <small
+          v-if="
+            commentLength >= minCommentLength &&
+              commentLength <= maxCommentLength
+          "
           >{{ commentLength }}/{{ maxCommentLength }}</small
         >
-        <small v-else style="color: red">{{ commentLength }}/{{ maxCommentLength }}</small>
+        <small v-else style="color: red"
+          >{{ commentLength }}/{{ maxCommentLength }}</small
+        >
       </div>
     </b-form>
+    <!-- End of comment form -->
+    <div v-if="!authenticated" class="border border-dark rounded p-2">
+      <span>Want to leave a comment?</span>
+      <b-button class="float-right" size="sm" variant="success"
+        >Sign Up</b-button
+      >
+      <b-button class="float-right mr-1" size="sm" variant="outline-primary"
+        >Sign In</b-button
+      >
+    </div>
+    <!-- Post comments -->
     <div v-for="(comment, index) in comments" :key="index">
       <div style="margin: 0.3rem; position: relative">
+        <b-button @click="rate(comment.id, 'up')" size="sm">up</b-button>
+        <span>{{ comment.rating }}</span>
+        <b-button size="sm" @click="rate(comment.id, 'down')">down</b-button>
         <div v-if="index != editor.editing">
           <p style="margin-bottom: 0px; display: block; margin-right: 4rem">
             {{ comment.author_name }} says: {{ comment.content }}
           </p>
           <small v-b-tooltip.hover :title="comment.created"
             ><timeago :datetime="comment.created" :auto-update="60"></timeago>
-            <small v-if="comment.edited == 1"> edited</small>
+            <small v-if="comment.edited"> edited</small>
           </small>
           <b-button-group
             v-if="
@@ -93,10 +121,15 @@
             max-rows="10"
             style="margin-bottom: 0px; display: block; width: 85%"
           ></b-form-textarea>
-          <small v-if="editorLength > minCommentLength && editorLength < maxCommentLength"
+          <small
+            v-if="
+              editorLength > minCommentLength && editorLength < maxCommentLength
+            "
             >{{ editorLength }}/{{ maxCommentLength }}</small
           >
-          <small v-else style="color: red">{{ editorLength }}/{{ maxCommentLength }}</small>
+          <small v-else style="color: red"
+            >{{ editorLength }}/{{ maxCommentLength }}</small
+          >
         </div>
         <b-button-group
           size="sm"
@@ -125,10 +158,14 @@
         </b-button-group>
       </div>
     </div>
+    <!-- End of post comments -->
   </div>
 </template>
 <script>
 import axios from "axios";
+
+axios.defaults.withCredentials = true;
+
 import { mapGetters } from "vuex";
 
 export default {
@@ -138,6 +175,7 @@ export default {
   computed: {
     ...mapGetters({
       user: "auth/user",
+      authenticated: "auth/authenticated",
     }),
     commentLength() {
       return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
@@ -150,6 +188,7 @@ export default {
     return {
       maxCommentLength: 200,
       minCommentLength: 5,
+      requesting: false,
       editor: { editing: -1, editingContent: "", requesting: false },
       deletingComment: false,
       comments: [],
@@ -169,7 +208,7 @@ export default {
           this.comments = response.data.data || [];
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     },
     async deleteComment(actualID, IDInList) {
@@ -181,14 +220,17 @@ export default {
           this.comments.splice(IDInList, 1);
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
           //TODO show alert
         })
         .finally(() => (this.deletingComment = false));
     },
     async leaveComment(e) {
       if (e) e.preventDefault();
-      if (this.commentLength < this.minCommentLength || this.commentLength > this.maxCommentLength)
+      if (
+        this.commentLength < this.minCommentLength ||
+        this.commentLength > this.maxCommentLength
+      )
         return;
       this.editor.editing = -1;
       return await axios
@@ -202,11 +244,14 @@ export default {
         });
     },
     async updateComment(actualID, oldCommentContent) {
-      if (this.editorLength < this.minCommentLength || this.editorLength > this.maxCommentLength)
+      if (
+        this.editorLength < this.minCommentLength ||
+        this.editorLength > this.maxCommentLength
+      )
         return;
       if (this.editor.editingContent == oldCommentContent) {
         this.comments[this.editor.editing].content = this.editor.editingContent;
-        this.comments[this.editor.editing].edited = 1;
+        this.comments[this.editor.editing].edited = true;
         this.editor.editing = -1;
         return;
       }
@@ -218,8 +263,10 @@ export default {
         })
         .then(() => {
           console.log(this.comments);
-          this.comments[this.editor.editing].content = this.editor.editingContent;
-          this.comments[this.editor.editing].edited = 1;
+          this.comments[
+            this.editor.editing
+          ].content = this.editor.editingContent;
+          this.comments[this.editor.editing].edited = true;
           this.editor.editing = -1;
         })
         .catch((error) => {
@@ -237,7 +284,7 @@ export default {
         created: Date.now(),
         content: this.form.comment,
         post: this.postID,
-        edited: 0,
+        edited: false,
       };
       this.comments = [comment, ...this.comments];
     },
@@ -252,6 +299,32 @@ export default {
           console.log(error);
         }
       }, 10);
+    },
+    async rate(id, reaction) {
+      if (this.requesting) return;
+      this.requesting = true;
+      let self = this;
+      let r = reaction == "up" ? 1 : -1;
+      if (
+        (reaction == "up" && this.yourReaction == 1) ||
+        (reaction == "down" && this.yourReaction == -1)
+      ) {
+        r = 0;
+      }
+      await axios
+        .post("comment/rate", { id: id, reaction: r })
+        .then((response) => {
+          let comment = this.comments.find((c) => c.id == id);
+          comment.rating = response.data.data.rating;
+          comment.your_reaction = response.data.data.your_reaction;
+        })
+        .catch((error) => {
+          console.log(error);
+          //TODO show alert saying that you need to be logged in to rate
+        })
+        .finally(() => {
+          self.requesting = false;
+        });
     },
   },
 };

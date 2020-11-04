@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	"encoding/json"
-	"forum/api/models"
-	"forum/api/repository"
-	"forum/api/repository/crud"
-	"forum/api/response"
-	"forum/api/utils"
+	"errors"
+
+	"github.com/sarmerer/forum/api/models"
+	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/repository/crud"
+	"github.com/sarmerer/forum/api/response"
+	"github.com/sarmerer/forum/api/utils"
 
 	"net/http"
 )
@@ -62,6 +63,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), uid) {
+		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
+		return
+	}
+
 	if updatedUser, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
@@ -81,20 +87,25 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		input  models.InputID
+		uid    int64
 		status int
 		err    error
 	)
-	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
+	if uid, err = utils.ParseID(r); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if _, status, err = repo.FindByID(input.ID); err != nil {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), uid) {
+		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
+		return
+	}
+
+	if _, status, err = repo.FindByID(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if status, err = repo.Delete(input.ID); err != nil {
+	if status, err = repo.Delete(uid); err != nil {
 		response.Error(w, status, err)
 		return
 	}

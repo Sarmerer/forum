@@ -2,36 +2,42 @@ package controllers
 
 import (
 	"fmt"
-	"forum/api/config"
 	"net/http"
 	"time"
+
+	"github.com/sarmerer/forum/api/config"
 
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-//generateUUID generates the cookie
-func generateCookie(cookie *http.Cookie, err error) *http.Cookie {
+func generateCookie(cookie *http.Cookie, err error) (string, string) {
 	var newUUID string
 	if err != nil {
 		newUUID = fmt.Sprint(uuid.NewV4())
 	} else {
 		newUUID = cookie.Value
 	}
-	return &http.Cookie{
+	newCookie := &http.Cookie{
 		Name:     config.SessionCookieName,
 		Value:    newUUID,
 		Expires:  time.Now().Add(config.SessionExpiration),
 		Path:     "/",
-		HttpOnly: true}
+		HttpOnly: true,
+	}
+	if config.Production {
+		cookie.Secure = true
+		// Heroku hosting uses Go version 1.12, which didin't support SameSite attribute,
+		// so I have to set that attribute manually.
+		return newCookie.String() + "; SameSite=None", newUUID
+	}
+	return newCookie.String(), newUUID
 }
 
-//hash hashes the password
 func hash(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), 8)
 }
 
-//verifyPassword verifyes the password
 func verifyPassword(hash, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
