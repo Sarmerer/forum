@@ -1,113 +1,123 @@
 <template>
   <div>
     <div class="card">
-      <Rating
-        v-on:update="
-          (args) => {
-            post.rating = args.new_rating;
-            post.your_reaction = args.new_your_reaction;
-          }
-        "
-        :postID="post.id"
-        :rating="post.rating"
-        :yourReaction="post.your_reaction"
-      />
-      <h3 class="primary">{{ post.title }}</h3>
-      <p style="color: white">{{ post.content }}</p>
-      <div>
-        <b-form-tag
-          v-for="category in categories"
-          disabled
-          :key="category"
-          :title="category"
-          variant="dark"
-          class="mr-1 mb-1"
-        >
-          {{ category }}
-        </b-form-tag>
-        <div class="controls">
-          <b-overlay
-            :show="modal.deleting"
-            rounded
-            opacity="0.5"
-            spinner-small
-            variant="light"
-            spinner-variant="primary"
-            class="d-inline-block"
-          >
-            <transition name="fade">
-              <b-button-group
-                v-if="
-                  (user ? post.author_id == user.id || user.role > 0 : false) &&
-                    !modal.show
-                "
-                size="sm"
+      <b-row>
+        <b-col cols="1">
+          <Rating
+            v-on:update="
+              (args) => {
+                post.rating = args.new_rating;
+                post.your_reaction = args.new_your_reaction;
+              }
+            "
+            :postID="post.id"
+            :rating="post.rating"
+            :yourReaction="post.your_reaction"
+        /></b-col>
+        <b-col cols="11" style="margin-left: -35px;">
+          <h3 class="primary">{{ post.title }}</h3>
+          <p style="color: white">{{ post.content }}</p>
+          <div>
+            <b-form-tag
+              v-for="category in categories"
+              disabled
+              :key="category"
+              :title="category"
+              variant="dark"
+              class="mr-1 mb-1"
+            >
+              {{ category }}
+            </b-form-tag>
+            <div class="controls">
+              <b-overlay
+                :show="modal.deleting"
+                rounded
+                opacity="0.5"
+                spinner-small
+                variant="light"
+                spinner-variant="primary"
+                class="d-inline-block"
               >
-                <b-button
-                  size="sm"
-                  lg="1"
-                  class="controls-button"
-                  variant="light"
-                  title="Edit"
-                >
-                  <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
-                </b-button>
-                <b-button
-                  size="sm"
-                  variant="outline-danger"
-                  lg="2"
-                  @click="modal.show = !modal.show"
-                  class="controls-button"
-                  title="Delete"
-                >
-                  <img
-                    src="@/assets/svg/post/delete.svg"
-                    alt="delete"
-                    srcset=""
-                  />
-                </b-button>
-              </b-button-group>
+                <transition name="fade">
+                  <b-button-group
+                    v-if="
+                      (user
+                        ? post.author_id == user.id || user.role > 0
+                        : false) && !modal.show
+                    "
+                    size="sm"
+                  >
+                    <b-button
+                      size="sm"
+                      lg="1"
+                      class="controls-button"
+                      variant="light"
+                      title="Edit"
+                    >
+                      <img
+                        src="@/assets/svg/post/edit.svg"
+                        alt="edit"
+                        srcset=""
+                      />
+                    </b-button>
+                    <b-button
+                      size="sm"
+                      variant="outline-danger"
+                      lg="2"
+                      @click="modal.show = !modal.show"
+                      class="controls-button"
+                      title="Delete"
+                    >
+                      <img
+                        src="@/assets/svg/post/delete.svg"
+                        alt="delete"
+                        srcset=""
+                      />
+                    </b-button>
+                  </b-button-group>
 
-              <b-button-group
-                v-if="
-                  (user ? post.author_id == user.id || user.role > 0 : false) &&
-                    modal.show
-                "
-                size="sm"
-              >
-                <b-button
-                  size="sm"
-                  variant="outline-success"
-                  lg="2"
-                  class="confirm"
-                  @click="deletePost()"
-                  title="Confirm"
-                >
-                  <img
-                    src="@/assets/svg/post/confirm.svg"
-                    alt="delete"
-                    srcset=""
-                  />
-                </b-button>
-                <b-button
-                  size="sm"
-                  lg="1"
-                  variant="outline-danger"
-                  @click="modal.show = !modal.show"
-                  class="confirm"
-                  title="Dismiss"
-                >
-                  <img
-                    src="@/assets/svg/post/dismiss.svg"
-                    alt="edit"
-                    srcset=""
-                  />
-                </b-button>
-              </b-button-group>
-            </transition>
-          </b-overlay>
-        </div>
-      </div>
+                  <b-button-group
+                    v-if="
+                      (user
+                        ? post.author_id == user.id || user.role > 0
+                        : false) && modal.show
+                    "
+                    size="sm"
+                  >
+                    <b-button
+                      size="sm"
+                      variant="outline-success"
+                      lg="2"
+                      class="confirm"
+                      @click="deletePost()"
+                      title="Confirm"
+                    >
+                      <img
+                        src="@/assets/svg/post/confirm.svg"
+                        alt="delete"
+                        srcset=""
+                      />
+                    </b-button>
+                    <b-button
+                      size="sm"
+                      lg="1"
+                      variant="outline-danger"
+                      @click="modal.show = !modal.show"
+                      class="confirm"
+                      title="Dismiss"
+                    >
+                      <img
+                        src="@/assets/svg/post/dismiss.svg"
+                        alt="edit"
+                        srcset=""
+                      />
+                    </b-button>
+                  </b-button-group>
+                </transition>
+              </b-overlay>
+            </div></div
+        ></b-col>
+      </b-row>
     </div>
   </div>
 </template>
@@ -115,8 +125,6 @@
 import axios from "axios";
 import { mapGetters } from "vuex";
 import Rating from "@/components/Rating";
-
-axios.defaults.withCredentials = true;
 
 export default {
   props: {
