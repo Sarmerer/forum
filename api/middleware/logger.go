@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"forum/api/logger"
 	"net/http"
 	"time"
+
+	"github.com/sarmerer/forum/api/logger"
 )
 
 type statusRecorder struct {

@@ -1,8 +1,9 @@
 package models
 
 type UserCtx struct {
-	ID   int64
-	Role int
+	ID          int64
+	DisplayName string
+	Role        int
 }
 
 type User struct {
@@ -33,6 +34,11 @@ type Post struct {
 	YourReaction  int        `json:"your_reaction"`
 }
 
+type Posts struct {
+	Posts     []Post `json:"posts"`
+	TotalRows int    `json:"total_rows"`
+}
+
 type Category struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -40,11 +46,18 @@ type Category struct {
 }
 
 type Comment struct {
-	ID         int64  `json:"id"`
-	AuthorID   int64  `json:"author_id"`
-	AuthorName string `json:"author_name"`
-	Content    string `json:"content"`
-	Created    string `json:"created"`
-	PostID     int64  `json:"post"`
-	Edited     int    `json:"edited"`
+	ID           int64  `json:"id"`
+	AuthorID     int64  `json:"author_id"`
+	AuthorName   string `json:"author_name"`
+	Content      string `json:"content"`
+	Created      string `json:"created"`
+	PostID       int64  `json:"post"`
+	Rating       int    `json:"rating"`
+	YourReaction int    `json:"your_reaction"`
+	Edited       bool   `json:"edited"`
+}
+
+type Rating struct {
+	Rating       int `json:"rating"`
+	YourReaction int `json:"your_reaction"`
 }

@@ -4,9 +4,9 @@ module.exports = {
       "/api": {
         target: "http://localhost:4433",
         ws: true,
-        changeOrigin: true
-      }
-    }
+        changeOrigin: true,
+      },
+    },
   },
-  transpileDependencies: ["vuetify"]
+  transpileDependencies: ["vuetify"],
 };

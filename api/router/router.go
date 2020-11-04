@@ -2,45 +2,57 @@ package router
 
 import (
 	"errors"
-	"forum/api/logger"
-	"forum/api/response"
 	"net/http"
+	"regexp"
+
+	"github.com/sarmerer/forum/api/logger"
+	"github.com/sarmerer/forum/api/response"
 )
 
 // Router contains a map of API routes, with their handlrers
 type Router struct {
-	handlers map[string]*routeHandler
+	routes []*Route
 }
 
-type routeHandler struct {
+type Route struct {
+	Pattern string
 	Handler func(http.ResponseWriter, *http.Request)
 	Method  string
 }
 
 // New creates an instance of Router
 func New() *Router {
-	router := new(Router)
-	router.handlers = make(map[string]*routeHandler)
-	return router
+	return new(Router)
 }
 
 // ServeHTTP is called for every request, it finds an API endpoint, matching request path, and calls the handler for that path
 func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	route, found := router.handlers[req.Method+":"+req.URL.Path]
-	if !found {
-		pageNotFound(w, req)
-		return
+	for _, route := range router.routes {
+		match, err := regexp.MatchString(route.Pattern, req.URL.Path)
+		if err != nil {
+			logger.CheckErrAndLog("Router", "", err)
+			return
+		}
+		if match {
+			if req.Method != route.Method && req.Method != http.MethodOptions {
+				wrongMethod(w, req)
+				return
+			}
+			route.Handler(w, req)
+			return
+		}
 	}
-	if route.Method != req.Method && req.Method != http.MethodOptions {
-		wrongMethod(w, req)
-		return
-	}
-	route.Handler(w, req)
+	pageNotFound(w, req)
+	return
 }
 
 // HandleFunc adds a route pattern to the router
-func (router *Router) HandleFunc(path, method string, h http.HandlerFunc) {
-	router.handlers[method+":"+path] = &routeHandler{h, method}
+func (router *Router) HandleFunc(path, method string, handler http.HandlerFunc) {
+	router.routes = append(router.routes, &Route{"^" + path + "$", handler, method})
+}
+
+func (router *Router) Handle(path, method string, h http.Handler) {
+	router.routes = append(router.routes, &Route{"^" + path + "$", func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }, method})
 }
 
 func pageNotFound(w http.ResponseWriter, req *http.Request) {
