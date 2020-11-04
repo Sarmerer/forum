@@ -1,7 +1,6 @@
 <template>
-  <div class="rating-column mr-2" style="text-align:center;">
+  <div class="rating-column rating-col">
     <svg
-      style="display:block"
       @click.prevent="rate('up')"
       width="1.5em"
       height="1.5em"
@@ -17,7 +16,6 @@
     </svg>
     <span>{{ rating }}</span>
     <svg
-      style="display:block"
       @click.prevent="rate('down')"
       width="1.5em"
       height="1.5em"
@@ -36,29 +34,27 @@
 <script>
 import axios from "axios";
 
-axios.defaults.withCredentials = true;
-
 export default {
   props: {
     postID: {
       type: Number,
       required: true,
-      default: -1,
+      default: -1
     },
     rating: {
       type: Number,
       required: true,
-      default: 0,
+      default: 0
     },
     yourReaction: {
       type: Number,
       required: true,
-      default: 0,
-    },
+      default: 0
+    }
   },
   data() {
     return {
-      requesting: false,
+      requesting: false
     };
   },
   methods: {
@@ -74,23 +70,33 @@ export default {
         r = 0;
       }
       await axios
-        .post("post/rate", { id: self.postID, reaction: r })
-        .then((response) => {
+        .post("post/rate", { pid: self.postID, reaction: r })
+        .then(response => {
           // self.yourReaction = response.data.data.your_reaction;
           // self.rating = response.data.data.rating;
           this.$emit("update", {
             new_rating: response.data.data.rating,
-            new_your_reaction: response.data.data.your_reaction,
+            new_your_reaction: response.data.data.your_reaction
           });
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
           //TODO show alert saying that you need to be logged in to rate
         })
         .finally(() => {
           self.requesting = false;
         });
-    },
-  },
+    }
+  }
 };
 </script>
+
+<style lang="scss">
+.rating-col {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: left;
+  margin-left: -100px;
+}
+</style>

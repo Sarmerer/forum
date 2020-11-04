@@ -1,5 +1,6 @@
-.vscode
+/ui/app/src/environments
 /database
+.vscode/settings.json
 .VSCodeCounter
 /node_modules
 /ssl

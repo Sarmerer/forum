@@ -3,12 +3,11 @@ package crud
 import (
 	"database/sql"
 	"errors"
+	"forum/api/config"
+	"forum/api/models"
+	"forum/api/repository"
 	"net/http"
 	"time"
-
-	"github.com/sarmerer/forum/api/config"
-	"github.com/sarmerer/forum/api/models"
-	"github.com/sarmerer/forum/api/repository"
 )
 
 //UserRepoCRUD helps performing CRUD operations
@@ -27,8 +26,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 		err   error
 	)
 	if rows, err = repository.DB.Query(
-		`SELECT *
-		FROM users`,
+		"SELECT * FROM users",
 	); err != nil {
 		return nil, err
 	}
@@ -48,9 +46,7 @@ func (UserRepoCRUD) FindByID(uid int64) (*models.User, int, error) {
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT *
-		FROM users
-		WHERE id = ?`, uid,
+		"SELECT * FROM users WHERE id = ?", uid,
 	).Scan(
 		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
 	); err != nil {
@@ -80,18 +76,7 @@ func (UserRepoCRUD) Create(u *models.User) (int, error) {
 	}
 
 	if result, err = repository.DB.Exec(
-		`INSERT INTO users (
-			login,
-			password,
-			email,
-			avatar,
-			display_name,
-			created,
-			last_online,
-			session_id,
-			role
-		)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		"INSERT INTO users (login, password, email, avatar, display_name, created, last_online, session_id, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		u.Login, u.Password, u.Email, u.Avatar, u.DisplayName, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), u.SessionID, u.Role,
 	); err != nil {
 		return http.StatusInternalServerError, err
@@ -114,9 +99,7 @@ func (UserRepoCRUD) Update(u *models.User) (int, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`UPDATE users
-		SET display_name = ?
-		WHERE id = ?`,
+		"UPDATE users SET display_name = ? WHERE id = ?",
 		u.DisplayName, u.ID,
 	); err != nil {
 		return http.StatusInternalServerError, err
@@ -139,8 +122,7 @@ func (UserRepoCRUD) Delete(id int64) (int, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`DELETE FROM users
-		WHERE id = ?`, id,
+		"DELETE FROM users WHERE id = ?", id,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return http.StatusInternalServerError, err
@@ -164,10 +146,7 @@ func (UserRepoCRUD) FindByNameOrEmail(login string) (*models.User, int, error) {
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT *
-		FROM users
-		WHERE login = ?
-			OR email = ?`, login, login,
+		"SELECT * FROM users WHERE login = ? OR email = ?", login, login,
 	).Scan(
 		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
 	); err != nil {

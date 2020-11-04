@@ -4,12 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"forum/api/config"
+	"forum/api/models"
+	"forum/api/repository"
 	"net/http"
 	"time"
-
-	"github.com/sarmerer/forum/api/config"
-	"github.com/sarmerer/forum/api/models"
-	"github.com/sarmerer/forum/api/repository"
 )
 
 //PostRepoCRUD helps performing CRUD operations
@@ -21,56 +20,59 @@ func NewPostRepoCRUD() PostRepoCRUD {
 }
 
 //FindAll returns all posts in the database
-func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Posts, error) {
+func (PostRepoCRUD) FindAll(uid int64) ([]models.Post, error) {
 	var (
-		posts  *sql.Rows
-		result models.Posts
-		err    error
+		rows  *sql.Rows
+		posts []models.Post
+		err   error
 	)
-	if posts, err = repository.DB.Query(
-		`SELECT *,
+	if rows, err = repository.DB.Query(
+		`SELECT
+		*,
 		(
-			SELECT TOTAL(reaction)
-			FROM posts_reactions
-			WHERE post_id_fkey = p.id
-		) AS rating,
-		IFNULL (
-			(
-				SELECT reaction
-				FROM posts_reactions
-				WHERE user_id_fkey = $1
-					AND post_id_fkey = p.id
-			),
-			0
-		) AS yor_reaction,
-		(
-			SELECT count(id)
-			FROM comments
-			WHERE post_id_fkey = p.id
-		) AS comments_count
-	FROM posts p
-	ORDER BY rating DESC
-	LIMIT $2
-	OFFSET $3`,
-		userID, perPage, (currentPage-1)*perPage,
+		   SELECT
+			  TOTAL(reaction) 
+		   FROM
+			  reactions 
+		   WHERE
+			  post_id_fkey = p.id 
+		)
+		AS rating,
+		IFNULL (( 
+		SELECT
+		   reaction 
+		FROM
+		   reactions 
+		WHERE
+		   user_id_fkey = $1 
+		   AND post_id_fkey = p.id), 0) AS yor_reaction,
+		   (
+			  SELECT
+				 count(id) 
+			  FROM
+				 comments 
+			  WHERE
+				 post_id_fkey = p.id
+		   )
+		   AS comments_count 
+		FROM
+		   posts p 
+		ORDER BY
+		   rating DESC`,
+		uid,
 	); err != nil {
 		return nil, err
 	}
-	for posts.Next() {
+	for rows.Next() {
 		var err error
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
+		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
 		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 		}
-		result.Posts = append(result.Posts, p)
+		posts = append(posts, p)
 	}
-	if err = repository.DB.QueryRow(
-		`SELECT COUNT(id) FROM posts`,
-	).Scan(&result.TotalRows); err != nil {
-		return nil, err
-	}
-	return &result, nil
+	return posts, nil
 }
 
 //FindByID returns a specific post from the database
@@ -85,7 +87,7 @@ func (PostRepoCRUD) FindByID(pid int64, uid int64) (*models.Post, int, error) {
 		   SELECT
 			  TOTAL(reaction) 
 		   FROM
-		   	posts_reactions 
+			  reactions 
 		   WHERE
 			  post_id_fkey = p.id 
 		)
@@ -94,7 +96,7 @@ func (PostRepoCRUD) FindByID(pid int64, uid int64) (*models.Post, int, error) {
 		SELECT
 		   reaction 
 		FROM
-			posts_reactions 
+		   reactions 
 		WHERE
 		   user_id_fkey = ? 
 		   AND post_id_fkey = p.id), 0) AS yor_reaction FROM posts p WHERE p.id = ?`,
@@ -122,26 +124,33 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 	if rows, err = repository.DB.Query(
 		`SELECT *,
 		(
-			SELECT TOTAL(reaction)
-			FROM posts_reactions
-			WHERE post_id_fkey = p.id
-		) AS rating,
-		IFNULL (
-			(
-				SELECT reaction
-				FROM posts_reactions
-				WHERE user_id_fkey = $1
-					AND post_id_fkey = p.id
-			),
-			0
-		) AS yor_reaction,
-		(
-			SELECT count(id)
-			FROM comments
-			WHERE post_id_fkey = p.id
-		) AS comments_count
-	FROM posts p
-	WHERE p.author_id_fkey = $1`,
+		   SELECT
+			  TOTAL(reaction) 
+		   FROM
+			  reactions 
+		   WHERE
+			  post_id_fkey = p.id 
+		)
+		AS rating,
+		IFNULL (( 
+		SELECT
+		   reaction 
+		FROM
+		   reactions 
+		WHERE
+		   user_id_fkey = $1 
+		   AND post_id_fkey = p.id), 0) AS yor_reaction,
+		   (
+			SELECT
+			   count(id) 
+			FROM
+			   comments 
+			WHERE
+			   post_id_fkey = p.id
+		 )
+		 AS comments_count 
+		FROM posts p
+			WHERE p.author_id_fkey = $1`,
 		uid,
 	); err != nil {
 		return nil, err
@@ -172,19 +181,17 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 		}
 	}
 	if rows, err = repository.DB.Query(
-		`SELECT p.id,
-		p.author_id_fkey,
-		p.author_name_fkey,
-		p.title,
-		p.content,
-		p.created,
-		p.updated
-	FROM posts_categories_bridge AS pcb
-		INNER JOIN posts as p ON p.id = pcb.post_id_fkey
-		INNER JOIN categories AS c ON c.id = pcb.category_id_fkey
-	WHERE c.name IN (`+args+`)
-	GROUP BY p.id
-	HAVING COUNT(DISTINCT c.id) = ?`,
+		`SELECT p.id, p.author_fkey, p.author_name_fkey, p.title, p.content, p.created, p.updated
+		FROM posts_categories_bridge AS pcb
+		INNER JOIN posts as p
+			ON p.id = pcb.post_id_fkey
+		INNER JOIN categories AS c
+			ON c.id = pcb.category_id_fkey
+			   WHERE c.name IN (`+args+`)
+		GROUP BY
+			p.id
+		HAVING 
+			COUNT(DISTINCT c.id) = ?`,
 		len(categories),
 	); err != nil {
 		return nil, err
@@ -206,15 +213,7 @@ func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`INSERT INTO posts (
-			author_id_fkey,
-			author_name_fkey,
-			title,
-			content,
-			created,
-			updated
-		)
-	VALUES (?, ?, ?, ?, ?, ?)`,
+		"INSERT INTO posts (author_fkey,author_name_fkey, title, content, created, updated) VALUES (?, ?, ?, ?, ?, ?)",
 		post.AuthorID, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
 	); err != nil {
 		return 0, err
@@ -241,14 +240,7 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`UPDATE posts
-		SET author_id_fkey = ?,
-			author_name_fkey,
-			title = ?,
-			content = ?,
-			created = ?,
-			updated = ?
-		WHERE id = ?`,
+		"UPDATE posts SET author_fkey = ?, author_name_fkey, title = ?, content = ?, created = ?, updated = ? WHERE id = ?",
 		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.ID,
 	); err != nil {
 		return err
@@ -271,8 +263,7 @@ func (PostRepoCRUD) Delete(pid int64) (int, error) {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`DELETE FROM posts
-		WHERE id = ?`, pid,
+		"DELETE FROM posts WHERE id = ?", pid,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return http.StatusInternalServerError, err

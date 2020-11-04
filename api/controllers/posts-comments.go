@@ -2,22 +2,19 @@ package controllers
 
 import (
 	"encoding/json"
-	"errors"
+	"forum/api/config"
+	"forum/api/models"
+	"forum/api/repository"
+	"forum/api/repository/crud"
+	"forum/api/response"
+	"forum/api/utils"
 	"net/http"
 	"time"
-
-	"github.com/sarmerer/forum/api/config"
-	"github.com/sarmerer/forum/api/models"
-	"github.com/sarmerer/forum/api/repository"
-	"github.com/sarmerer/forum/api/repository/crud"
-	"github.com/sarmerer/forum/api/response"
-	"github.com/sarmerer/forum/api/utils"
 )
 
 func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
-		userCtx  models.UserCtx         = utils.GetUserFromCtx(r)
 		comments []models.Comment
 		pid      int64
 		status   int
@@ -31,7 +28,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if comments, err = repo.FindAll(pid, userCtx.ID); err != nil {
+	if comments, err = repo.FindAll(pid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -41,7 +38,8 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		userCtx models.UserCtx         = utils.GetUserFromCtx(r)
+		userCtx models.UserCtx         = utils.GetUIDFromCtx(r)
+		author  *models.User
 		status  int
 		err     error
 	)
@@ -57,14 +55,18 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	comment := &models.Comment{
+	if author, status, err = crud.NewUserRepoCRUD().FindByID(userCtx.ID); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+	reply := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
 		PostID:     input.PID,
 		AuthorID:   userCtx.ID,
-		AuthorName: userCtx.DisplayName,
+		AuthorName: author.DisplayName,
 	}
-	if err = repo.Create(comment); err != nil {
+	if err = repo.Create(reply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -73,10 +75,10 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		comment *models.Comment
-		status  int
-		err     error
+		repo         repository.CommentRepo = crud.NewCommentRepoCRUD()
+		updatedReply *models.Comment
+		status       int
+		err          error
 	)
 	input := struct {
 		RID     int64  `json:"id"`
@@ -86,18 +88,13 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if comment, status, err = repo.FindByID(input.RID); err != nil {
+	if updatedReply, status, err = repo.FindByID(input.RID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 
-	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
-		response.Error(w, http.StatusForbidden, errors.New("this comment doesn't belong to you"))
-		return
-	}
-
-	comment.Content = input.Content
-	if err = repo.Update(comment); err != nil {
+	updatedReply.Content = input.Content
+	if err = repo.Update(updatedReply); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -106,27 +103,20 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		cid     int64
-		comment *models.Comment
-		status  int
-		err     error
+		repo   repository.CommentRepo = crud.NewCommentRepoCRUD()
+		rid    int64
+		status int
+		err    error
 	)
-	if cid, err = utils.ParseID(r); err != nil {
+	if rid, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if comment, status, err = repo.FindByID(cid); err != nil {
+	if _, status, err = repo.FindByID(rid); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-
-	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), comment.AuthorID) {
-		response.Error(w, http.StatusForbidden, errors.New("this comment doesn't belong to you"))
-		return
-	}
-
-	if err = repo.Delete(cid); err != nil {
+	if err = repo.Delete(rid); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

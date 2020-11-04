@@ -17,14 +17,10 @@ func HTTPLogs(status, elapsed, host, method, path string) {
 	log.Printf("|%s|\t%10s | %s |%s %s", status, elapsed, host, method, path)
 }
 
-func CheckErrAndLog(instance, message string, err error) {
+func ServerLogs(instance string, message string, err error) {
 	if err != nil {
 		log.Printf("%s:\t|%s| %s\n", instance, Red("ERROR"), err)
 	} else {
 		log.Printf("%s:\t|%s| %s\n", instance, Green("OK"), message)
 	}
-}
-
-func Log(instance, message string) {
-	log.Printf("%s: %s\n", instance, message)
 }

@@ -5,21 +5,177 @@ html {
   background-color: #121212;
   color: rgba(255, 255, 255, 0.87);
   height: 100%;
-  margin: 0;
+  // margin: 0;
   font-family: "Roboto Mono", monospace;
+  padding: 0 !important;
+  cursor: default;
 }
 
+/* Make sure the borders are not rounded because of Bootstrap*/
+.card,
+.btn,
+.form-control {
+  border: 0;
+  border-radius: 0;
+}
+
+/* Sidenav and navbar */
+.sidenav {
+  height: 100%;
+  width: 65px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 30px;
+}
+
+.sidenav a {
+  cursor: pointer;
+  padding: 10px 8px 10px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181 !important;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1 !important;
+}
+.navbar {
+  background-color: #111;
+  justify-content: space-around;
+}
+
+.navbar a {
+  color: #818181 !important;
+}
+
+.navbar a:hover {
+  color: #f1f1f1 !important;
+}
+
+/* Card */
+.card {
+  margin: 20px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
+}
+
+.card a {
+  text-decoration: none;
+}
+
+/* Responsive grid layout start */
+.grid {
+  margin: 0 17%;
+}
+
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.columns > * {
+  flex-basis: calc(calc(750px - 100%) * 999);
+}
+
+.main-col {
+  flex-grow: 1;
+}
+
+.info-col {
+  flex-grow: 0.4;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    margin: 0 2%;
+  }
+  .main-col {
+    flex-grow: 1;
+  }
+
+  .info-col {
+    flex-grow: 0.4;
+  }
+}
+
+/* Responsive grid layout end */
+
+/* Global Form Control color scheme start */
+.form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.b-form-tags.focus,
+.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid #278ea5;
+}
+
+.form-control input {
+  background-color: transparent;
+  color: white;
+}
+
+/* Form Control color scheme end */
+
+/* Scroll Bar start */
+
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #222222;
+}
+
+/* Scroll Bar end */
+
+/* Global Color scheme start*/
 .primary {
   color: #278ea5;
+}
+
+.background-primary {
+  background-color: #278ea5;
 }
 
 .primary-variant {
   color: #1f4287;
 }
 
+.background-variant {
+  background-color: #1f4287;
+}
+
 .secondary {
   color: #21e6c1;
 }
+.background-secondary {
+  background-color: #21e6c1;
+}
+
+a.secondary:hover {
+  color: #21e6c1;
+  opacity: 0.6;
+}
+
 .textarea {
   background-color: #101010;
   color: gray;
@@ -30,3 +186,8 @@ html {
   color: white;
   background-color: #121212;
 }
+
+.text-muted {
+  opacity: 0.7;
+}
+/*Color scheme end*/

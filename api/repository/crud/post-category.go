@@ -3,21 +3,20 @@ package crud
 import (
 	"database/sql"
 	"errors"
-
-	"github.com/sarmerer/forum/api/models"
-	"github.com/sarmerer/forum/api/repository"
+	"forum/api/models"
+	"forum/api/repository"
 )
 
-//CategoryRepoCRUD helps performing CRUD operations
-type CategoryRepoCRUD struct{}
+//categoryRepoCRUD helps performing CRUD operations
+type categoryRepoCRUD struct{}
 
 //NewCategoryRepoCRUD creates an instance of CategoryModel
 //FIXME wrong categories amount after COUNT
-func NewCategoryRepoCRUD() CategoryRepoCRUD {
-	return CategoryRepoCRUD{}
+func NewCategoryRepoCRUD() categoryRepoCRUD {
+	return categoryRepoCRUD{}
 }
 
-func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
+func (categoryRepoCRUD) FindAll() ([]models.Category, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
@@ -25,13 +24,12 @@ func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 	)
 	if rows, err = repository.DB.Query(
 		`SELECT COUNT(category_id_fkey) AS use_count,
-			category_id_fkey,
-			name
+				category_id_fkey,
+				name
 		FROM categories c
-			LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
+ 		LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
 		GROUP BY category_id_fkey
-		ORDER BY name ASC
-		LIMIT 30`,
+		ORDER BY name ASC`,
 	); err != nil {
 		return nil, err
 	}
@@ -44,7 +42,7 @@ func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 }
 
 //FindByPostID returns all categories belonging to  a post
-func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
+func (categoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
@@ -52,10 +50,10 @@ func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 	)
 	if rows, err = repository.DB.Query(
 		`SELECT category_id_fkey,
-			name
-		FROM categories c
-			LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = ?
-		WHERE c.id = ctb.category_id_fkey`,
+				name
+ 		FROM categories c
+ 		LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = ?
+ 		WHERE c.id = ctb.category_id_fkey`,
 		postID,
 	); err != nil {
 		return nil, err
@@ -70,7 +68,7 @@ func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 
 //Find returns a specific category from the database
 //TODO implment search for all post with such categories here
-func (CategoryRepoCRUD) Find(id int) (*models.Category, error) {
+func (categoryRepoCRUD) Find(id int) (*models.Category, error) {
 	var category models.Category
 	rows, err := repository.DB.Query("SELECT * FROM categories WHERE id = ?", id)
 	if err != nil {
@@ -84,7 +82,7 @@ func (CategoryRepoCRUD) Find(id int) (*models.Category, error) {
 
 //Create adds a new category to the database
 //FIXME category being duplicated, when creating new post with existing category
-func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
+func (categoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 	var (
 		cid    int64
 		result sql.Result
@@ -125,8 +123,7 @@ func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 
 //Delete deletes category from the database
 //TODO also delete category from the brige table
-// FIXME BEGIN COMMIT do not work for some reason
-func (CategoryRepoCRUD) Delete(cid int) error {
+func (categoryRepoCRUD) Delete(cid int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -134,10 +131,8 @@ func (CategoryRepoCRUD) Delete(cid int) error {
 	)
 	if result, err = repository.DB.Exec(
 		`BEGIN;
-		DELETE FROM categories
-		WHERE id = $1;
-		DELETE FROM posts_categories_bridge
-		WHERE category_id_fkey = $1;
+		DELETE FROM categories WHERE id = $1;
+		DELETE FROM posts_categories_bridge WHERE category_id_fkey = $1;
 		COMMIT;`,
 		cid,
 	); err != nil {
@@ -153,23 +148,24 @@ func (CategoryRepoCRUD) Delete(cid int) error {
 	return errors.New("could not delete the category")
 }
 
-func (CategoryRepoCRUD) DeleteGroup(pid int64) error {
+func (categoryRepoCRUD) DeleteGroup(pid int64) error {
 	var err error
 	if _, err = repository.DB.Exec(
-		`DELETE FROM posts_categories_bridge
+		`DELETE
+		FROM posts_categories_bridge
 		WHERE post_id_fkey = ?`,
 		pid,
 	); err != nil {
 		return err
 	}
 	if _, err = repository.DB.Exec(
-		`DELETE FROM categories
-		WHERE id IN (
-				SELECT c.id
-				FROM categories c
-					LEFT JOIN posts_categories_bridge pcb ON c.id = pcb.category_id_fkey
-				WHERE pcb.category_id_fkey IS NULL
-			)`,
+		`DELETE
+		FROM categories
+		WHERE id IN
+			(SELECT c.id
+			 FROM categories c
+			 LEFT JOIN posts_categories_bridge pcb ON c.id = pcb.category_id_fkey
+			 WHERE pcb.category_id_fkey IS NULL)`,
 	); err != nil {
 		return err
 	}

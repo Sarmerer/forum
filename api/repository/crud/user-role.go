@@ -3,9 +3,8 @@ package crud
 import (
 	"database/sql"
 	"errors"
+	"forum/api/repository"
 	"net/http"
-
-	"github.com/sarmerer/forum/api/repository"
 )
 
 func (UserRepoCRUD) GetRole(id int64) (int, int, error) {
@@ -14,9 +13,7 @@ func (UserRepoCRUD) GetRole(id int64) (int, int, error) {
 		err  error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT role
-		FROM users
-		WHERE id = ?`, id,
+		"SELECT role FROM users WHERE id = ?", id,
 	).Scan(&role); err != nil {
 		if err != sql.ErrNoRows {
 			return 0, http.StatusInternalServerError, err
@@ -34,9 +31,7 @@ func (UserRepoCRUD) UpdateRole(uid int64, role int) error {
 		err          error
 	)
 	if result, err = repository.DB.Exec(
-		`UPDATE users
-		SET role = ?
-		WHERE id = ?`,
+		"UPDATE users SET role = ? WHERE id = ?",
 		role, uid,
 	); err != nil {
 		return err
