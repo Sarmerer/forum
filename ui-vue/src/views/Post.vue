@@ -50,51 +50,33 @@
       </b-card> -->
         </div>
         <div class="info-col">
-          <div class="card">
-            <p>1 reply</p>
-            <p>1 participant</p>
-            <p>Last reply from:</p>
-            <p>Last activity:</p>
+          <div class="card" id="user-info">
+            <img :src="user.avatar" alt="avatar" />
+            <h3 class="primary">
+              {{ user.display_name }}
+            </h3>
+            <h5>
+              <b-badge v-if="user.role == 2" class="background-variant"
+                >Admin</b-badge
+              >
+            </h5>
           </div>
         </div>
       </div>
     </div>
     <div v-else class="grid">
-      <div class="columns">
-        <div v-if="isMobile()" class="info-col">
-          <div class="card">
-            <p>1 reply</p>
-            <p>1 participant</p>
-            <p>Last reply from:</p>
-            <p>Last activity:</p>
-          </div>
-        </div>
-        <div class="main-col">
-          <PostSection :postID="postID" />
-          <CommentsSection :postID="postID" />
-        </div>
-        <div v-if="!isMobile()" class="info-col">
-          <div class="card">
-            <p>1 reply</p>
-            <p>1 participant</p>
-            <p>Last reply from:</p>
-            <p>Last activity:</p>
-          </div>
-        </div>
-      </div>
+      <PostSection :postID="postID" />
     </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import CommentsSection from "@/components/CommentsSection";
 import PostSection from "@/components/PostSection";
 import { mapGetters } from "vuex";
 export default {
   components: {
-    PostSection,
-    CommentsSection
+    PostSection
   },
   computed: {
     ...mapGetters({
@@ -163,5 +145,18 @@ form .btn:hover {
 
 #new-post {
   margin: 20px;
+}
+
+#user-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  text-align: center;
+}
+
+#user-info img {
+  width: 100px;
+  height: 100px;
+  border-radius: 200px;
 }
 </style>
