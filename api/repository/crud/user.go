@@ -20,6 +20,7 @@ func NewUserRepoCRUD() UserRepoCRUD {
 }
 
 //FindAll returns all users in the database
+//FIXME don't scan for sensetive data, like password and session id
 func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	var (
 		rows  *sql.Rows
@@ -41,18 +42,22 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 }
 
 //FindByID returns a specific user from the database
-//FIXME don't scan for sensetive data, like password and session id
 func (UserRepoCRUD) FindByID(uid int64) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT *
+		`SELECT id,
+		 		login,
+				email,
+				avatar,
+				display_name,
+				role
 		FROM users
 		WHERE id = ?`, uid,
 	).Scan(
-		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
+		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
