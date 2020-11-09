@@ -1,8 +1,8 @@
 package crud
 
 import (
+	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
@@ -12,7 +12,6 @@ import (
 type CategoryRepoCRUD struct{}
 
 //NewCategoryRepoCRUD creates an instance of CategoryModel
-//FIXME wrong categories amount after COUNT
 func NewCategoryRepoCRUD() CategoryRepoCRUD {
 	return CategoryRepoCRUD{}
 }
@@ -69,7 +68,7 @@ func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 }
 
 //Find returns a specific category from the database
-//TODO implment search for all post with such categories here
+// ? do we even need that
 func (CategoryRepoCRUD) Find(id int) (*models.Category, error) {
 	var category models.Category
 	rows, err := repository.DB.Query("SELECT * FROM categories WHERE id = ?", id)
@@ -124,33 +123,36 @@ func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 }
 
 //Delete deletes category from the database
-//TODO also delete category from the brige table
-// FIXME BEGIN COMMIT do not work for some reason
-func (CategoryRepoCRUD) Delete(cid int) error {
+func (CategoryRepoCRUD) Delete(categotyID int) error {
 	var (
-		result       sql.Result
-		rowsAffected int64
-		err          error
+		ctx context.Context
+		tx  *sql.Tx
+		err error
 	)
-	if result, err = repository.DB.Exec(
-		`BEGIN;
-		DELETE FROM categories
-		WHERE id = $1;
-		DELETE FROM posts_categories_bridge
-		WHERE category_id_fkey = $1;
-		COMMIT;`,
-		cid,
-	); err != nil {
+	ctx = context.Background()
+	tx, err = repository.DB.BeginTx(ctx, nil)
+	if err != nil {
 		return err
 	}
-
-	if rowsAffected, err = result.RowsAffected(); err != nil {
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM categories
+		WHERE id = $1`, categotyID)
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
-	if rowsAffected > 0 {
-		return nil
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM posts_categories_bridge
+		WHERE category_id_fkey = $1`, categotyID)
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
-	return errors.New("could not delete the category")
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (CategoryRepoCRUD) DeleteGroup(pid int64) error {

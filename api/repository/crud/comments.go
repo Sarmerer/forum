@@ -190,7 +190,7 @@ func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 	ctx = context.Background()
 	tx, err = repository.DB.BeginTx(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments_reactions
