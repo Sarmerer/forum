@@ -19,9 +19,9 @@ func HTTPLogs(status, elapsed, host, method, path string) {
 
 func CheckErrAndLog(instance, message string, err error) {
 	if err != nil {
-		log.Printf("%s:\t|%s| %s\n", instance, Red("ERROR"), err)
+		log.Printf("|%s|\t%s: %s\n", Red("ERROR"), instance, err)
 	} else {
-		log.Printf("%s:\t|%s| %s\n", instance, Green("OK"), message)
+		log.Printf("|%s|\t%s: %s\n", Green("OK"), instance, message)
 	}
 }
 

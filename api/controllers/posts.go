@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/logger"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
@@ -175,14 +176,19 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = DeleteCommentsGroup(pid); err != nil {
-		fmt.Println(err)
+		logger.CheckErrAndLog("comments deletion", "", err)
+		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
-	//TODO make proper logging here
 	if err = DeleteAllCategoriesForPost(pid); err != nil {
-		fmt.Println(err)
+		logger.CheckErrAndLog("categories deletion", "", err)
+		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 	if err = DeleteReactionsForPost(pid); err != nil {
-		fmt.Println(err)
+		logger.CheckErrAndLog("reactions deletion", "", err)
+		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 	if status, err = repo.Delete(pid); err != nil {
 		response.Error(w, status, err)
