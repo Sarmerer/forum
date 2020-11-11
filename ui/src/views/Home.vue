@@ -8,16 +8,17 @@
         </h1>
       </div>
     </div>
-    <b-pagination
-      v-model="pagination.currentPage"
-      :total-rows="pagination.totalPages"
-      :per-page="pagination.perPage"
-      aria-controls="my-table"
-      @change="handlePageChange"
-      first-number
-      last-number
-    ></b-pagination>
+
     <div class="grid">
+      <b-pagination
+        v-model="pagination.currentPage"
+        :total-rows="pagination.totalPages"
+        :per-page="pagination.perPage"
+        aria-controls="my-table"
+        @change="handlePageChange"
+        first-number
+        last-number
+      ></b-pagination>
       <div class="columns">
         <div class="main-col">
           <div>
@@ -54,7 +55,7 @@
                 <Rating
                   v-if="!isMobile()"
                   v-on:update="
-                    (args) => {
+                    args => {
                       post.rating = args.new_rating;
                       post.your_reaction = args.new_your_reaction;
                     }
@@ -161,12 +162,12 @@ export default {
   name: "Home",
   computed: {
     ...mapGetters({
-      user: "auth/user",
-    }),
+      user: "auth/user"
+    })
   },
   components: {
     Rating,
-    Error,
+    Error
   },
   data() {
     return {
@@ -178,8 +179,8 @@ export default {
         show: false,
         status: Number,
         message: String,
-        callback: Function,
-      },
+        callback: Function
+      }
     };
   },
   created() {
@@ -194,14 +195,14 @@ export default {
       return await axios
         .post("posts", {
           per_page: this.pagination.perPage,
-          current_page: currentPage,
+          current_page: currentPage
         })
-        .then((response) => {
+        .then(response => {
           this.error.show = false;
           this.posts = response.data.data.posts || [];
           this.pagination.totalPages = response.data.data.total_rows || 5;
         })
-        .catch((error) => {
+        .catch(error => {
           this.error.show = true;
           this.error.status = error.response.status;
           this.error.message = error.response.statusText;
@@ -211,10 +212,10 @@ export default {
     async getCategories() {
       return await axios
         .get("categories")
-        .then((response) => {
+        .then(response => {
           this.categories = response.data.data || [];
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
         });
     },
@@ -231,8 +232,8 @@ export default {
         });
       }
       this.sorter.byDate = !this.sorter.byDate;
-    },
-  },
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>
