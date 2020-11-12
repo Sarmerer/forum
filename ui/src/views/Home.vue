@@ -10,21 +10,26 @@
     </div>
 
     <div class="grid">
-      <b-pagination
-        v-model="pagination.currentPage"
-        :total-rows="pagination.totalPages"
-        :per-page="pagination.perPage"
-        aria-controls="my-table"
-        @change="handlePageChange"
-        first-number
-        last-number
-      ></b-pagination>
       <div class="columns">
         <div class="main-col">
           <div>
             <Error v-if="error.show" :errorData="error" />
           </div>
-          <div v-if="posts.length > 0" class="card">
+          <b-row
+            align-h="between"
+            align-v="end"
+            class="mx-3 mt-3"
+            v-if="posts.length > 0"
+          >
+            <b-pagination
+              v-model="pagination.currentPage"
+              :total-rows="pagination.totalPages"
+              :per-page="pagination.perPage"
+              aria-controls="my-table"
+              @change="handlePageChange"
+              first-number
+              last-number
+            ></b-pagination>
             <ul id="filters">
               <li v-if="sorter.byDate">
                 <b-icon
@@ -39,7 +44,7 @@
                 <b-icon icon="heart"></b-icon>
               </li>
             </ul>
-          </div>
+          </b-row>
 
           <!-- Start of posts -->
           <router-link
@@ -174,7 +179,7 @@ export default {
       posts: [],
       categories: [],
       sorter: { byDate: false },
-      pagination: { currentPage: 1, totalPages: 1, perPage: 5 },
+      pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
       error: {
         show: false,
         status: Number,
