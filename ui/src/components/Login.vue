@@ -10,7 +10,7 @@
       title="Sign In"
     >
       <h4>SIGN IN</h4>
-      <b-form @submit.prevent="submit">
+      <b-form @submit.prevent="submitSignIn">
         <b-input-group>
           <b-input
             v-model="form.login"
@@ -51,7 +51,7 @@
     >
       <h4>SIGN UP</h4>
 
-      <b-form @submit.prevent="submit">
+      <b-form @submit.prevent="submitSignUp">
         <b-input-group>
           <b-input
             v-model="form.login"
@@ -110,20 +110,24 @@ export default {
     return {
       form: {
         login: "",
-        password: "",
+        password: ""
       },
       response: "",
-      authmodal: ["auth-modal"],
+      authmodal: ["auth-modal"]
     };
   },
   methods: {
     ...mapActions({
       signIn: "auth/signIn",
+      signUp: "auth/signUp"
     }),
-    submit() {
+    submitSignIn() {
       this.signIn(this.form);
     },
-  },
+    submitSignUp() {
+      this.signUp(this.form);
+    }
+  }
 };
 </script>
 <style>
