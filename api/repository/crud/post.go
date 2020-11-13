@@ -23,9 +23,11 @@ func NewPostRepoCRUD() PostRepoCRUD {
 //FindAll returns all posts in the database
 func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Posts, error) {
 	var (
-		posts  *sql.Rows
-		result models.Posts
-		err    error
+		posts        *sql.Rows
+		result       models.Posts
+		offset       int = (currentPage - 1) * perPage
+		recentAmount int = 5
+		err          error
 	)
 	if posts, err = repository.DB.Query(
 		`SELECT *,
@@ -48,11 +50,11 @@ func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Pos
 			FROM comments
 			WHERE post_id_fkey = p.id
 		) AS comments_count
-	FROM posts p
-	ORDER BY rating DESC
-	LIMIT $2
-	OFFSET $3`,
-		userID, perPage, (currentPage-1)*perPage,
+		FROM posts p
+		ORDER BY rating DESC
+		LIMIT $2
+		OFFSET $3`,
+		userID, perPage, offset,
 	); err != nil {
 		return nil, err
 	}
@@ -63,7 +65,11 @@ func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Pos
 		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 		}
-		result.Posts = append(result.Posts, p)
+		result.Hot = append(result.Hot, p)
+	}
+
+	if result.Recent, err = NewPostRepoCRUD().FindRecent(recentAmount); err != nil {
+		return nil, err
 	}
 	if err = repository.DB.QueryRow(
 		`SELECT COUNT(id) FROM posts`,
@@ -71,6 +77,29 @@ func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Pos
 		return nil, err
 	}
 	return &result, nil
+}
+
+func (PostRepoCRUD) FindRecent(amount int) ([]models.Post, error) {
+	var (
+		posts  *sql.Rows
+		result []models.Post
+		err    error
+	)
+	if posts, err = repository.DB.Query(
+		`SELECT *
+		FROM posts p
+		ORDER BY created DESC
+		LIMIT $1`,
+		amount,
+	); err != nil {
+		return nil, err
+	}
+	for posts.Next() {
+		var p models.Post
+		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
+		result = append(result, p)
+	}
+	return result, nil
 }
 
 //FindByID returns a specific post from the database
