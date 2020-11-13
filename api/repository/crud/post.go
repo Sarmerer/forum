@@ -111,12 +111,12 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 	if err = repository.DB.QueryRow(
 		`SELECT COUNT(id) AS comments_count,
 		COUNT(DISTINCT author_id_fkey) AS total_participants,
-		last_comment_from_id,
-		last_comment_from_name,
-		last_comment_date
+		IFNULL(last_comment_from_id,-1),
+		IFNULL(last_comment_from_name,""),
+		IFNULL(last_comment_date,"")
 		FROM comments c
 		JOIN(
-			SELECT IFNULL(author_id_fkey, 0) AS last_comment_from_id,
+			SELECT author_id_fkey AS last_comment_from_id,
 				author_name_fkey AS last_comment_from_name,
 				created AS last_comment_date
 			FROM comments
