@@ -74,43 +74,69 @@ func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Pos
 }
 
 //FindByID returns a specific post from the database
-func (PostRepoCRUD) FindByID(pid int64, uid int64) (*models.Post, int, error) {
+func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, error) {
 	var (
-		p   models.Post
-		err error
+		post models.Post
+		err  error
 	)
+	// ? Query looks too bad
 	if err = repository.DB.QueryRow(
 		`SELECT *,
 		(
-		   SELECT
-			  TOTAL(reaction) 
-		   FROM
-		   	posts_reactions 
-		   WHERE
-			  post_id_fkey = p.id 
-		)
-		AS rating,
-		IFNULL (( 
-		SELECT
-		   reaction 
-		FROM
-			posts_reactions 
-		WHERE
-		   user_id_fkey = ? 
-		   AND post_id_fkey = p.id), 0) AS yor_reaction FROM posts p WHERE p.id = ?`,
-		uid, pid,
+			SELECT TOTAL(reaction)
+			FROM posts_reactions
+			WHERE post_id_fkey = p.id
+		) AS rating,
+		IFNULL (
+			(
+				SELECT reaction
+				FROM posts_reactions
+				WHERE user_id_fkey = $1
+					AND post_id_fkey = p.id
+			),
+			0
+		) AS yor_reaction
+		FROM posts p
+		WHERE p.id = $2`,
+		userID, postID,
 	).Scan(
-		&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction,
+		&post.ID, &post.AuthorID, &post.AuthorName, &post.Title, &post.Content,
+		&post.Created, &post.Updated, &post.Rating, &post.YourReaction,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusNotFound, errors.New("post not found")
 	}
-	if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
-		p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
+	if err = repository.DB.QueryRow(
+		`SELECT COUNT(id) AS comments_count,
+		COUNT(DISTINCT author_id_fkey) AS total_participants,
+		last_comment_from_id,
+		last_comment_from_name,
+		last_comment_date
+		FROM comments c
+		JOIN(
+			SELECT IFNULL(author_id_fkey, 0) AS last_comment_from_id,
+				author_name_fkey AS last_comment_from_name,
+				created AS last_comment_date
+			FROM comments
+			ORDER BY created
+			LIMIT 1
+		)
+		WHERE post_id_fkey = $1`,
+		postID,
+	).Scan(
+		&post.CommentsCount, &post.TotalParticipants, &post.LastCommentFromID,
+		&post.LastCommentFromName, &post.LastCommentDate,
+	); err != nil {
+		if err != sql.ErrNoRows {
+			return nil, http.StatusInternalServerError, err
+		}
 	}
-	return &p, http.StatusOK, nil
+	if post.Categories, err = NewCategoryRepoCRUD().FindByPostID(post.ID); err != nil {
+		post.Categories = append(post.Categories, models.Category{ID: 0, Name: err.Error()})
+	}
+	return &post, http.StatusOK, nil
 }
 
 func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {

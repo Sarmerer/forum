@@ -20,18 +20,23 @@ type User struct {
 }
 
 type Post struct {
-	ID            int64      `json:"id"`
-	AuthorID      int64      `json:"author_id"`
-	AuthorName    string     `json:"author_name"`
-	Title         string     `json:"title"`
-	Content       string     `json:"content"`
-	Created       string     `json:"created"`
-	Updated       string     `json:"updated"`
-	Categories    []Category `json:"categories,omitempty"`
-	Comments      []Comment  `json:"comments,omitempty"`
-	CommentsCount int        `json:"comments_count"`
-	Rating        int        `json:"rating"`
-	YourReaction  int        `json:"your_reaction"`
+	ID           int64      `json:"id"`
+	AuthorID     int64      `json:"author_id"`
+	AuthorName   string     `json:"author_name"`
+	Title        string     `json:"title"`
+	Content      string     `json:"content"`
+	Created      string     `json:"created"`
+	Updated      string     `json:"updated"`
+	Categories   []Category `json:"categories,omitempty"`
+	Comments     []Comment  `json:"comments,omitempty"`
+	Rating       int        `json:"rating"`
+	YourReaction int        `json:"your_reaction"`
+
+	CommentsCount       int    `json:"comments_count"`
+	TotalParticipants   int    `json:"total_participants"`
+	LastCommentFromID   int64  `json:"last_comment_from_id"`
+	LastCommentFromName string `json:"last_comment_from_name"`
+	LastCommentDate     string `json:"last_comment_date"`
 }
 
 type Posts struct {
