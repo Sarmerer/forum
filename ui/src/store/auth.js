@@ -21,6 +21,14 @@ export default {
     },
   },
   actions: {
+    async signUp({ dispatch }, credentials) {
+      await axios
+        .post(`auth/signup`, credentials)
+        .then(() => {
+          dispatch("attempt");
+        })
+        .catch((error) => console.log(error));
+    },
     async signIn({ dispatch }, credentials) {
       await axios
         .post(`auth/signin`, credentials)

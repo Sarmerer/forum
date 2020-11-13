@@ -57,6 +57,39 @@ html {
   color: #f1f1f1 !important;
 }
 
+/* Pagination */
+.pagination {
+  justify-content: flex-start;
+  margin-bottom: 0;
+}
+
+.page-link {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid #121212;
+}
+
+.page-link:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.003);
+  border: 1px solid #121212;
+}
+
+.page-item.active .page-link {
+  color: #fff;
+  background-color: #278ea5;
+  border-color: #278ea5d2;
+}
+
+.page-item.disabled :read-only {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.01) !important;
+  border-color: #121212 !important;
+  cursor: not-allowed;
+}
+
+/*Pagination*/
+
 /* Card */
 .card {
   margin: 20px;
