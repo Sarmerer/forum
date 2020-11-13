@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -44,9 +43,9 @@ func Run() {
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
 	}
-	log.Printf("Listening %s:%s\n", config.APIURL, port)
+	log.Printf("Listening %s\n", config.APIURL)
 	////log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), mux))
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
 func main() {
