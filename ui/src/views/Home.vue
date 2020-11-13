@@ -60,7 +60,7 @@
                 <Rating
                   v-if="!isMobile()"
                   v-on:update="
-                    args => {
+                    (args) => {
                       post.rating = args.new_rating;
                       post.your_reaction = args.new_your_reaction;
                     }
@@ -120,7 +120,7 @@
             <h3 class="primary">RECENT</h3>
             <router-link
               :to="'/post/' + post.id"
-              v-for="(post, index) in posts.slice(0, 5)"
+              v-for="(post, index) in recent"
               :key="index"
               tag="div"
               style="cursor: pointer;"
@@ -167,25 +167,27 @@ export default {
   name: "Home",
   computed: {
     ...mapGetters({
-      user: "auth/user"
-    })
+      user: "auth/user",
+    }),
   },
   components: {
     Rating,
-    Error
+    Error,
   },
   data() {
     return {
       posts: [],
+      recent: [],
       categories: [],
       sorter: { byDate: false },
+      // ! ^ this is useless ^
       pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
       error: {
         show: false,
         status: Number,
         message: String,
-        callback: Function
-      }
+        callback: Function,
+      },
     };
   },
   created() {
@@ -200,14 +202,15 @@ export default {
       return await axios
         .post("posts", {
           per_page: this.pagination.perPage,
-          current_page: currentPage
+          current_page: currentPage,
         })
-        .then(response => {
+        .then((response) => {
           this.error.show = false;
-          this.posts = response.data.data.posts || [];
+          this.posts = response.data.data.hot || [];
+          this.recent = response.data.data.recent || [];
           this.pagination.totalPages = response.data.data.total_rows || 5;
         })
-        .catch(error => {
+        .catch((error) => {
           this.error.show = true;
           this.error.status = error.response.status;
           this.error.message = error.response.statusText;
@@ -217,10 +220,10 @@ export default {
     async getCategories() {
       return await axios
         .get("categories")
-        .then(response => {
+        .then((response) => {
           this.categories = response.data.data || [];
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
     },
@@ -237,8 +240,8 @@ export default {
         });
       }
       this.sorter.byDate = !this.sorter.byDate;
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
