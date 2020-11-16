@@ -8,6 +8,7 @@ import store from "./store";
 import axios from "axios";
 import "./assets/styles.scss"; // Global styles
 import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
+import moment from "moment";
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
@@ -44,4 +45,10 @@ Vue.mixin({
       }
     },
   },
+});
+
+Vue.filter("formatDate", function(value) {
+  if (value) {
+    return moment(String(value)).format("MM/DD/YYYY hh:mm");
+  }
 });

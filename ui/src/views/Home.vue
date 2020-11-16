@@ -31,17 +31,28 @@
               last-number
             ></b-pagination>
             <ul id="filters">
-              <li v-if="sorter.byDate">
+              <li style="cursor: pointer">
                 <b-icon
+                  v-if="sorter.byDate"
                   icon="sort-down-alt"
                   @click="sortDisplayPosts()"
                 ></b-icon>
-              </li>
-              <li v-else>
-                <b-icon icon="sort-up" @click="sortDisplayPosts()"></b-icon>
+                <b-icon
+                  v-else
+                  icon="sort-up"
+                  @click="sortDisplayPosts()"
+                ></b-icon>
               </li>
               <li>
-                <b-icon icon="heart"></b-icon>
+                <b-icon v-if="checked" icon="clock"></b-icon>
+                <b-icon v-else icon="clock-fill"></b-icon>
+              </li>
+              <input type="checkbox" id="switch" v-model="checked" /><label
+                for="switch"
+              ></label>
+              <li>
+                <b-icon v-if="!checked" icon="heart"></b-icon>
+                <b-icon v-else icon="heart-fill"></b-icon>
               </li>
             </ul>
           </b-row>
@@ -53,7 +64,7 @@
             :key="post.id"
             class="card"
             tag="div"
-            style="cursor: pointer;"
+            style="cursor: pointer"
           >
             <b-row>
               <b-col cols="1">
@@ -101,7 +112,7 @@
               <!-- TO-DO: Make this look decent -->
               <!-- style is embedded here for responsiveness. MB fix later -->
               <small v-if="isMobile()"
-                ><Rating style="flex-direction:row; margin:0;"
+                ><Rating style="flex-direction: row; margin: 0"
               /></small>
               <small
                 >by
@@ -123,7 +134,7 @@
               v-for="(post, index) in recent"
               :key="index"
               tag="div"
-              style="cursor: pointer;"
+              style="cursor: pointer"
               ><p>
                 {{ post.title }}<br /><small class="text-muted"
                   ><timeago :datetime="post.created" :auto-update="10"></timeago
@@ -136,18 +147,20 @@
             <!-- Start of categories -->
             <span v-if="categories.length == 0">None</span>
             <b-container v-else>
-              <!-- <b-row>
-                  <b-col>Name</b-col>
-                  <b-col>Posts</b-col>
-                </b-row> -->
-              <b-row v-for="c in categories" :key="c.ID" :id="c.ID">
-                <b-col
-                  ><b-form-tag disabled variant="dark">{{
-                    c.name
-                  }}</b-form-tag></b-col
+              <div class="categories">
+                <b-form-tag
+                  v-for="c in categories"
+                  :key="c.ID"
+                  :id="c.ID"
+                  disabled
+                  variant="dark"
+                  class="category-name"
+                  >{{ c.name }}
+                  <span class="category-count">{{
+                    c.use_count
+                  }}</span></b-form-tag
                 >
-                <b-col>{{ c.use_count }}</b-col>
-              </b-row>
+              </div>
             </b-container>
             <!-- End of categories -->
           </div>
@@ -188,6 +201,7 @@ export default {
         message: String,
         callback: Function,
       },
+      checked: false,
     };
   },
   created() {
@@ -289,8 +303,59 @@ ul#filters li {
   display: inline;
   padding: 7px;
   font-size: 22px;
-  cursor: pointer;
 }
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.category-name {
+  margin: 1px;
+}
+.category-count {
+  background-color: #278ea5;
+  padding: 2px;
+}
+
+/* TOGGLE SWITCH START */
+
+input[type="checkbox"] {
+  height: 0;
+  width: 0;
+  visibility: hidden;
+}
+
+label {
+  cursor: pointer;
+  /* bottom: 5px; */
+  margin: 0;
+  text-indent: -9999px;
+  width: 35px;
+  height: 20px;
+  background: grey;
+  border-radius: 50px;
+  position: relative;
+}
+
+label:after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 15px;
+  height: 15px;
+  background: #278ea5;
+  border-radius: 30px;
+  transition: 0.3s;
+}
+
+input:checked + label:after {
+  left: calc(100%);
+  transform: translateX(-100%);
+}
+
+/* TOGGLE SWITCH END */
 
 @media (max-width: 500px) {
   .post-content {

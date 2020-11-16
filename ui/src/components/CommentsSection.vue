@@ -53,11 +53,16 @@
     <!-- End of comment form -->
     <div v-if="!authenticated" class="border border-dark rounded p-2">
       <span>Want to leave a comment?</span>
-      <b-button class="float-right" size="sm" variant="success"
-        >Sign Up</b-button
+
+      <a v-b-modal.signup-modal
+        ><b-button class="float-right" variant="success" size="sm"
+          >Sign Up</b-button
+        ></a
       >
-      <b-button class="float-right mr-1" size="sm" variant="outline-primary"
-        >Sign In</b-button
+      <a v-b-modal.auth-modal
+        ><b-button class="float-right mr-1" variant="outline-info" size="sm"
+          >Sign In</b-button
+        ></a
       >
     </div>
     <!-- Post comments -->
@@ -72,7 +77,7 @@
           </p>
           <small v-b-tooltip.hover :title="comment.created"
             ><timeago :datetime="comment.created" :auto-update="60"></timeago>
-            <small v-if="comment.edited"> edited</small>
+            <small v-if="comment.edited" class="text-muted"> edited</small>
           </small>
           <b-button-group
             v-if="
@@ -170,19 +175,19 @@ import { mapGetters } from "vuex";
 
 export default {
   props: {
-    postID: { type: Number, required: true },
+    postID: { type: Number, required: true }
   },
   computed: {
     ...mapGetters({
       user: "auth/user",
-      authenticated: "auth/authenticated",
+      authenticated: "auth/authenticated"
     }),
     commentLength() {
       return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
     },
     editorLength() {
       return this.editor.editingContent.replace(/(\r\n|\n|\r)/g, "").length;
-    },
+    }
   },
   data() {
     return {
@@ -193,8 +198,8 @@ export default {
       deletingComment: false,
       comments: [],
       form: {
-        comment: "",
-      },
+        comment: ""
+      }
     };
   },
   created() {
@@ -204,10 +209,10 @@ export default {
     async getComments() {
       return await axios
         .get("/comments", { params: { id: this.postID } })
-        .then((response) => {
+        .then(response => {
           this.comments = response.data.data || [];
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error.response.data);
         });
     },
@@ -219,7 +224,7 @@ export default {
         .then(() => {
           this.comments.splice(IDInList, 1);
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error.response.data);
           //TODO show alert
         })
@@ -239,7 +244,7 @@ export default {
           this.appendComment();
           this.form.comment = "";
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
         });
     },
@@ -259,7 +264,7 @@ export default {
       return await axios
         .put("comment/update", {
           id: actualID,
-          content: this.editor.editingContent,
+          content: this.editor.editingContent
         })
         .then(() => {
           console.log(this.comments);
@@ -269,7 +274,7 @@ export default {
           this.comments[this.editor.editing].edited = true;
           this.editor.editing = -1;
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
         })
         .finally(() => {
@@ -284,7 +289,7 @@ export default {
         created: Date.now(),
         content: this.form.comment,
         post: this.postID,
-        edited: false,
+        edited: false
       };
       this.comments = [comment, ...this.comments];
     },
@@ -313,20 +318,20 @@ export default {
       }
       await axios
         .post("comment/rate", { id: id, reaction: r })
-        .then((response) => {
-          let comment = this.comments.find((c) => c.id == id);
+        .then(response => {
+          let comment = this.comments.find(c => c.id == id);
           comment.rating = response.data.data.rating;
           comment.your_reaction = response.data.data.your_reaction;
         })
-        .catch((error) => {
+        .catch(error => {
           console.log(error);
           //TODO show alert saying that you need to be logged in to rate
         })
         .finally(() => {
           self.requesting = false;
         });
-    },
-  },
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>
@@ -355,5 +360,16 @@ export default {
 .slide-fade-leave-to {
   transform: translateX(10px);
   opacity: 0;
+}
+
+.authorize-button {
+  color: #121212;
+  background-color: #21e6c1;
+  border: none;
+}
+
+.authorize-button:hover {
+  background-color: #21e6c1;
+  opacity: 0.8;
 }
 </style>
