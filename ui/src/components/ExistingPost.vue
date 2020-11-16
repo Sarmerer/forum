@@ -2,9 +2,9 @@
   <div class="columns">
     <div v-if="isMobile()" class="info-col">
       <div class="card">
-        <p>Comments: {{ post.CommentsCount }}</p>
+        <p>Comments: {{ post.comments_count }}</p>
         <p>1 participant</p>
-        <p>Last reply from:</p>
+        <p>Last comment from: {{ post.last_comment_from_name }}</p>
         <p>Last activity:</p>
       </div>
     </div>
@@ -14,7 +14,7 @@
           <b-col cols="1">
             <Rating
               v-on:update="
-                args => {
+                (args) => {
                   post.rating = args.new_rating;
                   post.your_reaction = args.new_your_reaction;
                 }
@@ -23,7 +23,7 @@
               :rating="post.rating"
               :yourReaction="post.your_reaction"
           /></b-col>
-          <b-col cols="11" style="margin-left: -35px;">
+          <b-col cols="11" style="margin-left: -35px">
             <h3 class="primary">{{ post.title }}</h3>
             <p style="color: white">{{ post.content }}</p>
             <div>
@@ -132,10 +132,18 @@
     </div>
     <div v-if="!isMobile()" class="info-col">
       <div class="card">
-        <p>Comments: {{ post.CommentsCount }}</p>
-        <p>1 participant</p>
-        <p>Last reply from:</p>
-        <p>Last activity:</p>
+        <p>
+          {{ post.comments_count }} comment{{
+            post.comments_count == 1 ? "" : "s"
+          }}
+        </p>
+        <p>
+          {{ post.total_participants }} participant{{
+            post.total_participants == 1 ? "" : "s"
+          }}
+        </p>
+        <p>Last comment from: {{ post.last_comment_from_name }}</p>
+        <p>Last activity: {{ post.last_comment_date | formatDate }}</p>
       </div>
     </div>
   </div>
@@ -148,22 +156,22 @@ import CommentsSection from "@/components/CommentsSection";
 
 export default {
   props: {
-    postID: { type: Number, required: true }
+    postID: { type: Number, required: true },
   },
   components: {
     Rating,
-    CommentsSection
+    CommentsSection,
   },
   computed: {
     ...mapGetters({
-      user: "auth/user"
-    })
+      user: "auth/user",
+    }),
   },
   data() {
     return {
       post: {},
       categories: [],
-      modal: { show: false, deleting: false }
+      modal: { show: false, deleting: false },
     };
   },
   created() {
@@ -174,25 +182,25 @@ export default {
       return await axios
         .post("post/find", {
           by: "id",
-          id: this.postID
+          id: this.postID,
         })
-        .then(response => {
+        .then((response) => {
           //TODO create error page for post
           //? because response.data.data is an array of objects
           const result = response.data.data;
           this.post = result;
           if (result.replies) {
-            this.comments = result.replies.sort(function(a, b) {
+            this.comments = result.replies.sort(function (a, b) {
               return new Date(b.created) - new Date(a.created);
             });
           }
           if (result.categories) {
-            result.categories.forEach(c => {
+            result.categories.forEach((c) => {
               this.categories.push(c.name);
             });
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
           this.$router.push("/");
         });
@@ -212,8 +220,8 @@ export default {
           this.modal.deleting = false;
           this.modal.show = false;
         });
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

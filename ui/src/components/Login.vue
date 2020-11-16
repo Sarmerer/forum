@@ -19,6 +19,9 @@
             placeholder="Login"
             class="mb-2 mt-4"
           ></b-input>
+          <b-form-invalid-feedback id="input-login-live-feedback"
+            >Login is required.</b-form-invalid-feedback
+          >
         </b-input-group>
 
         <b-input-group>
@@ -104,8 +107,11 @@
 </template>
 <script>
 import { mapActions } from "vuex";
+// import { validationMixin } from "vuelidate";
+import { required, minLength } from "vuelidate/lib/validators";
 
 export default {
+  // mixins: [validationMixin],
   data() {
     return {
       form: {
@@ -115,6 +121,17 @@ export default {
       response: "",
       authmodal: ["auth-modal"]
     };
+  },
+  validations: {
+    form: {
+      login: {
+        required
+      },
+      password: {
+        required,
+        minLength: minLength(6)
+      }
+    }
   },
   methods: {
     ...mapActions({
