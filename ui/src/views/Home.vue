@@ -30,7 +30,7 @@
               first-number
               last-number
             ></b-pagination>
-            <ul id="filters">
+            <!-- <ul id="filters">
               <li v-if="sorter.byDate">
                 <b-icon
                   icon="sort-down-alt"
@@ -43,7 +43,20 @@
               <li>
                 <b-icon icon="heart"></b-icon>
               </li>
-            </ul>
+              <li>
+                <b-icon icon="clock" @click="sortDisplayPosts()"></b-icon>
+              </li>
+            </ul> -->
+            <b-button-group
+              ><b-button
+                :variant="sorter.byDate ? 'info' : 'dark'"
+                :pressed.sync="sorter.byDate"
+                ><b-icon-clock></b-icon-clock></b-button
+              ><b-button
+                :variant="sorter.byDate ? 'dark' : 'info'"
+                :pressed.sync="sorter.byDate"
+                ><b-icon-heart></b-icon-heart></b-button
+            ></b-button-group>
           </b-row>
 
           <!-- Start of posts -->
