@@ -54,6 +54,9 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		input          models.InputUserSignUp
 		hashedPassword []byte
 		status         int
+		cookie         string
+		newUUID        string
+		newUserID      int64
 		err            error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -73,10 +76,17 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		SessionID:   "",
 		Role:        config.RoleAdmin,
 	}
-	if status, err = repo.Create(&user); err != nil {
+	if newUserID, status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)
 		return
 	}
+	cookie, newUUID = generateCookie(r.Cookie(config.SessionCookieName))
+	if err = repo.UpdateSession(newUserID, newUUID); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.Header().Set("Set-Cookie", cookie)
 	response.Success(w, "user has been created", nil)
 	return
 }

@@ -42,7 +42,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 }
 
 //FindByID returns a specific user from the database
-func (UserRepoCRUD) FindByID(uid int64) (*models.User, int, error) {
+func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
@@ -55,7 +55,7 @@ func (UserRepoCRUD) FindByID(uid int64) (*models.User, int, error) {
 				display_name,
 				role
 		FROM users
-		WHERE id = ?`, uid,
+		WHERE id = ?`, userID,
 	).Scan(
 		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Role,
 	); err != nil {
@@ -68,20 +68,21 @@ func (UserRepoCRUD) FindByID(uid int64) (*models.User, int, error) {
 }
 
 //Create adds a new user to the database
-func (UserRepoCRUD) Create(u *models.User) (int, error) {
+func (UserRepoCRUD) Create(user *models.User) (int64, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
+		lastInsertID int64
 		err          error
 	)
-	name := repository.DB.QueryRow("SELECT login FROM users WHERE login = ?", u.Login).Scan(&u.Login)
-	email := repository.DB.QueryRow("SELECT email FROM users WHERE email = ?", u.Email).Scan(&u.Email)
+	name := repository.DB.QueryRow("SELECT login FROM users WHERE login = ?", user.Login).Scan(&user.Login)
+	email := repository.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&user.Email)
 	if name == nil && email != nil {
-		return http.StatusConflict, errors.New("name is not unique")
+		return 0, http.StatusConflict, errors.New("name is not unique")
 	} else if email == nil && name != nil {
-		return http.StatusConflict, errors.New("email is not unique")
+		return 0, http.StatusConflict, errors.New("email is not unique")
 	} else if name == nil && email == nil {
-		return http.StatusConflict, errors.New("name and email are not unique")
+		return 0, http.StatusConflict, errors.New("name and email are not unique")
 	}
 
 	if result, err = repository.DB.Exec(
@@ -97,22 +98,25 @@ func (UserRepoCRUD) Create(u *models.User) (int, error) {
 			role
 		)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		u.Login, u.Password, u.Email, u.Avatar, u.DisplayName, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), u.SessionID, u.Role,
+		user.Login, user.Password, user.Email, user.Avatar, user.DisplayName, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), user.SessionID, user.Role,
 	); err != nil {
-		return http.StatusInternalServerError, err
+		return 0, http.StatusInternalServerError, err
 	}
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return http.StatusInternalServerError, err
+		return 0, http.StatusInternalServerError, err
+	}
+	if lastInsertID, err = result.LastInsertId(); err != nil {
+		return 0, http.StatusInternalServerError, err
 	}
 	if rowsAffected > 0 {
-		return http.StatusOK, nil
+		return lastInsertID, http.StatusOK, nil
 	}
-	return http.StatusNotModified, errors.New("could not create the user")
+	return 0, http.StatusBadRequest, errors.New("could not create the user")
 }
 
 //Update updates existing user in the database
 //TODO decide what we will let users to update
-func (UserRepoCRUD) Update(u *models.User) (int, error) {
+func (UserRepoCRUD) Update(user *models.User) (int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -122,7 +126,7 @@ func (UserRepoCRUD) Update(u *models.User) (int, error) {
 		`UPDATE users
 		SET display_name = ?
 		WHERE id = ?`,
-		u.DisplayName, u.ID,
+		user.DisplayName, user.ID,
 	); err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -137,7 +141,7 @@ func (UserRepoCRUD) Update(u *models.User) (int, error) {
 }
 
 //Delete deletes user from the database
-func (UserRepoCRUD) Delete(id int64) (int, error) {
+func (UserRepoCRUD) Delete(userID int64) (int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -145,7 +149,7 @@ func (UserRepoCRUD) Delete(id int64) (int, error) {
 	)
 	if result, err = repository.DB.Exec(
 		`DELETE FROM users
-		WHERE id = ?`, id,
+		WHERE id = ?`, userID,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return http.StatusInternalServerError, err

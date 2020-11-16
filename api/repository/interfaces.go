@@ -5,18 +5,18 @@ import (
 )
 
 type UserRepo interface {
-	FindAll() ([]models.User, error)
-	FindByID(int64) (*models.User, int, error)
-	Create(*models.User) (int, error)
-	Update(*models.User) (int, error)
-	Delete(int64) (int, error)
-	FindByNameOrEmail(string) (*models.User, int, error)
+	FindAll() (users []models.User, err error)
+	FindByID(userID int64) (user *models.User, status int, err error)
+	Create(newUser *models.User) (newUserID int64, status int, err error)
+	Update(user *models.User) (status int, err error)
+	Delete(userID int64) (status int, err error)
+	FindByNameOrEmail(login string) (user *models.User, status int, err error)
 
-	UpdateSession(int64, string) error
-	ValidateSession(string) (models.UserCtx, int, error)
+	UpdateSession(userID int64, newSessionID string) error
+	ValidateSession(sessionID string) (userCtx models.UserCtx, status int, err error)
 
-	GetRole(int64) (int, int, error)
-	UpdateRole(int64, int) error
+	GetRole(userID int64) (role int, status int, err error)
+	UpdateRole(userID int64, newRole int) error
 }
 
 type PostRepo interface {
