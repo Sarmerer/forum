@@ -30,42 +30,21 @@
               first-number
               last-number
             ></b-pagination>
-            <ul id="filters">
-              <li style="cursor: pointer">
-                <b-icon
-                  v-if="sorter.byDate"
-                  icon="sort-down-alt"
-                  @click="sortDisplayPosts()"
-                ></b-icon>
-                <b-icon
-                  v-else
-                  icon="sort-up"
-                  @click="sortDisplayPosts()"
-                ></b-icon>
-              </li>
-              <!--<li>
-                <b-icon v-if="checked" icon="clock"></b-icon>
-                <b-icon v-else icon="clock-fill"></b-icon>
-              </li>
-              <input type="checkbox" id="switch" v-model="checked" /><label
-                for="switch"
-              ></label>
-              <li>
-                <b-icon v-if="!checked" icon="heart"></b-icon>
-                <b-icon v-else icon="heart-fill"></b-icon>
-              </li>
-              <li>
-                <b-icon icon="clock" @click="sortDisplayPosts()"></b-icon>
-              </li>-->
-            </ul>
-            <b-button-group
+            <b-button
+              variant="dark"
+              @click="sort()"
+              :disabled="sorter.throttled"
+            >
+              <b-icon :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"></b-icon>
+            </b-button>
+            <b-button-group @click="order()"
               ><b-button
-                :variant="sorter.byDate ? 'info' : 'dark'"
-                :pressed.sync="sorter.byDate"
+                :disabled="sorter.throttled"
+                :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
                 ><b-icon-clock-fill></b-icon-clock-fill></b-button
               ><b-button
-                :variant="sorter.byDate ? 'dark' : 'info'"
-                :pressed.sync="sorter.byDate"
+                :disabled="sorter.throttled"
+                :variant="sorter.orderBy == 'created' ? 'dark' : 'info'"
                 ><b-icon-heart></b-icon-heart></b-button
             ></b-button-group>
           </b-row>
@@ -188,7 +167,6 @@ import axios from "axios";
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
-
 export default {
   name: "Home",
   computed: {
@@ -205,7 +183,7 @@ export default {
       posts: [],
       recent: [],
       categories: [],
-      sorter: { byDate: false },
+      sorter: { orderBy: "rating", asc: true, throttled: false },
       // ! ^ this is useless ^
       pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
       error: {
@@ -230,8 +208,11 @@ export default {
         .post("posts", {
           per_page: this.pagination.perPage,
           current_page: currentPage,
+          order_by: this.sorter.orderBy,
+          ascending: this.sorter.asc,
         })
         .then((response) => {
+          console.log(response.data.data);
           this.error.show = false;
           this.posts = response.data.data.hot || [];
           this.recent = response.data.data.recent || [];
@@ -254,19 +235,22 @@ export default {
           console.log(error);
         });
     },
-    sortDisplayPosts() {
-      if (this.sorter.byDate) {
-        this.posts
-          .sort((a, b) => {
-            return new Date(b.created) - new Date(a.created);
-          })
-          .reverse();
-      } else {
-        this.posts.sort((a, b) => {
-          return new Date(b.created) - new Date(a.created);
-        });
-      }
-      this.sorter.byDate = !this.sorter.byDate;
+    sort() {
+      this.throttle();
+      this.sorter.asc = !this.sorter.asc;
+    },
+    order() {
+      this.throttle();
+      this.sorter.orderBy =
+        this.sorter.orderBy == "created" ? "rating" : "created";
+    },
+    throttle() {
+      if (this.sorter.throttled) return;
+      this.sorter.throttled = true;
+      this.getPosts();
+      setTimeout(() => {
+        this.sorter.throttled = false;
+      }, 1000);
     },
   },
 };
