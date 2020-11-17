@@ -44,7 +44,7 @@ func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Pos
 					AND post_id_fkey = p.id
 			),
 			0
-		) AS yor_reaction,
+		) AS your_reaction,
 		(
 			SELECT count(id)
 			FROM comments
@@ -67,7 +67,6 @@ func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Pos
 		}
 		result.Hot = append(result.Hot, p)
 	}
-
 	if result.Recent, err = NewPostRepoCRUD().FindRecent(recentAmount); err != nil {
 		return nil, err
 	}
@@ -130,7 +129,7 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 					AND post_id_fkey = p.id
 			),
 			0
-		) AS yor_reaction,
+		) AS your_reaction,
 		c.*
 		FROM posts p
 		JOIN(

@@ -66,7 +66,7 @@ func (PostRepoCRUD) Rate(postID, userID int64, reaction int) error {
 				$1,
 				$2,
 				$3
-			);`,
+			)`,
 			postID, userID, reaction,
 		); err != nil {
 			return err

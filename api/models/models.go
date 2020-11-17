@@ -40,7 +40,7 @@ type Post struct {
 }
 
 type Posts struct {
-	Hot       []Post `json:"hot"` // ! renamed "posts" to "hot", also change it in Home.vue
+	Hot       []Post `json:"hot"`
 	Recent    []Post `json:"recent"`
 	TotalRows int    `json:"total_rows"`
 }
