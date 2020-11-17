@@ -56,8 +56,8 @@
               </li>
               <li>
                 <b-icon icon="clock" @click="sortDisplayPosts()"></b-icon>
-              </li>
-            </ul> -->
+              </li>-->
+            </ul>
             <b-button-group
               ><b-button
                 :variant="sorter.byDate ? 'info' : 'dark'"

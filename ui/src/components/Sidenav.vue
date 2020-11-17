@@ -8,7 +8,7 @@
       <Login />
     </div>
     <div v-if="authenticated">
-      <router-link to="/post/new"><b-icon icon="pen"></b-icon></router-link>
+      <router-link to="/new-post"><b-icon icon="pen"></b-icon></router-link>
 
       <router-link :to="'/user/' + user.id"
         ><b-icon icon="person"></b-icon
