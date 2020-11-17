@@ -22,8 +22,10 @@ type InputPostCreateUpdate struct {
 }
 
 type InputAllPosts struct {
-	PerPage     int `json:"per_page"`
-	CurrentPage int `json:"current_page"`
+	PerPage     int    `json:"per_page"`
+	CurrentPage int    `json:"current_page"`
+	OrderBy     string `json:"order_by"`
+	Ascending   bool   `json:"ascending"`
 }
 
 type InputPostFind struct {

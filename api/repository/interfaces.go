@@ -24,7 +24,7 @@ type PostRepo interface {
 	// FindAll takes in user id, current page and offset,
 	// user id for server to know if that user put a like or dislike on a post,
 	// current page and offset for pagination
-	FindAll(userID int64, perPage, currentPage int) (*models.Posts, error)
+	FindAll(userID int64, input models.InputAllPosts) (*models.Posts, error)
 	// FindByID takes in post id and user id, for the same reasaon, as in FindAll()
 	FindByID(postID, userID int64) (*models.Post, int, error)
 	FindByAuthor(userID int64) ([]models.Post, error)

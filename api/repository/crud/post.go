@@ -21,41 +21,62 @@ func NewPostRepoCRUD() PostRepoCRUD {
 }
 
 //FindAll returns all posts in the database
-func (PostRepoCRUD) FindAll(userID int64, perPage, currentPage int) (*models.Posts, error) {
+//TODO improve this MESS
+func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.Posts, error) {
 	var (
 		posts        *sql.Rows
 		result       models.Posts
-		offset       int = (currentPage - 1) * perPage
+		offset       int
 		recentAmount int = 5
+		perPage      int
+		orderBy      string
+		order        string
+		query        string
 		err          error
 	)
-	if posts, err = repository.DB.Query(
-		`SELECT *,
+	if input.CurrentPage >= 0 && input.PerPage > 0 {
+		offset = (input.CurrentPage - 1) * input.PerPage
+		perPage = input.PerPage
+	} else {
+		offset = 0
+		perPage = 7
+	}
+	if input.OrderBy == "rating" || input.OrderBy == "created" {
+		orderBy = input.OrderBy
+	} else {
+		orderBy = "rating"
+	}
+	if input.Ascending {
+		order = orderBy + " ASC"
+	} else {
+		order = orderBy + " DESC"
+	}
+	query = fmt.Sprintf(`SELECT *,
+	(
+		SELECT TOTAL(reaction)
+		FROM posts_reactions
+		WHERE post_id_fkey = p.id
+	) AS rating,
+	IFNULL (
 		(
-			SELECT TOTAL(reaction)
+			SELECT reaction
 			FROM posts_reactions
-			WHERE post_id_fkey = p.id
-		) AS rating,
-		IFNULL (
-			(
-				SELECT reaction
-				FROM posts_reactions
-				WHERE user_id_fkey = $1
-					AND post_id_fkey = p.id
-			),
-			0
-		) AS your_reaction,
-		(
-			SELECT count(id)
-			FROM comments
-			WHERE post_id_fkey = p.id
-		) AS comments_count
-		FROM posts p
-		ORDER BY rating DESC
-		LIMIT $2
-		OFFSET $3`,
-		userID, perPage, offset,
-	); err != nil {
+			WHERE user_id_fkey = %d
+				AND post_id_fkey = p.id
+		),
+		0
+	) AS your_reaction,
+	(
+		SELECT count(id)
+		FROM comments
+		WHERE post_id_fkey = p.id
+	) AS comments_count
+	FROM posts p
+	ORDER BY %s
+	LIMIT %d
+	OFFSET %d`, userID, order, perPage, offset)
+
+	if posts, err = repository.DB.Query(query); err != nil {
 		return nil, err
 	}
 	for posts.Next() {
