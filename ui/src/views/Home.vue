@@ -44,7 +44,7 @@
                 ><b-icon-clock-fill></b-icon-clock-fill></b-button
               ><b-button
                 :disabled="sorter.throttled"
-                :variant="sorter.orderBy == 'created' ? 'dark' : 'info'"
+                :variant="sorter.orderBy == 'rating' ? 'info' : 'dark'"
                 ><b-icon-heart></b-icon-heart></b-button
             ></b-button-group>
           </b-row>
@@ -184,7 +184,6 @@ export default {
       recent: [],
       categories: [],
       sorter: { orderBy: "rating", asc: true, throttled: false },
-      // ! ^ this is useless ^
       pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
       error: {
         show: false,
@@ -212,7 +211,6 @@ export default {
           ascending: this.sorter.asc,
         })
         .then((response) => {
-          console.log(response.data.data);
           this.error.show = false;
           this.posts = response.data.data.hot || [];
           this.recent = response.data.data.recent || [];
@@ -236,13 +234,13 @@ export default {
         });
     },
     sort() {
-      this.throttle();
       this.sorter.asc = !this.sorter.asc;
+      this.throttle();
     },
     order() {
-      this.throttle();
       this.sorter.orderBy =
         this.sorter.orderBy == "created" ? "rating" : "created";
+      this.throttle();
     },
     throttle() {
       if (this.sorter.throttled) return;

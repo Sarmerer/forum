@@ -28,18 +28,18 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		result       models.Posts
 		offset       int
 		recentAmount int = 5
-		perPage      int
+		limit        int
 		orderBy      string
 		order        string
-		query        string
 		err          error
 	)
+	fmt.Println("input before", input)
 	if input.CurrentPage >= 0 && input.PerPage > 0 {
 		offset = (input.CurrentPage - 1) * input.PerPage
-		perPage = input.PerPage
+		limit = input.PerPage
 	} else {
 		offset = 0
-		perPage = 7
+		limit = 7
 	}
 	if input.OrderBy == "rating" || input.OrderBy == "created" {
 		orderBy = input.OrderBy
@@ -47,11 +47,14 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		orderBy = "rating"
 	}
 	if input.Ascending {
-		order = orderBy + " ASC"
+		order = orderBy + " " + "DESC"
 	} else {
-		order = orderBy + " DESC"
+		order = orderBy + " ASC"
 	}
-	query = fmt.Sprintf(`SELECT *,
+	fmt.Println("input after", input)
+	if posts, err = repository.DB.Query(
+		fmt.Sprintf(
+			`SELECT *,
 	(
 		SELECT TOTAL(reaction)
 		FROM posts_reactions
@@ -61,7 +64,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		(
 			SELECT reaction
 			FROM posts_reactions
-			WHERE user_id_fkey = %d
+			WHERE user_id_fkey = $1
 				AND post_id_fkey = p.id
 		),
 		0
@@ -73,10 +76,9 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	) AS comments_count
 	FROM posts p
 	ORDER BY %s
-	LIMIT %d
-	OFFSET %d`, userID, order, perPage, offset)
-
-	if posts, err = repository.DB.Query(query); err != nil {
+	LIMIT $2
+	OFFSET $3`, order), userID, limit, offset,
+	); err != nil {
 		return nil, err
 	}
 	for posts.Next() {
