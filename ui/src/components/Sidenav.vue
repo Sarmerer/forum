@@ -19,7 +19,7 @@
       <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
     </div>
     <router-link to="/dashboard/admin"
-      ><b-icon icon="hammer"></b-icon
+      ><b-icon icon="wrench"></b-icon
     ></router-link>
   </div>
 </template>

@@ -13,12 +13,18 @@
     <div class="user-info">
       <b-tabs pills card>
         <b-tab title="Posts" active>
-          <div class="user-card" v-for="(post, index) in posts" :key="index">
+          <router-link
+            :to="'/post/' + post.id"
+            v-for="post in posts"
+            :key="post.id"
+            class="user-card"
+            tag="div"
+          >
             <h5>
               <strong>{{ post.title }}</strong>
             </h5>
             {{ post.content }}
-          </div></b-tab
+          </router-link></b-tab
         >
         <b-tab title="Replies"
           ><div
@@ -53,7 +59,7 @@ export default {
     this.getReplies();
   },
   filters: {
-    formatDate: function(value) {
+    formatDate: function (value) {
       if (value) {
         return moment(String(value)).format("MM/DD/YYYY hh:mm");
       }
@@ -104,6 +110,14 @@ export default {
   padding: 15px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
+}
+
+.user-info .user-card {
+  cursor: pointer;
+}
+
+.user-info .user-card:hover {
+  opacity: 0.8;
 }
 
 .user-card img {

@@ -15,6 +15,12 @@ const routes = [
     component: Home,
   },
   {
+    path: "*",
+    name: "Not Found",
+    component: () =>
+      import(/* webpackChunkName: "Not Found" */ "@/views/NotFound.vue"),
+  },
+  {
     path: "/post/:id",
     name: "Post",
     // route level code-splitting
