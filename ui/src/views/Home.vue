@@ -145,17 +145,16 @@
             <span v-if="categories.length == 0">None</span>
             <b-container v-else>
               <div class="categories">
-                <b-form-tag
+                <b-button-group
                   v-for="c in categories"
                   :key="c.ID"
                   :id="c.ID"
-                  disabled
-                  variant="dark"
                   class="category-name"
-                  >{{ c.name }}
-                  <span class="category-count">{{
-                    c.use_count
-                  }}</span></b-form-tag
+                  size="sm"
+                  ><b-button disabled>{{ c.name }}</b-button>
+                  <b-button disabled class="category-count">
+                    {{ c.use_count }}
+                  </b-button></b-button-group
                 >
               </div>
             </b-container>
@@ -311,11 +310,15 @@ ul#filters li {
 }
 
 .category-name {
-  margin: 1px;
+  margin: 2px;
 }
-.category-count {
+.categories .btn-secondary.disabled.category-count {
   background-color: #278ea5;
-  padding: 2px;
+}
+
+.categories .btn-secondary.disabled {
+  background-color: #343a40;
+  border: none;
 }
 
 /* TOGGLE SWITCH START */
