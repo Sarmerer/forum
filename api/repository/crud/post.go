@@ -33,7 +33,6 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		order        string
 		err          error
 	)
-	fmt.Println("input before", input)
 	if input.CurrentPage >= 0 && input.PerPage > 0 {
 		offset = (input.CurrentPage - 1) * input.PerPage
 		limit = input.PerPage
@@ -51,7 +50,6 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	} else {
 		order = orderBy + " ASC"
 	}
-	fmt.Println("input after", input)
 	if posts, err = repository.DB.Query(
 		fmt.Sprintf(
 			`SELECT *,

@@ -245,10 +245,11 @@ export default {
     throttle() {
       if (this.sorter.throttled) return;
       this.sorter.throttled = true;
-      this.getPosts();
-      setTimeout(() => {
-        this.sorter.throttled = false;
-      }, 1000);
+      this.getPosts().then(
+        setTimeout(() => {
+          this.sorter.throttled = false;
+        }, 1000)
+      );
     },
   },
 };
