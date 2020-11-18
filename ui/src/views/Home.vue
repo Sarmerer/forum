@@ -30,23 +30,28 @@
               first-number
               last-number
             ></b-pagination>
-            <b-button
-              variant="dark"
-              @click="sort()"
-              :disabled="sorter.throttled"
-            >
-              <b-icon :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"></b-icon>
-            </b-button>
-            <b-button-group @click="order()"
-              ><b-button
+            <div>
+              <b-button
+                variant="dark"
+                @click="sort()"
                 :disabled="sorter.throttled"
-                :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
-                ><b-icon-clock-fill></b-icon-clock-fill></b-button
-              ><b-button
-                :disabled="sorter.throttled"
-                :variant="sorter.orderBy == 'created' ? 'dark' : 'info'"
-                ><b-icon-heart></b-icon-heart></b-button
-            ></b-button-group>
+                class="mx-2"
+              >
+                <b-icon
+                  :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"
+                ></b-icon>
+              </b-button>
+              <b-button-group @click="order()"
+                ><b-button
+                  :disabled="sorter.throttled"
+                  :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
+                  ><b-icon-clock-fill></b-icon-clock-fill></b-button
+                ><b-button
+                  :disabled="sorter.throttled"
+                  :variant="sorter.orderBy == 'created' ? 'dark' : 'info'"
+                  ><b-icon-heart></b-icon-heart></b-button
+              ></b-button-group>
+            </div>
           </b-row>
 
           <!-- Start of posts -->
@@ -350,6 +355,16 @@ label:after {
 input:checked + label:after {
   left: calc(100%);
   transform: translateX(-100%);
+}
+
+.btn-dark {
+  // color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: none;
+}
+
+.btn-dark:hover {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 /* TOGGLE SWITCH END */
