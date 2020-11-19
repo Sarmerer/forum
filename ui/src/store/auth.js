@@ -37,7 +37,7 @@ export default {
     },
     async signOut({ commit }) {
       //FIXME fix case when you log in from a new place, and then try to log out from the first session
-      return axios.post("auth/signout").then(() => {
+      return axios.post("auth/signout").finally(() => {
         commit("setUser", null);
       });
     },

@@ -1,0 +1,7 @@
+POST {{baseURL}}/api/comments/find
+Content-Type: application/json
+
+{
+    "by":"user_id",
+    "id":1
+}

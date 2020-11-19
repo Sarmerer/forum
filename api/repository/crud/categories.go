@@ -29,8 +29,8 @@ func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 		FROM categories c
 			LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
 		GROUP BY category_id_fkey
-		ORDER BY name ASC
-		LIMIT 30`,
+		ORDER BY use_count DESC,name ASC
+		LIMIT 70`,
 	); err != nil {
 		return nil, err
 	}

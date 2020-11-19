@@ -41,15 +41,33 @@
                   :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"
                 ></b-icon>
               </b-button>
-              <b-button-group @click="order()"
+              <b-button-group
                 ><b-button
                   :disabled="sorter.throttled"
-                  :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
-                  ><b-icon-clock-fill></b-icon-clock-fill></b-button
-                ><b-button
-                  :disabled="sorter.throttled"
-                  :variant="sorter.orderBy == 'created' ? 'dark' : 'info'"
+                  @click="order('rating')"
+                  :variant="sorter.orderBy == 'rating' ? 'info' : 'dark'"
                   ><b-icon-heart></b-icon-heart></b-button
+                ><b-button
+                  :disabled="sorter.throttled"
+                  @click="order('created')"
+                  :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
+                  ><b-icon-clock></b-icon-clock>
+                </b-button>
+                <b-button
+                  :disabled="sorter.throttled"
+                  @click="order('comments_count')"
+                  :variant="
+                    sorter.orderBy == 'comments_count' ? 'info' : 'dark'
+                  "
+                  ><b-icon-chat-left></b-icon-chat-left
+                ></b-button>
+                <b-button
+                  :disabled="sorter.throttled"
+                  @click="order('total_participants')"
+                  :variant="
+                    sorter.orderBy == 'total_participants' ? 'info' : 'dark'
+                  "
+                  ><b-icon-people></b-icon-people></b-button
               ></b-button-group>
             </div>
           </b-row>
@@ -221,6 +239,9 @@ export default {
           this.pagination.totalPages = response.data.data.total_rows || 5;
         })
         .catch((error) => {
+          this.posts = [];
+          this.recent = [];
+          this.categories = [];
           this.error.show = true;
           this.error.status = error.response.status;
           this.error.message = error.response.statusText;
@@ -241,9 +262,8 @@ export default {
       this.sorter.asc = !this.sorter.asc;
       this.throttle();
     },
-    order() {
-      this.sorter.orderBy =
-        this.sorter.orderBy == "created" ? "rating" : "created";
+    order(by) {
+      this.sorter.orderBy = this.sorter.orderBy = by;
       this.throttle();
     },
     throttle() {

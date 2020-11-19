@@ -39,7 +39,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
 		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
-		input   models.InputPostFind
+		input   models.InputFind
 		posts   interface{}
 		status  int
 		err     error

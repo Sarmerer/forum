@@ -30,7 +30,6 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		recentAmount int = 5
 		limit        int
 		orderBy      string
-		order        string
 		err          error
 	)
 	if input.CurrentPage >= 0 && input.PerPage > 0 {
@@ -40,15 +39,20 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		offset = 0
 		limit = 7
 	}
-	if input.OrderBy == "rating" || input.OrderBy == "created" {
+	m := make(map[string]bool)
+	m["rating"] = true
+	m["created"] = true
+	m["comments_count"] = true
+	m["total_participants"] = true
+	if _, ok := m[input.OrderBy]; ok {
 		orderBy = input.OrderBy
 	} else {
 		orderBy = "rating"
 	}
 	if input.Ascending {
-		order = orderBy + " " + "DESC"
+		orderBy += " DESC"
 	} else {
-		order = orderBy + " ASC"
+		orderBy += " ASC"
 	}
 	if posts, err = repository.DB.Query(
 		fmt.Sprintf(
@@ -71,18 +75,27 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		SELECT count(id)
 		FROM comments
 		WHERE post_id_fkey = p.id
-	) AS comments_count
+	) AS comments_count,
+	IFNULL (
+		(
+			SELECT COUNT(DISTINCT author_id_fkey)
+			FROM comments
+			WHERE post_id_fkey = p.id
+		),
+		0
+	) AS total_participants
 	FROM posts p
 	ORDER BY %s
 	LIMIT $2
-	OFFSET $3`, order), userID, limit, offset,
+	OFFSET $3`, orderBy), userID, limit, offset,
 	); err != nil {
 		return nil, err
 	}
 	for posts.Next() {
 		var err error
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
+		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created,
+			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.TotalParticipants)
 		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 		}
