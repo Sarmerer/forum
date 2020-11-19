@@ -11,6 +11,11 @@ html {
   cursor: default;
 }
 
+.b-toast .toast {
+  border: none;
+  background-color: #121212 !important;
+}
+
 /* Make sure the borders are not rounded because of Bootstrap*/
 .card,
 .form-control {

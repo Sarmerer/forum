@@ -33,9 +33,11 @@
             <div>
               <b-button
                 variant="dark"
-                @click="sort()"
+                @click="sort(), toast('b-toaster-bottom-center', true)"
                 :disabled="sorter.throttled"
                 class="mx-2"
+                v-b-tooltip.hover
+                :title="sorter.asc ? 'Ascending' : 'Descending'"
               >
                 <b-icon
                   :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"
@@ -45,17 +47,23 @@
                 ><b-button
                   :disabled="sorter.throttled"
                   @click="order('rating')"
+                  v-b-tooltip.hover
+                  title="Most liked"
                   :variant="sorter.orderBy == 'rating' ? 'info' : 'dark'"
                   ><b-icon-heart></b-icon-heart></b-button
                 ><b-button
                   :disabled="sorter.throttled"
                   @click="order('created')"
+                  v-b-tooltip.hover
+                  title="Most recent"
                   :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
                   ><b-icon-clock></b-icon-clock>
                 </b-button>
                 <b-button
                   :disabled="sorter.throttled"
                   @click="order('comments_count')"
+                  v-b-tooltip.hover
+                  title="Most commented"
                   :variant="
                     sorter.orderBy == 'comments_count' ? 'info' : 'dark'
                   "
@@ -64,6 +72,8 @@
                 <b-button
                   :disabled="sorter.throttled"
                   @click="order('total_participants')"
+                  v-b-tooltip.hover
+                  title="Most participants"
                   :variant="
                     sorter.orderBy == 'total_participants' ? 'info' : 'dark'
                   "
@@ -274,6 +284,17 @@ export default {
           this.sorter.throttled = false;
         }, 1000)
       );
+    },
+    toast(toaster, append = true) {
+      var message = this.sorter.asc ? "ascending" : "descending";
+      this.$bvToast.toast(`Post sorted in ${message} order`, {
+        // title: `YAY`,
+        toaster: toaster,
+        solid: true,
+        // variant: "secondary",
+        appendToast: append,
+        noCloseButton: true,
+      });
     },
   },
 };
