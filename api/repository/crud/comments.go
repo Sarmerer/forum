@@ -17,12 +17,12 @@ import (
 type CommentRepoCRUD struct{}
 
 //NewCommentRepoCRUD creates an instance of PostReplyModel
-func NewCommentRepoCRUD() *CommentRepoCRUD {
-	return &CommentRepoCRUD{}
+func NewCommentRepoCRUD() CommentRepoCRUD {
+	return CommentRepoCRUD{}
 }
 
 //FindAll returns all replies for the specified post
-func (CommentRepoCRUD) FindAll(postID, userID int64) ([]models.Comment, error) {
+func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, error) {
 	var (
 		rows     *sql.Rows
 		comments []models.Comment
@@ -45,8 +45,10 @@ func (CommentRepoCRUD) FindAll(postID, userID int64) ([]models.Comment, error) {
 			0
 		) AS yor_reaction
 		FROM comments c
-	WHERE post_id_fkey = $2
-	ORDER BY created DESC`, userID, postID); err != nil {
+		WHERE post_id_fkey = $2
+		ORDER BY created DESC`,
+		userID, postID,
+	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, err
 		}
@@ -58,6 +60,46 @@ func (CommentRepoCRUD) FindAll(postID, userID int64) ([]models.Comment, error) {
 		comments = append(comments, r)
 	}
 	return comments, nil
+}
+
+func (CommentRepoCRUD) FindByUserID(userID, requestorID int64) ([]models.Comment, int, error) {
+	var (
+		rows     *sql.Rows
+		comments []models.Comment
+		err      error
+	)
+	if rows, err = repository.DB.Query(
+		`SELECT *,
+		(
+			SELECT TOTAL(reaction)
+			FROM comments_reactions
+			WHERE comment_id_fkey = c.id
+		) AS rating,
+		IFNULL (
+			(
+				SELECT reaction
+				FROM comments_reactions
+				WHERE user_id_fkey = $1
+					AND comment_id_fkey = c.id
+			),
+			0
+		) AS yor_reaction
+		FROM comments c
+		WHERE author_id_fkey = $2
+		ORDER BY created DESC`,
+		requestorID, userID,
+	); err != nil {
+		if err != sql.ErrNoRows {
+			return nil, http.StatusInternalServerError, err
+		}
+		return nil, http.StatusNotFound, nil
+	}
+	for rows.Next() {
+		var r models.Comment
+		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited, &r.Rating, &r.YourReaction)
+		comments = append(comments, r)
+	}
+	return comments, http.StatusOK, nil
 }
 
 //FindByID returns a specific reply from the database

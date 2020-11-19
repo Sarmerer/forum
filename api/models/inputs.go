@@ -21,6 +21,11 @@ type InputPostCreateUpdate struct {
 	Categories []string
 }
 
+type InputCommentCreateUpdate struct {
+	PostID  int64
+	Content string
+}
+
 type InputAllPosts struct {
 	PerPage     int    `json:"per_page"`
 	CurrentPage int    `json:"current_page"`
@@ -28,7 +33,7 @@ type InputAllPosts struct {
 	Ascending   bool   `json:"ascending"`
 }
 
-type InputPostFind struct {
+type InputFind struct {
 	By         string   `json:"by"`
 	ID         int64    `json:"id"`
 	AuthorID   int64    `json:"author"`

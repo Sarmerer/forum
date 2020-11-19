@@ -24,9 +24,9 @@ type PostRepo interface {
 	// FindAll takes in user id, current page and offset,
 	// user id for server to know if that user put a like or dislike on a post,
 	// current page and offset for pagination
-	FindAll(userID int64, input models.InputAllPosts) (*models.Posts, error)
+	FindAll(requestorID int64, input models.InputAllPosts) (*models.Posts, error)
 	// FindByID takes in post id and user id, for the same reasaon, as in FindAll()
-	FindByID(postID, userID int64) (*models.Post, int, error)
+	FindByID(postID, requestorID int64) (*models.Post, int, error)
 	FindByAuthor(userID int64) ([]models.Post, error)
 	FindByCategories(categories []string) ([]models.Post, error)
 
@@ -35,7 +35,7 @@ type PostRepo interface {
 	Delete(postID int64) (int, error)
 
 	Rate(postID, userID int64, reaction int) error
-	GetRating(postID, userID int64) (int, int, error)
+	GetRating(postID, requestorID int64) (int, int, error)
 	// TODO delete all reactions from user, when deleting a user
 	DeleteAllReactions(postID int64) error
 }
@@ -48,15 +48,16 @@ type CategoryRepo interface {
 }
 
 type CommentRepo interface {
-	FindAll(postID, userID int64) ([]models.Comment, error)
-	FindByID(int64) (*models.Comment, int, error)
-	Create(*models.Comment) error
-	Update(*models.Comment) error
-	Delete(int64) error
-	DeleteGroup(int64) error
-	Count(int64) (string, error)
+	FindByID(commentID int64) (*models.Comment, int, error)
+	FindByPostID(postID, requestorID int64) ([]models.Comment, error)
+	FindByUserID(userID, requestorID int64) (comments []models.Comment, status int, err error)
+	Create(comment *models.Comment) error
+	Update(comment *models.Comment) error
+	Delete(commentID int64) error
+	DeleteGroup(postID int64) error
+	Count(postID int64) (string, error)
 
-	Rate(int64, int64, int) error
-	GetRating(int64, int64) (int, int, error)
-	DeleteAllReactions(int64) error
+	Rate(commentID, userID int64, reaction int) error
+	GetRating(commentID int64, userID int64) (rating, userReaction int, err error)
+	DeleteAllReactions(postID int64) error
 }

@@ -174,6 +174,13 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
+		URI:      "/api/comments/find",
+		Handler:  controllers.FindComments,
+		Method:   http.MethodPost,
+		MinRole:  config.RoleUser,
+		NeedAuth: false,
+	},
+	{
 		URI:      "/api/comment/add",
 		Handler:  controllers.CreateComment,
 		Method:   http.MethodPost,

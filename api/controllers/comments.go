@@ -31,8 +31,34 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-	if comments, err = repo.FindAll(pid, userCtx.ID); err != nil {
+	if comments, err = repo.FindByPostID(pid, userCtx.ID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	response.Success(w, nil, comments)
+}
+
+func FindComments(w http.ResponseWriter, r *http.Request) {
+	var (
+		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
+		userCtx  models.UserCtx         = utils.GetUserFromCtx(r)
+		input    models.InputFind
+		comments []models.Comment
+		status   int
+		err      error
+	)
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+	switch input.By {
+	case "user_id":
+		if comments, status, err = repo.FindByUserID(input.ID, userCtx.ID); err != nil {
+			response.Error(w, status, err)
+			return
+		}
+	default:
+		response.Error(w, http.StatusBadRequest, errors.New("unknown search type"))
 		return
 	}
 	response.Success(w, nil, comments)
@@ -42,25 +68,22 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
 		userCtx models.UserCtx         = utils.GetUserFromCtx(r)
+		input   models.InputCommentCreateUpdate
 		status  int
 		err     error
 	)
-	input := struct {
-		PID     int64  `json:"pid"`
-		Content string `json:"content"`
-	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PID, -1); err != nil {
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PostID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	comment := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
-		PostID:     input.PID,
+		PostID:     input.PostID,
 		AuthorID:   userCtx.ID,
 		AuthorName: userCtx.DisplayName,
 	}
@@ -74,19 +97,16 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
+		input   models.InputCommentCreateUpdate
 		comment *models.Comment
 		status  int
 		err     error
 	)
-	input := struct {
-		RID     int64  `json:"id"`
-		Content string `json:"content"`
-	}{}
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if comment, status, err = repo.FindByID(input.RID); err != nil {
+	if comment, status, err = repo.FindByID(input.PostID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
