@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/logger"
 	"github.com/sarmerer/forum/api/response"
 )
@@ -28,7 +29,11 @@ func New() *Router {
 
 // ServeHTTP is called for every request, it finds an API endpoint, matching request path, and calls the handler for that path
 func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Host)
+	if config.Production && req.Host != config.ClientURL {
+		fmt.Println(req.Host)
+		response.Error(w, http.StatusForbidden, errors.New("nice try, but no"))
+		return
+	}
 	for _, route := range router.routes {
 		match, err := regexp.MatchString(route.Pattern, req.URL.Path)
 		if err != nil {

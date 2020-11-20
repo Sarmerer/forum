@@ -19,10 +19,10 @@ var (
 // API config
 const (
 	APIPort       = "4433"
-	apiURLTest    = "http://localhost:" + APIPort
-	apiURLProd    = "https://forum-api-sarmerer.herokuapp.com"
-	clientURLTest = "http://localhost:8080"
-	clientURLProd = "https://forum-sarmerer.herokuapp.com"
+	apiURLTest    = "localhost:" + APIPort
+	apiURLProd    = "forum-api-sarmerer.herokuapp.com"
+	clientURLTest = "localhost:8080"
+	clientURLProd = "forum-sarmerer.herokuapp.com"
 
 	DatabaseDriver   = "sqlite3"
 	DatabasePath     = "./database"

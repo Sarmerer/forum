@@ -12,9 +12,9 @@ func (i InputAllPosts) Validate() {
 	m["total_participants"] = true
 	if _, ok := m[i.OrderBy]; ok {
 		if i.Ascending {
-			i.OrderBy += "DESC"
+			i.OrderBy += " DESC"
 		} else {
-			i.OrderBy += "ASC"
+			i.OrderBy += " ASC"
 		}
 	} else {
 		i.OrderBy = "rating DESC"
