@@ -28,6 +28,9 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+
+	input.Validate()
+
 	if result, err = repo.FindAll(userCtx.ID, input); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
