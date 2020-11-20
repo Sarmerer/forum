@@ -26,10 +26,34 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	var (
 		posts        *sql.Rows
 		result       models.Posts
-		offset       int = (input.CurrentPage - 1) * input.PerPage
+		offset       int
 		recentAmount int = 5
+		limit        int
+		orderBy      string
 		err          error
 	)
+	if input.CurrentPage >= 0 && input.PerPage > 0 {
+		offset = (input.CurrentPage - 1) * input.PerPage
+		limit = input.PerPage
+	} else {
+		offset = 0
+		limit = 7
+	}
+	m := make(map[string]bool)
+	m["rating"] = true
+	m["created"] = true
+	m["comments_count"] = true
+	m["total_participants"] = true
+	if _, ok := m[input.OrderBy]; ok {
+		orderBy = input.OrderBy
+	} else {
+		orderBy = "rating"
+	}
+	if input.Ascending {
+		orderBy += " DESC"
+	} else {
+		orderBy += " ASC"
+	}
 	if posts, err = repository.DB.Query(
 		fmt.Sprintf(
 			`SELECT *,
@@ -63,7 +87,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	FROM posts p
 	ORDER BY %s
 	LIMIT $2
-	OFFSET $3`, input.OrderBy), userID, input.PerPage, offset,
+	OFFSET $3`, orderBy), userID, limit, offset,
 	); err != nil {
 		return nil, err
 	}

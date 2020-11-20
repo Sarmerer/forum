@@ -46,16 +46,6 @@ var (
 	Production = false
 )
 
-// API response messages
-const (
-	// Auth endpoints
-	SuccessLogIn = "user is logged in"
-	SuccesSignUp = "user has been created"
-	SuccesLogOut = "user is logged out"
-
-	ErrorWrongCreds = "wrong login or password"
-)
-
 func Init() {
 	if Production {
 		ClientURL = clientURLProd
