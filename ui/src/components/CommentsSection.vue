@@ -175,19 +175,19 @@ import { mapGetters } from "vuex";
 
 export default {
   props: {
-    postID: { type: Number, required: true }
+    postID: { type: Number, required: true },
   },
   computed: {
     ...mapGetters({
       user: "auth/user",
-      authenticated: "auth/authenticated"
+      authenticated: "auth/authenticated",
     }),
     commentLength() {
       return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
     },
     editorLength() {
       return this.editor.editingContent.replace(/(\r\n|\n|\r)/g, "").length;
-    }
+    },
   },
   data() {
     return {
@@ -198,8 +198,8 @@ export default {
       deletingComment: false,
       comments: [],
       form: {
-        comment: ""
-      }
+        comment: "",
+      },
     };
   },
   created() {
@@ -209,10 +209,10 @@ export default {
     async getComments() {
       return await axios
         .get("/comments", { params: { id: this.postID } })
-        .then(response => {
+        .then((response) => {
           this.comments = response.data.data || [];
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error.response.data);
         });
     },
@@ -224,7 +224,7 @@ export default {
         .then(() => {
           this.comments.splice(IDInList, 1);
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error.response.data);
           //TODO show alert
         })
@@ -239,13 +239,13 @@ export default {
         return;
       this.editor.editing = -1;
       return await axios
-        .post("comment/add", { pid: this.postID, content: this.form.comment })
+        .post("comment/add", { id: this.postID, content: this.form.comment })
         .then(() => {
           this.appendComment();
           this.form.comment = "";
         })
-        .catch(error => {
-          console.log(error);
+        .catch((error) => {
+          console.log(error.response.data);
         });
     },
     async updateComment(actualID, oldCommentContent) {
@@ -264,7 +264,7 @@ export default {
       return await axios
         .put("comment/update", {
           id: actualID,
-          content: this.editor.editingContent
+          content: this.editor.editingContent,
         })
         .then(() => {
           console.log(this.comments);
@@ -274,7 +274,7 @@ export default {
           this.comments[this.editor.editing].edited = true;
           this.editor.editing = -1;
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         })
         .finally(() => {
@@ -289,7 +289,7 @@ export default {
         created: Date.now(),
         content: this.form.comment,
         post: this.postID,
-        edited: false
+        edited: false,
       };
       this.comments = [comment, ...this.comments];
     },
@@ -318,20 +318,20 @@ export default {
       }
       await axios
         .post("comment/rate", { id: id, reaction: r })
-        .then(response => {
-          let comment = this.comments.find(c => c.id == id);
+        .then((response) => {
+          let comment = this.comments.find((c) => c.id == id);
           comment.rating = response.data.data.rating;
           comment.your_reaction = response.data.data.your_reaction;
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
           //TODO show alert saying that you need to be logged in to rate
         })
         .finally(() => {
           self.requesting = false;
         });
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

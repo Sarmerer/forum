@@ -82,9 +82,11 @@ export default {
           categories: this.form.categories,
         })
         .then((response) => {
-          console.log(response.data);
           this.resetForm();
-          this.$router.push("/post/" + response.data.data);
+          this.$router.push({
+            name: "Post",
+            params: { id: response.data.data.id, postData: response.data.data },
+          });
         })
         .catch((error) => {
           alert(error.response.data.code + " " + error.response.data.message);

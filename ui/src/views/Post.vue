@@ -157,6 +157,9 @@ import Rating from "@/components/Rating";
 import CommentsSection from "@/components/CommentsSection";
 
 export default {
+  props: {
+    postData: { type: Object, required: false },
+  },
   components: {
     Rating,
     CommentsSection,
@@ -175,7 +178,7 @@ export default {
     };
   },
   created() {
-    this.getPost();
+    this.postData ? (this.post = this.postData) : this.getPost();
   },
   methods: {
     async getPost() {
@@ -186,19 +189,8 @@ export default {
         })
         .then((response) => {
           //TODO create error page for post
-          //? because response.data.data is an array of objects
           const result = response.data.data;
           this.post = result;
-          if (result.replies) {
-            this.comments = result.replies.sort(function(a, b) {
-              return new Date(b.created) - new Date(a.created);
-            });
-          }
-          if (result.categories) {
-            result.categories.forEach((c) => {
-              this.categories.push(c.name);
-            });
-          }
         })
         .catch((error) => {
           console.log(error);
