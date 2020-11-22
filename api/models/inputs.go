@@ -16,14 +16,14 @@ type InputUserSignUp struct {
 }
 
 type InputPostCreateUpdate struct {
-	Title      string
-	Content    string
-	Categories []string
+	Title      string   `json:"title"`
+	Content    string   `json:"content"`
+	Categories []string `json:"categories"`
 }
 
 type InputCommentCreateUpdate struct {
-	PostID  int64
-	Content string
+	ID      int64  `json:"id"` // post ID, to which comment is added
+	Content string `json:"content"`
 }
 
 type InputAllPosts struct {

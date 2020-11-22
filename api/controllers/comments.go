@@ -76,14 +76,14 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PostID, -1); err != nil {
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.ID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	comment := &models.Comment{
 		Content:    input.Content,
 		Created:    time.Now().Format(config.TimeLayout),
-		PostID:     input.PostID,
+		PostID:     input.ID,
 		AuthorID:   userCtx.ID,
 		AuthorName: userCtx.DisplayName,
 	}
@@ -106,7 +106,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if comment, status, err = repo.FindByID(input.PostID); err != nil {
+	if comment, status, err = repo.FindByID(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
