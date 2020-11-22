@@ -5,11 +5,12 @@ import (
 	"regexp"
 )
 
-func (i InputAllPosts) Validate() {
+func (i *InputAllPosts) Validate() {
 	m := make(map[string]bool)
 	m["rating"] = true
 	m["created"] = true
 	m["total_participants"] = true
+	m["comments_count"] = true
 	if _, ok := m[i.OrderBy]; ok {
 		if i.Ascending {
 			i.OrderBy += " DESC"

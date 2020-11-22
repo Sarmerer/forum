@@ -83,7 +83,9 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
 		input   models.InputPostCreateUpdate
 		post    models.Post
+		newPost *models.Post
 		pid     int64
+		status  int
 		err     error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -99,8 +101,8 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Updated:    time.Now().Format(config.TimeLayout),
 		Rating:     0,
 	}
-	if pid, err = repo.Create(&post); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if newPost, status, err = repo.Create(&post); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 	if len(input.Categories) > 0 {
@@ -110,7 +112,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response.Success(w, fmt.Sprintf("post has been created"), pid)
+	response.Success(w, fmt.Sprintf("post has been created"), newPost)
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
