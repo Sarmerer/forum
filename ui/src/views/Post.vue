@@ -13,17 +13,8 @@
         <div class="card">
           <b-row>
             <b-col cols="1">
-              <Rating
-                v-on:update="
-                  (args) => {
-                    post.rating = args.new_rating;
-                    post.your_reaction = args.new_your_reaction;
-                  }
-                "
-                :postID="post.id"
-                :rating="post.rating"
-                :yourReaction="post.your_reaction"
-            /></b-col>
+              <Rating :callback="rate" :entity="post" type="comment" />
+            </b-col>
             <b-col cols="11" style="margin-left: -35px">
               <h3 class="primary">{{ post.title }}</h3>
               <p style="color: white">{{ post.content }}</p>
@@ -211,6 +202,25 @@ export default {
         .finally(() => {
           this.modal.deleting = false;
           this.modal.show = false;
+        });
+    },
+    async rate(reaction, post) {
+      if (this.requesting) return;
+      let r = reaction == "up" ? 1 : -1;
+      if (
+        (reaction == "up" && post.your_reaction == 1) ||
+        (reaction == "down" && post.your_reaction == -1)
+      ) {
+        r = 0;
+      }
+      await axios
+        .post("post/rate", { id: this.postID, reaction: r })
+        .then((response) => {
+          post.your_reaction = response.data.data.your_reaction;
+          post.rating = response.data.data.rating;
+        })
+        .catch((error) => {
+          console.log(error);
         });
     },
   },

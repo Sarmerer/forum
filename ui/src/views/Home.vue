@@ -93,18 +93,7 @@
           >
             <b-row>
               <b-col cols="1">
-                <Rating
-                  v-if="!isMobile()"
-                  v-on:update="
-                    (args) => {
-                      post.rating = args.new_rating;
-                      post.your_reaction = args.new_your_reaction;
-                    }
-                  "
-                  :postID="post.id"
-                  :rating="post.rating"
-                  :yourReaction="post.your_reaction"
-                />
+                <Rating :callback="rate" :entity="post" type="comment" />
               </b-col>
               <b-col cols="11" class="post-content">
                 <h5>
@@ -137,7 +126,11 @@
               <!-- TO-DO: Make this look decent -->
               <!-- style is embedded here for responsiveness. MB fix later -->
               <small v-if="isMobile()"
-                ><Rating style="flex-direction: row; margin: 0"
+                ><Rating
+                  style="flex-direction: row; margin: 0"
+                  type="post"
+                  :callbakc="rate"
+                  :entity="post"
               /></small>
               <small
                 >by
@@ -295,6 +288,25 @@ export default {
         appendToast: append,
         noCloseButton: true,
       });
+    },
+    async rate(reaction, post) {
+      if (this.requesting) return;
+      let r = reaction == "up" ? 1 : -1;
+      if (
+        (reaction == "up" && post.your_reaction == 1) ||
+        (reaction == "down" && post.your_reaction == -1)
+      ) {
+        r = 0;
+      }
+      await axios
+        .post("post/rate", { id: post.id, reaction: r })
+        .then((response) => {
+          post.your_reaction = response.data.data.your_reaction;
+          post.rating = response.data.data.rating;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };
