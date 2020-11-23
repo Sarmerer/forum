@@ -17,10 +17,10 @@
       <router-link to="/"><b-icon icon="gear"></b-icon></router-link>
 
       <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
+      <router-link to="/dashboard/admin"
+        ><b-icon icon="wrench"></b-icon
+      ></router-link>
     </div>
-    <router-link to="/dashboard/admin"
-      ><b-icon icon="wrench"></b-icon
-    ></router-link>
   </div>
 </template>
 <script>

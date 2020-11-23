@@ -35,6 +35,11 @@
         <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
       </b-nav-item>
     </b-navbar-nav>
+    <b-navbar-nav v-if="authenticated"
+      ><b-nav-item>
+        <router-link to="/dashboard/admin"
+          ><b-icon icon="wrench"></b-icon></router-link></b-nav-item
+    ></b-navbar-nav>
   </b-navbar>
 </template>
 <script>
