@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div>
     <div class="hero-image">
       <div class="hero-text">
         <h1>
@@ -81,7 +81,6 @@
               ></b-button-group>
             </div>
           </b-row>
-
           <!-- Start of posts -->
           <router-link
             :to="'/post/' + post.id"
@@ -106,11 +105,11 @@
                   :yourReaction="post.your_reaction"
                 />
               </b-col>
-              <b-col cols="11" class="post-content">
+              <b-col cols="11" class="post-content" style="flex-wrap: wrap">
                 <h5>
                   {{ post.title }}
                 </h5>
-                <p>{{ post.content }}</p>
+                <p v-if="!isMobile()">{{ post.content }}</p>
                 <b-form-tag
                   v-for="(category, index) in post.categories"
                   disabled
@@ -137,7 +136,17 @@
               <!-- TODO: Make this look decent -->
               <!-- style is embedded here for responsiveness. MB fix later -->
               <small v-if="isMobile()"
-                ><Rating style="flex-direction: row; margin: 0"
+                ><Rating
+                  style="flex-direction: row; margin: 0"
+                  v-on:update="
+                    (args) => {
+                      post.rating = args.new_rating;
+                      post.your_reaction = args.new_your_reaction;
+                    }
+                  "
+                  :postID="post.id"
+                  :rating="post.rating"
+                  :yourReaction="post.your_reaction"
               /></small>
               <small
                 >by
@@ -305,6 +314,7 @@ export default {
   background-image: url("../assets/img/home-hero.jpg");
   box-shadow: 0 5px 6px 2px rgba(10, 10, 10, 0.3);
   height: 200px;
+  width: 100%;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
