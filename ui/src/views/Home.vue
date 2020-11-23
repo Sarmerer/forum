@@ -123,7 +123,7 @@
                 <!-- {{ post.comments_count == 1 ? "comment" : "comments" }} -->
               </small>
 
-              <!-- TO-DO: Make this look decent -->
+              <!-- TODO: Make this look decent -->
               <!-- style is embedded here for responsiveness. MB fix later -->
               <small v-if="isMobile()"
                 ><Rating
@@ -280,7 +280,7 @@ export default {
     },
     toast(toaster, append = true) {
       var message = this.sorter.asc ? "ascending" : "descending";
-      this.$bvToast.toast(`Post sorted in ${message} order`, {
+      this.$bvToast.toast(`Posts sorted in ${message} order.`, {
         // title: `YAY`,
         toaster: toaster,
         solid: true,
