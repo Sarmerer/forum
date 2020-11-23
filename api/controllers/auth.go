@@ -63,6 +63,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+
+	if err = input.Validate(); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
 	if hashedPassword, err = hash(input.Password); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return

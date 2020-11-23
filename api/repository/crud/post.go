@@ -26,34 +26,10 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	var (
 		posts        *sql.Rows
 		result       models.Posts
-		offset       int
+		offset       int = (input.CurrentPage - 1) * input.PerPage
 		recentAmount int = 5
-		limit        int
-		orderBy      string
 		err          error
 	)
-	if input.CurrentPage >= 0 && input.PerPage > 0 {
-		offset = (input.CurrentPage - 1) * input.PerPage
-		limit = input.PerPage
-	} else {
-		offset = 0
-		limit = 7
-	}
-	m := make(map[string]bool)
-	m["rating"] = true
-	m["created"] = true
-	m["comments_count"] = true
-	m["total_participants"] = true
-	if _, ok := m[input.OrderBy]; ok {
-		orderBy = input.OrderBy
-	} else {
-		orderBy = "rating"
-	}
-	if input.Ascending {
-		orderBy += " DESC"
-	} else {
-		orderBy += " ASC"
-	}
 	if posts, err = repository.DB.Query(
 		fmt.Sprintf(
 			`SELECT *,
@@ -87,7 +63,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	FROM posts p
 	ORDER BY %s
 	LIMIT $2
-	OFFSET $3`, orderBy), userID, limit, offset,
+	OFFSET $3`, input.OrderBy), userID, input.PerPage, offset,
 	); err != nil {
 		return nil, err
 	}
@@ -288,11 +264,13 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 }
 
 //Create adds a new post to the database
-func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
+func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		pid          int64
+		newPost      *models.Post
+		status       int
 		err          error
 	)
 	if result, err = repository.DB.Exec(
@@ -305,22 +283,27 @@ func (PostRepoCRUD) Create(post *models.Post) (int64, error) {
 			updated
 		)
 	VALUES (?, ?, ?, ?, ?, ?)`,
-		post.AuthorID, post.AuthorName, post.Title, post.Content, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
+		post.AuthorID, post.AuthorName, post.Title, post.Content,
+		time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
 	); err != nil {
-		return 0, err
+		return nil, http.StatusInternalServerError, err
 	}
 
 	if pid, err = result.LastInsertId(); err != nil {
-		return 0, err
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if newPost, status, err = NewPostRepoCRUD().FindByID(pid, -1); err != nil {
+		return nil, status, err
 	}
 
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return 0, err
+		return nil, http.StatusInternalServerError, err
 	}
 	if rowsAffected > 0 {
-		return pid, nil
+		return newPost, http.StatusOK, nil
 	}
-	return 0, errors.New("could not create the post")
+	return nil, http.StatusBadRequest, errors.New("could not create the post")
 }
 
 //Update updates existing post in the database

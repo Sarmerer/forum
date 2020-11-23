@@ -21,7 +21,7 @@ const (
 	APIPort       = "4433"
 	apiURLTest    = "http://localhost:" + APIPort
 	apiURLProd    = "https://forum-api-sarmerer.herokuapp.com"
-	clientURLTest = "http://localhost:8081"
+	clientURLTest = "http://localhost:8080"
 	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 
 	DatabaseDriver   = "sqlite3"
@@ -44,16 +44,6 @@ const (
 // Flags
 var (
 	Production = false
-)
-
-// API response messages
-const (
-	// Auth endpoints
-	SuccessLogIn = "user is logged in"
-	SuccesSignUp = "user has been created"
-	SuccesLogOut = "user is logged out"
-
-	ErrorWrongCreds = "wrong login or password"
 )
 
 func Init() {

@@ -23,6 +23,12 @@ func RatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+
+	if err = input.Validate(); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
 	if err = repo.Rate(input.ID, userCtx.ID, input.Reaction); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
@@ -57,6 +63,12 @@ func RateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+
+	if err = input.Validate(); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
 	if err = repo.Rate(input.ID, userCtx.ID, input.Reaction); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
