@@ -27,7 +27,8 @@
                 <div class="controls">
                   <ControlButtons
                     :hasPermission="hasPermission"
-                    :deleteCallback="deletePost"
+                    :deleteCallback="{ callback: deletePost }"
+                    :editCallback="{}"
                     :disabled="deleting"
                   />
                 </div></div

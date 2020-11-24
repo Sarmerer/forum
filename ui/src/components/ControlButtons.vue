@@ -8,7 +8,7 @@
         variant="light"
         title="Edit"
         :disabled="disabled"
-        @click="editCallback()"
+        @click="call(editCallback)"
       >
         <b-icon-pencil-square color="white"></b-icon-pencil-square>
       </b-button>
@@ -24,14 +24,13 @@
         <b-icon-trash color="red"></b-icon-trash>
       </b-button>
     </b-button-group>
-
     <b-button-group v-if="hasPermission && confirm" size="sm">
       <b-button
         size="sm"
         variant="outline-success"
         lg="2"
         class="confirm"
-        @click="deleteCallback().then((confirm = false))"
+        @click="call(deleteCallback).then((confirm = false))"
         title="Confirm"
         :disabled="disabled"
       >
@@ -57,8 +56,8 @@ import { mapGetters } from "vuex";
 export default {
   props: {
     hasPermission: { type: Boolean, required: true },
-    deleteCallback: { type: Function, required: true },
-    editCallback: { type: Function },
+    deleteCallback: { type: Object, required: true },
+    editCallback: { type: Object, required: true },
     disabled: { type: Boolean, required: true },
   },
   computed: {
@@ -70,6 +69,11 @@ export default {
     return {
       confirm: false,
     };
+  },
+  methods: {
+    call(prop) {
+      return prop.args ? prop.callback(...prop.args) : prop.callback();
+    },
   },
 };
 </script>

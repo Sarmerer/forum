@@ -13,7 +13,7 @@
           "
           v-model="form.comment"
           @keydown.enter.exact.prevent
-          @keyup.enter.exact="leaveComment()"
+          @keyup.enter.exact="addComment()"
           keydown.enter.shift.exact="newline"
           rows="1"
           max-rows="3"
@@ -76,40 +76,17 @@
             </timeago>
             <small v-if="comment.edited" class="text-muted"> edited</small>
           </small>
-          <b-button-group
-            v-if="
-              (user ? comment.author_id == user.id || user.role > 0 : false) &&
-                index != editor.editing
-            "
-            size="sm"
-            class="controls-button"
-            style="position: absolute; right: 0px; top: 10px"
-          >
-            <b-button
-              size="sm"
-              lg="1"
-              variant="light"
-              class="controls-button"
-              :disabled="deletingComment"
-              @click="edit(index, comment.content)"
-            >
-              <b-icon-pencil-square color="white"></b-icon-pencil-square>
-            </b-button>
-            <b-button
-              variant="danger"
-              :disabled="deletingComment"
-              class="controls-button"
-              @click="deleteComment(comment.id, index)"
-              ><b-icon-trash color="red"></b-icon-trash
-            ></b-button>
-          </b-button-group>
+          <ControlButtons
+            :hasPermission="hasPermission(comment)"
+            :deleteCallback="{
+              callback: deleteComment,
+              args: [comment.id, index],
+            }"
+            :editCallback="{ callback: edit, args: [index, comment.content] }"
+            :disabled="deleting"
+          />
         </div>
-        <div
-          v-if="
-            (user ? comment.author_id == user.id || user.role > 0 : false) &&
-              index == editor.editing
-          "
-        >
+        <div v-if="hasPermission(comment) && index == editor.editing">
           <b-form-textarea
             class="textarea"
             ref="editComment"
@@ -160,9 +137,10 @@
   </div>
 </template>
 <script>
-import axios from "axios";
+import ControlButtons from "@/components/ControlButtons";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
+import axios from "axios";
 
 export default {
   props: {
@@ -189,6 +167,7 @@ export default {
     },
   },
   components: {
+    ControlButtons,
     Rating,
   },
   data() {
@@ -197,7 +176,7 @@ export default {
       minCommentLength: 5,
       requesting: false,
       editor: { editing: -1, editingContent: "", requesting: false },
-      deletingComment: false,
+      deleting: false,
       comments: [],
       form: {
         comment: "",
@@ -208,6 +187,10 @@ export default {
     this.getComments();
   },
   methods: {
+    hasPermission(comment) {
+      if (!this.user) return false;
+      return comment.author_id == this.user.id || this.user.role > 0;
+    },
     async getComments() {
       return await axios
         .get("/comments", { params: { id: this.postID } })
@@ -220,7 +203,7 @@ export default {
     },
     async deleteComment(actualID, IDInList) {
       this.editor.editing = -1;
-      this.deletingComment = true;
+      this.deleting = true;
       return await axios
         .delete("comment/delete", { params: { id: actualID } })
         .then(() => {
@@ -230,7 +213,7 @@ export default {
           console.log(error.response.data);
           //TODO show alert
         })
-        .finally(() => (this.deletingComment = false));
+        .finally(() => (this.deleting = false));
     },
     async addComment(e) {
       if (e) e.preventDefault();

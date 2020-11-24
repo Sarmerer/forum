@@ -1,14 +1,18 @@
 <template>
   <div class="rating-column rating-col">
     <b-icon-chevron-up
+      :animation="animations[Math.floor(Math.random() * 6)]"
       @click.prevent="callback('up', entity)"
+      shift-v="-7"
       class="h4"
       :style="`color: ${entity.your_reaction == 1 ? 'green' : 'white'}`"
     >
     </b-icon-chevron-up>
     <span>{{ entity.rating }}</span>
     <b-icon-chevron-down
+      :animation="animations[Math.floor(Math.random() * 6)]"
       @click.prevent="callback('down', entity)"
+      shift-v="2"
       class="h4"
       :style="`color: ${entity.your_reaction == -1 ? 'red' : 'white'}`"
     ></b-icon-chevron-down>
@@ -29,6 +33,18 @@ export default {
       type: String,
       required: true,
     },
+  },
+  data() {
+    return {
+      animations: [
+        "cylon",
+        "cylon-vertical",
+        "fade",
+        "spin",
+        "spin-reverse",
+        "throb",
+      ],
+    };
   },
 };
 </script>
