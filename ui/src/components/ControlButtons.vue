@@ -1,70 +1,65 @@
 <template>
-  <b-overlay
-    :show="requestPending"
-    rounded
-    opacity="0.5"
-    spinner-small
-    variant="light"
-    spinner-variant="primary"
-    class="d-inline-block"
-  >
-    <transition name="fade">
-      <b-button-group v-if="!confirm" size="sm">
-        <b-button
-          size="sm"
-          lg="1"
-          class="controls-button"
-          variant="light"
-          title="Edit"
-          @click="editFunction()"
-        >
-          <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
-        </b-button>
-        <b-button
-          size="sm"
-          variant="outline-danger"
-          lg="2"
-          @click="confirm = !confirm"
-          class="controls-button"
-          title="Delete"
-        >
-          <img src="@/assets/svg/post/delete.svg" alt="delete" srcset="" />
-        </b-button>
-      </b-button-group>
+  <transition name="fade">
+    <b-button-group v-if="hasPermission && !confirm" size="sm">
+      <b-button
+        size="sm"
+        lg="1"
+        class="controls-button"
+        variant="light"
+        title="Edit"
+        :disabled="disabled"
+        @click="editCallback()"
+      >
+        <b-icon-pencil-square color="white"></b-icon-pencil-square>
+      </b-button>
+      <b-button
+        size="sm"
+        variant="outline-danger"
+        lg="2"
+        class="controls-button"
+        title="Delete"
+        @click="confirm = true"
+        :disabled="disabled"
+      >
+        <b-icon-trash color="red"></b-icon-trash>
+      </b-button>
+    </b-button-group>
 
-      <b-button-group v-if="confirm" size="sm">
-        <b-button
-          size="sm"
-          variant="outline-success"
-          lg="2"
-          class="confirm"
-          @click="deleteFunction()"
-          title="Confirm"
-        >
-          <img src="@/assets/svg/post/confirm.svg" alt="delete" srcset="" />
-        </b-button>
-        <b-button
-          size="sm"
-          lg="1"
-          variant="outline-danger"
-          @click="confirm = !confirm"
-          class="confirm"
-          title="Dismiss"
-        >
-          <img src="@/assets/svg/post/dismiss.svg" alt="edit" srcset="" />
-        </b-button>
-      </b-button-group>
-    </transition>
-  </b-overlay>
+    <b-button-group v-if="hasPermission && confirm" size="sm">
+      <b-button
+        size="sm"
+        variant="outline-success"
+        lg="2"
+        class="confirm"
+        @click="deleteCallback().then((confirm = false))"
+        title="Confirm"
+        :disabled="disabled"
+      >
+        <b-icon-check></b-icon-check>
+      </b-button>
+      <b-button
+        size="sm"
+        lg="1"
+        variant="outline-danger"
+        @click="confirm = false"
+        class="confirm"
+        title="Dismiss"
+        :disabled="disabled"
+      >
+        <b-icon-x></b-icon-x>
+      </b-button>
+    </b-button-group>
+  </transition>
 </template>
 <script>
 import { mapGetters } from "vuex";
 
 export default {
   props: {
-    deleteFunction: { type: Function, required: true },
-    editFunction: { type: Function },
-    requestPending: { type: Boolean, required: true },
+    hasPermission: { type: Boolean, required: true },
+    deleteCallback: { type: Function, required: true },
+    editCallback: { type: Function },
+    disabled: { type: Boolean, required: true },
   },
   computed: {
     ...mapGetters({
@@ -79,6 +74,11 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.controls {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
 .confirm {
   box-shadow: none;
   -moz-box-shadow: none;

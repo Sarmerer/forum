@@ -71,7 +71,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		var err error
 		var p models.Post
 		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created,
-			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.TotalParticipants)
+			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
 		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 		}
@@ -146,8 +146,8 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 			SELECT COUNT(id) AS comments_count,
 				COUNT(DISTINCT author_id_fkey) AS total_participants,
 				IFNULL(last_comment_from_id, -1) AS last_comment_from_id,
-				IFNULL(last_comment_from_name, "none") AS last_comment_from_name,
-				IFNULL(last_comment_date, "none") AS last_comment_date
+				IFNULL(last_comment_from_name, "") AS last_comment_from_name,
+				IFNULL(last_comment_date, "") AS last_comment_date
 			FROM comments c
 				JOIN(
 					SELECT author_id_fkey AS last_comment_from_id,
@@ -164,7 +164,7 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 	).Scan(
 		&post.ID, &post.AuthorID, &post.AuthorName, &post.Title, &post.Content,
 		&post.Created, &post.Updated, &post.Rating, &post.YourReaction,
-		&post.CommentsCount, &post.TotalParticipants, &post.LastCommentFromID,
+		&post.CommentsCount, &post.ParticipantsCount, &post.LastCommentFromID,
 		&post.LastCommentFromName, &post.LastCommentDate,
 	); err != nil {
 		if err != sql.ErrNoRows {

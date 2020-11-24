@@ -33,7 +33,7 @@ type Post struct {
 	YourReaction int        `json:"your_reaction"`
 
 	CommentsCount       int    `json:"comments_count"`
-	TotalParticipants   int    `json:"total_participants"`
+	ParticipantsCount   int    `json:"participants_count"`
 	LastCommentFromID   int64  `json:"last_comment_from_id"`
 	LastCommentFromName string `json:"last_comment_from_name"`
 	LastCommentDate     string `json:"last_comment_date"`
