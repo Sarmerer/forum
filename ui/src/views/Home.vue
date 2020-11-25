@@ -94,7 +94,7 @@
               <b-col cols="1">
                 <Rating :callback="rate" :entity="post" type="comment" />
               </b-col>
-              <b-col cols="11" class="post-content" style="flex-wrap: wrap">
+              <b-col cols="11" class="post-content">
                 <h5>
                   {{ post.title }}
                 </h5>
