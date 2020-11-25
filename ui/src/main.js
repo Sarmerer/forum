@@ -20,6 +20,7 @@ Vue.use(VueTimeago, {
 });
 
 Vue.config.productionTip = false;
+axios.defaults.withCredinentials = true;
 axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 store.dispatch("auth/attempt").then(() => {
   new Vue({
