@@ -7,11 +7,23 @@
       <div class="main-col">
         <div class="card">
           <b-row v-if="!editor.editing">
-            <b-col cols="1">
+            <b-col cols="start">
               <Rating :callback="rate" :entity="post" type="post" />
             </b-col>
-            <b-col cols="11" style="margin-left: -35px">
-              <h3 class="primary">{{ post.title }}</h3>
+            <b-col class="ml-2">
+              <b-row>
+                <b-col>
+                  <h3 class="primary">{{ post.title }}</h3>
+                </b-col>
+                <b-col cols="end">
+                  <ControlButtons
+                    :hasPermission="hasPermission"
+                    :deleteCallback="{ callback: deletePost }"
+                    :editCallback="{ callback: edit }"
+                    :disabled="requesting"
+                  />
+                </b-col>
+              </b-row>
               <p color="white">{{ post.content }}</p>
               <div>
                 <b-form-tag
@@ -21,53 +33,53 @@
                   :title="category.name"
                   variant="dark"
                   class="mr-1 mb-1"
-                >
-                  {{ category.name }}
+                  >{{ category.name }}
                 </b-form-tag>
-                <div class="controls">
-                  <ControlButtons
-                    :hasPermission="hasPermission"
-                    :deleteCallback="{ callback: deletePost }"
-                    :editCallback="{ callback: edit }"
-                    :disabled="requesting"
-                  />
-                </div></div
-            ></b-col>
+              </div>
+            </b-col>
+            <b-col cols="end" align-v="start" class="mr-3" display="flex">
+            </b-col>
           </b-row>
           <b-form v-if="editor.editing">
-            <b-form-group label-for="title">
-              <b-form-input
-                id="title"
-                v-model="editor.title"
-                autocomplete="off"
-                placeholder="Enter title"
-              ></b-form-input>
-            </b-form-group>
-            <b-form-group id="input-group-2" label-for="input-2" fluid>
-              <b-form-textarea
-                id="textarea-auto-height"
-                v-model="editor.content"
-                rows="5"
-                max-rows="10"
-              ></b-form-textarea>
-            </b-form-group>
-            <b-form-tags
-              input-id="tags-basic"
-              remove-on-delete
-              v-model="editor.categories"
-              tag-variant="dark"
-            ></b-form-tags>
-            <b-button-group size="sm" vertical>
-              <b-button variant="outline-success" @click="updatePost()">
-                Save
-              </b-button>
-              <b-button
-                variant="outline-danger"
-                @click="editor.editing = false"
-              >
-                Cancel
-              </b-button>
-            </b-button-group>
+            <b-form-row>
+              <b-col>
+                <b-form-group label-for="title">
+                  <b-form-input
+                    id="title"
+                    class="mb-3"
+                    v-model="editor.title"
+                    autocomplete="off"
+                    placeholder="Enter title"
+                  ></b-form-input>
+                  <b-form-textarea
+                    id="textarea-auto-height"
+                    v-model="editor.content"
+                    rows="1"
+                    max-rows="10"
+                  >
+                  </b-form-textarea>
+                </b-form-group>
+                <b-form-tags
+                  input-id="tags-basic"
+                  remove-on-delete
+                  v-model="editor.categories"
+                  tag-variant="dark"
+                ></b-form-tags>
+              </b-col>
+              <b-col cols="end">
+                <b-button-group size="sm" vertical>
+                  <b-button variant="outline-success" @click="updatePost()">
+                    Save
+                  </b-button>
+                  <b-button
+                    variant="outline-danger"
+                    @click="editor.editing = false"
+                  >
+                    Cancel
+                  </b-button>
+                </b-button-group>
+              </b-col>
+            </b-form-row>
           </b-form>
         </div>
         <CommentsSection :postID="postID" />
@@ -114,7 +126,6 @@ export default {
         title: "",
         content: "",
         categories: [],
-        categoriesRaw: [],
         editing: false,
       },
       postID: Number.parseInt(this.$route.params.id),
@@ -182,7 +193,6 @@ export default {
       this.editor.title = this.post.title;
       this.editor.content = this.post.content;
       this.editor.categories = this.post.categories.map((c) => c.name);
-      this.editor.categoriesRaw = this.post.categories;
       this.editor.editing = true;
     },
     async rate(reaction, post) {
@@ -207,10 +217,3 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-.controls {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-}
-</style>
