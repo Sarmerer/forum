@@ -1,43 +1,51 @@
 <template>
   <div class="grid">
-    <div class="user-card">
-      <img :src="user.avatar" alt="avatar" />
-      <h3 class="primary">
-        {{ user.display_name }}
-        <b-badge v-if="user.role == 2" class="background-variant"
-          >Admin</b-badge
-        >
-      </h3>
-      <p>Last online: {{ user.last_online | formatDate }}</p>
-    </div>
-    <div class="user-info">
-      <b-tabs pills card>
-        <b-tab title="Posts" active>
-          <router-link
-            :to="'/post/' + post.id"
-            v-for="post in posts"
-            :key="post.id"
-            class="user-card"
-            tag="div"
-          >
-            <h5>
-              <strong>{{ post.title }}</strong>
-            </h5>
-            {{ post.content }}
-          </router-link></b-tab
-        >
-        <b-tab title="Replies"
-          ><div
-            class="user-card"
-            v-for="(reply, index) in replies"
-            :key="index"
-          >
-            <h5>
-              {{ reply.content }}
-            </h5>
-          </div></b-tab
-        >
-      </b-tabs>
+    <div class="columns">
+      <div class="info-col">
+        <div class="card user-card">
+          <img :src="user.avatar" alt="avatar" />
+          <h3 class="primary">
+            {{ user.display_name }}
+            <b-badge v-if="user.role == 2" class="background-variant"
+              >Admin</b-badge
+            >
+          </h3>
+          <!-- <p>Last online: {{ user.last_online | formatDate }}</p> -->
+        </div>
+      </div>
+      <div class="main-col">
+        <div class="user-info">
+          <b-tabs card>
+            <b-tab title="Posts" active>
+              <router-link
+                :to="'/post/' + post.id"
+                v-for="post in posts"
+                :key="post.id"
+                class="card user-card"
+                tag="div"
+              >
+                <h5>
+                  <strong>{{ post.title }}</strong>
+                </h5>
+                {{ post.content }}
+              </router-link></b-tab
+            >
+            <b-tab title="Replies"
+              ><router-link
+                :to="'/post/' + reply.post"
+                class="card user-card"
+                v-for="(reply, index) in replies"
+                :key="index"
+                tag="div"
+              >
+                <h5>
+                  {{ reply.content }}
+                </h5>
+              </router-link></b-tab
+            >
+          </b-tabs>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -108,13 +116,6 @@ export default {
 };
 </script>
 <style lang="scss">
-.user-card {
-  margin: 15px 0;
-  padding: 15px;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-}
-
 .user-info .user-card {
   cursor: pointer;
 }
@@ -124,26 +125,38 @@ export default {
 }
 
 .user-card img {
-  width: 100px;
-  height: 100px;
-  border-radius: 200px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 15px;
+  width: 150px;
+  height: 150px;
+  border-radius: 150px;
+}
+
+.user-card h3 {
+  text-align: center;
 }
 
 .card-body {
   padding: 0;
 }
 
-.nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
+.nav-tabs .nav-item.show .nav-link,
+.nav-tabs .nav-link.active {
   background-color: #278ea5;
+  border-color: #278ea5;
+  color: white;
 }
 
 .nav-link {
   color: #278ea5;
 }
 
-.nav-link:hover {
+.nav-tabs .nav-item.show .nav-link,
+.nav-tabs .nav-link:not(.active):hover {
   color: #278ea5;
+  border-color: #278ea5;
   opacity: 0.8;
 }
 </style>
