@@ -44,6 +44,7 @@ type CategoryRepo interface {
 	FindAll() ([]models.Category, error)
 	FindByPostID(postID int64) ([]models.Category, error)
 	Create(postID int64, categories []string) error
+	Update(postID int64, categories []string) error
 	DeleteGroup(postID int64) error
 }
 

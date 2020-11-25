@@ -16,9 +16,10 @@ type InputUserSignUp struct {
 }
 
 type InputPostCreateUpdate struct {
-	Title      string   `json:"title"`
-	Content    string   `json:"content"`
-	Categories []string `json:"categories"`
+	ID         int64    `json:"id"`         //update
+	Title      string   `json:"title"`      //create/update
+	Content    string   `json:"content"`    //create/update
+	Categories []string `json:"categories"` //create/update
 }
 
 type InputCommentCreateUpdate struct {

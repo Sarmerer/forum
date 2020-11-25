@@ -3,7 +3,6 @@
     <b-button-group v-if="hasPermission && !confirm" size="sm">
       <b-button
         size="sm"
-        lg="1"
         class="controls-button"
         variant="light"
         title="Edit"
@@ -15,7 +14,6 @@
       <b-button
         size="sm"
         variant="outline-danger"
-        lg="2"
         class="controls-button"
         title="Delete"
         @click="confirm = true"
@@ -28,7 +26,6 @@
       <b-button
         size="sm"
         variant="outline-success"
-        lg="2"
         class="confirm"
         @click="call(deleteCallback).then((confirm = false))"
         title="Confirm"
@@ -38,7 +35,6 @@
       </b-button>
       <b-button
         size="sm"
-        lg="1"
         variant="outline-danger"
         @click="confirm = false"
         class="confirm"

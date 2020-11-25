@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <!-- Comment form-start -->
-    <b-form v-if="authenticated" @submit="addComment">
+    <b-form v-if="authenticated" @submit.prevent="addComment">
       <b-input-group class="mt-1 mb-1">
         <b-textarea
           type="text"
@@ -215,8 +215,7 @@ export default {
         })
         .finally(() => (this.deleting = false));
     },
-    async addComment(e) {
-      if (e) e.preventDefault();
+    async addComment() {
       if (!this.properCommentLength) return;
       this.editor.editing = -1;
       return await axios

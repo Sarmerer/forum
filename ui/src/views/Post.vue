@@ -6,12 +6,24 @@
       </div>
       <div class="main-col">
         <div class="card">
-          <b-row>
-            <b-col cols="1">
-              <Rating :callback="rate" :entity="post" type="comment" />
+          <b-row v-if="!editor.editing">
+            <b-col cols="start">
+              <Rating :callback="rate" :entity="post" type="post" />
             </b-col>
-            <b-col cols="11" style="margin-left: -35px">
-              <h3 class="primary">{{ post.title }}</h3>
+            <b-col class="ml-2">
+              <b-row>
+                <b-col>
+                  <h3 class="primary">{{ post.title }}</h3>
+                </b-col>
+                <b-col cols="end">
+                  <ControlButtons
+                    :hasPermission="hasPermission"
+                    :deleteCallback="{ callback: deletePost }"
+                    :editCallback="{ callback: edit }"
+                    :disabled="requesting"
+                  />
+                </b-col>
+              </b-row>
               <p color="white">{{ post.content }}</p>
               <div>
                 <b-form-tag
@@ -21,19 +33,54 @@
                   :title="category.name"
                   variant="dark"
                   class="mr-1 mb-1"
-                >
-                  {{ category.name }}
+                  >{{ category.name }}
                 </b-form-tag>
-                <div class="controls">
-                  <ControlButtons
-                    :hasPermission="hasPermission"
-                    :deleteCallback="{ callback: deletePost }"
-                    :editCallback="{}"
-                    :disabled="deleting"
-                  />
-                </div></div
-            ></b-col>
+              </div>
+            </b-col>
+            <b-col cols="end" align-v="start" class="mr-3" display="flex">
+            </b-col>
           </b-row>
+          <b-form v-if="editor.editing">
+            <b-form-row>
+              <b-col>
+                <b-form-group label-for="title">
+                  <b-form-input
+                    id="title"
+                    class="mb-3"
+                    v-model="editor.title"
+                    autocomplete="off"
+                    placeholder="Enter title"
+                  ></b-form-input>
+                  <b-form-textarea
+                    id="textarea-auto-height"
+                    v-model="editor.content"
+                    rows="1"
+                    max-rows="10"
+                  >
+                  </b-form-textarea>
+                </b-form-group>
+                <b-form-tags
+                  input-id="tags-basic"
+                  remove-on-delete
+                  v-model="editor.categories"
+                  tag-variant="dark"
+                ></b-form-tags>
+              </b-col>
+              <b-col cols="end">
+                <b-button-group size="sm" vertical>
+                  <b-button variant="outline-success" @click="updatePost()">
+                    Save
+                  </b-button>
+                  <b-button
+                    variant="outline-danger"
+                    @click="editor.editing = false"
+                  >
+                    Cancel
+                  </b-button>
+                </b-button-group>
+              </b-col>
+            </b-form-row>
+          </b-form>
         </div>
         <CommentsSection :postID="postID" />
       </div>
@@ -75,8 +122,14 @@ export default {
       post: {},
       postStats: {},
       categories: [],
+      editor: {
+        title: "",
+        content: "",
+        categories: [],
+        editing: false,
+      },
       postID: Number.parseInt(this.$route.params.id),
-      deleting: false,
+      requesting: false,
     };
   },
   created() {
@@ -107,18 +160,40 @@ export default {
         });
     },
     async deletePost() {
-      this.deleting = true;
+      this.requesting = true;
       return await axios
         .delete("post/delete", { params: { id: this.post.id } })
         .then(() => {
           this.$router.push("/");
         })
-        .catch(() => {
-          // TODO show error notification
-        })
+        .catch(console.log)
         .finally(() => {
-          this.deleting = false;
+          this.requesting = false;
         });
+    },
+    async updatePost() {
+      this.requesting = true;
+      return await axios
+        .put("post/update", {
+          id: this.post.id,
+          title: this.editor.title,
+          content: this.editor.content,
+          categories: this.editor.categories,
+        })
+        .then((response) => {
+          this.post = response.data.data;
+        })
+        .catch(console.log)
+        .finally(() => {
+          this.requesting = false;
+          this.editor.editing = false;
+        });
+    },
+    edit() {
+      this.editor.title = this.post.title;
+      this.editor.content = this.post.content;
+      this.editor.categories = this.post.categories.map((c) => c.name);
+      this.editor.editing = true;
     },
     async rate(reaction, post) {
       if (this.requesting) return;
@@ -142,10 +217,3 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-.controls {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-}
-</style>

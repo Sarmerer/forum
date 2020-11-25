@@ -117,23 +117,19 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		input  models.InputPostCreateUpdate
-		pid    int64
-		post   *models.Post
-		status int
-		err    error
+		repo    repository.PostRepo = crud.NewPostRepoCRUD()
+		input   models.InputPostCreateUpdate
+		post    *models.Post
+		userCtx models.UserCtx = utils.GetUserFromCtx(r)
+		status  int
+		err     error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-
-	if pid, err = utils.ParseID(r); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if post, status, err = repo.FindByID(pid, -1); err != nil {
+	
+	if post, status, err = repo.FindByID(input.ID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -143,19 +139,24 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post.Updated = time.Now().Format(config.TimeLayout)
-	if input.Title != "" {
-		post.Title = input.Title
-	}
-	if input.Content != "" {
-		post.Content = input.Content
-	}
+	post.Title = input.Title
+	post.Content = input.Content
+
 	if err = repo.Update(post); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	response.Success(w, fmt.Sprint("post has been updated"), nil)
+	if err = crud.NewCategoryRepoCRUD().Update(input.ID, input.Categories); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if post, status, err = repo.FindByID(input.ID, userCtx.ID); err != nil {
+		response.Error(w, status, err)
+	}
+
+	response.Success(w, fmt.Sprint("post has been updated"), post)
 }
 
 func DeletePost(w http.ResponseWriter, r *http.Request) {

@@ -12,15 +12,6 @@
               placeholder="Enter title"
             ></b-form-input>
           </b-form-group>
-          <!-- <b-form-group label-for="amount">
-          <b-form-input
-            id="amount"
-            v-model="form.amount"
-            autocomplete="off"
-            required
-            placeholder="Enter title"
-          ></b-form-input>
-        </b-form-group> -->
           <b-form-group id="input-group-2" label-for="input-2" fluid>
             <b-form-textarea
               id="textarea-auto-height"
@@ -32,8 +23,6 @@
               max-rows="10"
             ></b-form-textarea>
           </b-form-group>
-
-          <!-- <label for="tags-basic">Type a new tag and press enter</label> -->
           <b-form-tags
             input-id="tags-basic"
             remove-on-delete
@@ -42,9 +31,6 @@
           ></b-form-tags>
           <b-button type="submit" class="mt-3">Submit</b-button>
         </b-form>
-        <!-- <b-card class="mt-3" header="Form Data Result">
-        <pre class="m-0" style="color: white">{{ form }}</pre>
-      </b-card> -->
       </div>
       <div class="info-col">
         <div class="card">

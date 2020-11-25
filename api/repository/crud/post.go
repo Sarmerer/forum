@@ -316,13 +316,13 @@ func (PostRepoCRUD) Update(post *models.Post) error {
 	if result, err = repository.DB.Exec(
 		`UPDATE posts
 		SET author_id_fkey = ?,
-			author_name_fkey,
+			author_name_fkey = ?,
 			title = ?,
 			content = ?,
 			created = ?,
 			updated = ?
 		WHERE id = ?`,
-		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, post.Updated, post.ID,
+		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, time.Now().Format(config.TimeLayout), post.ID,
 	); err != nil {
 		return err
 	}
