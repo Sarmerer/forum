@@ -10,7 +10,6 @@
               >Admin</b-badge
             >
           </h3>
-          <!-- <p>Last online: {{ user.last_online | formatDate }}</p> -->
         </div>
       </div>
       <div class="main-col">
