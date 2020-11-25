@@ -42,6 +42,11 @@ html {
 .sidenav a:hover {
   color: #f1f1f1 !important;
 }
+
+.sidenav a.router-link-exact-active.router-link-active {
+  color: #278ea5 !important;
+}
+
 .navbar {
   background-color: #111;
   justify-content: space-around;
@@ -53,6 +58,10 @@ html {
 
 .navbar a:hover {
   color: #f1f1f1 !important;
+}
+
+.navbar a.router-link-exact-active.router-link-active {
+  color: #278ea5 !important;
 }
 
 /* Pagination */

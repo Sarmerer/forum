@@ -1,8 +1,6 @@
 <template>
   <div class="sidenav">
-    <router-link to="/"
-      ><span class="primary"><b-icon icon="house-door"></b-icon></span
-    ></router-link>
+    <router-link to="/"><b-icon icon="house-door"></b-icon></router-link>
     <div v-if="!authenticated">
       <a v-b-modal.auth-modal><b-icon icon="door-closed"></b-icon></a>
       <Login />
@@ -14,7 +12,7 @@
         ><b-icon icon="person"></b-icon
       ></router-link>
 
-      <router-link to="/"><b-icon icon="gear"></b-icon></router-link>
+      <!-- <router-link to="/"><b-icon icon="gear"></b-icon></router-link> -->
 
       <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
       <router-link to="/dashboard/admin"

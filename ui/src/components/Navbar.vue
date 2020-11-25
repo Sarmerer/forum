@@ -3,14 +3,11 @@
     <b-navbar-nav
       ><b-nav-item>
         <router-link to="/"
-          ><span class="primary"
-            ><b-icon
-              icon="chat-left-dots"
-            ></b-icon></span></router-link></b-nav-item
+          ><b-icon icon="house-door"></b-icon></router-link></b-nav-item
     ></b-navbar-nav>
     <b-navbar-nav v-if="authenticated"
       ><b-nav-item>
-        <router-link to="/post/new"
+        <router-link to="/new-post"
           ><b-icon icon="pen"></b-icon></router-link></b-nav-item
     ></b-navbar-nav>
     <b-navbar-nav v-if="!authenticated"
@@ -25,11 +22,11 @@
         ></router-link>
       </b-nav-item>
     </b-navbar-nav>
-    <b-navbar-nav v-if="authenticated"
+    <!-- <b-navbar-nav v-if="authenticated"
       ><b-nav-item>
         <router-link to="/"><b-icon icon="gear"></b-icon></router-link>
       </b-nav-item>
-    </b-navbar-nav>
+    </b-navbar-nav> -->
     <b-navbar-nav v-if="authenticated"
       ><b-nav-item>
         <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
