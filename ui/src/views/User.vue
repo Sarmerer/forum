@@ -92,7 +92,10 @@ export default {
     },
     async getReplies() {
       return await axios
-        .get("comments", { params: { id: this.$route.params.id } })
+        .post("comments/find", {
+          by: "user_id",
+          id: Number.parseInt(this.$route.params.id),
+        })
         .then((response) => {
           this.replies = response.data.data || [];
           console.log(response.data.data);
