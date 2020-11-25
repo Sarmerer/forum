@@ -1,7 +1,7 @@
 <template>
   <div class="card">
-    <!-- Comment form -->
-    <b-form v-if="authenticated" @submit="leaveComment">
+    <!-- Comment form-start -->
+    <b-form v-if="authenticated" @submit="addComment">
       <b-input-group class="mt-1 mb-1">
         <b-textarea
           type="text"
@@ -13,7 +13,7 @@
           "
           v-model="form.comment"
           @keydown.enter.exact.prevent
-          @keyup.enter.exact="leaveComment()"
+          @keyup.enter.exact="addComment()"
           keydown.enter.shift.exact="newline"
           rows="1"
           max-rows="3"
@@ -23,96 +23,70 @@
         <b-input-group-append>
           <transition name="slide-fade">
             <b-button
-              v-if="commentLength >= minCommentLength"
+              v-if="properCommentLength"
               variant="outline-light"
               type="submit"
-              :disabled="
-                !(
-                  commentLength > minCommentLength &&
-                  commentLength < maxCommentLength
-                )
-              "
+              :disabled="!properCommentLength"
               >Say</b-button
             >
           </transition>
         </b-input-group-append>
       </b-input-group>
       <div v-if="commentLength > 0">
-        <small
-          v-if="
-            commentLength >= minCommentLength &&
-              commentLength <= maxCommentLength
-          "
-          >{{ commentLength }}/{{ maxCommentLength }}</small
-        >
-        <small v-else style="color: red"
-          >{{ commentLength }}/{{ maxCommentLength }}</small
-        >
+        <small :style="properCommentLength ? 'color: white' : 'color: red'">
+          {{ commentLength }}/{{ maxCommentLength }}
+        </small>
       </div>
     </b-form>
-    <!-- End of comment form -->
+    <!-- Not authenticated-start -->
     <div v-if="!authenticated" class="border border-dark rounded p-2">
       <span>Want to leave a comment?</span>
-
-      <a v-b-modal.signup-modal
-        ><b-button class="float-right" variant="success" size="sm"
-          >Sign Up</b-button
-        ></a
-      >
-      <a v-b-modal.auth-modal
-        ><b-button class="float-right mr-1" variant="outline-info" size="sm"
-          >Sign In</b-button
-        ></a
-      >
+      <b-button
+        v-b-modal.signup-modal
+        class="float - right"
+        variant="success"
+        size="sm"
+        >Sign Up
+      </b-button>
+      <b-button
+        v-b-modal.auth-modal
+        class="float-right mr-1"
+        variant="outline-info"
+        size="sm"
+        >Sign In
+      </b-button>
     </div>
-    <!-- Post comments -->
+    <!-- Not authenticated-end -->
+    <!-- Comment form-end -->
+
+    <!-- Comments-start -->
     <div v-for="(comment, index) in comments" :key="index">
       <div style="margin: 0.3rem; position: relative">
-        <b-button @click="rate(comment.id, 'up')" size="sm">up</b-button>
-        <span>{{ comment.rating }}</span>
-        <b-button size="sm" @click="rate(comment.id, 'down')">down</b-button>
+        <Rating :callback="rate" :entity="comment" type="comment" />
         <div v-if="index != editor.editing">
           <p style="margin-bottom: 0px; display: block; margin-right: 4rem">
             {{ comment.author_name }} says: {{ comment.content }}
           </p>
-          <small v-b-tooltip.hover :title="comment.created"
-            ><timeago :datetime="comment.created" :auto-update="60"></timeago>
+          <small v-b-tooltip.hover :title="comment.created">
+            <timeago
+              v-if="comment.created"
+              :datetime="comment.created"
+              :auto-update="60"
+            >
+            </timeago>
             <small v-if="comment.edited" class="text-muted"> edited</small>
           </small>
-          <b-button-group
-            v-if="
-              (user ? comment.author_id == user.id || user.role > 0 : false) &&
-                index != editor.editing
-            "
-            size="sm"
-            class="controls-button"
-            style="position: absolute; right: 0px; top: 10px"
-          >
-            <b-button
-              size="sm"
-              lg="1"
-              variant="light"
-              class="controls-button"
-              :disabled="deletingComment"
-              @click="edit(index, comment.content)"
-            >
-              <img src="@/assets/svg/post/edit.svg" alt="edit" srcset="" />
-            </b-button>
-            <b-button
-              variant="danger"
-              :disabled="deletingComment"
-              class="controls-button"
-              @click="deleteComment(comment.id, index)"
-              ><img src="@/assets/svg/post/delete.svg" alt="delete" srcset=""
-            /></b-button>
-          </b-button-group>
+          <ControlButtons
+            :hasPermission="hasPermission(comment)"
+            :deleteCallback="{
+              callback: deleteComment,
+              args: [comment.id, index],
+            }"
+            :editCallback="{ callback: edit, args: [index, comment.content] }"
+            :disabled="deleting"
+          />
         </div>
-        <div
-          v-if="
-            (user ? comment.author_id == user.id || user.role > 0 : false) &&
-              index == editor.editing
-          "
-        >
+        <div v-if="hasPermission(comment) && index == editor.editing">
           <b-form-textarea
             class="textarea"
             ref="editComment"
@@ -126,10 +100,7 @@
             max-rows="10"
             style="margin-bottom: 0px; display: block; width: 85%"
           ></b-form-textarea>
-          <small
-            v-if="
-              editorLength > minCommentLength && editorLength < maxCommentLength
-            "
+          <small v-if="properEditorLength"
             >{{ editorLength }}/{{ maxCommentLength }}</small
           >
           <small v-else style="color: red"
@@ -145,8 +116,7 @@
           <b-button
             :disabled="
               editor.editingContent == comment.content ||
-                editorLength < minCommentLength ||
-                editorLength > maxCommentLength ||
+                !properEditorLength ||
                 editor.requesting
             "
             variant="outline-success"
@@ -163,15 +133,14 @@
         </b-button-group>
       </div>
     </div>
-    <!-- End of post comments -->
+    <!-- Comments-end -->
   </div>
 </template>
 <script>
-import axios from "axios";
-
-axios.defaults.withCredentials = true;
-
+import ControlButtons from "@/components/ControlButtons";
+import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
+import axios from "axios";
 
 export default {
   props: {
@@ -185,9 +154,21 @@ export default {
     commentLength() {
       return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
     },
+    properCommentLength() {
+      let cl = this.commentLength;
+      return cl >= this.minCommentLength && cl <= this.maxCommentLength;
+    },
     editorLength() {
       return this.editor.editingContent.replace(/(\r\n|\n|\r)/g, "").length;
     },
+    properEditorLength() {
+      let el = this.editorLength;
+      return el >= this.minCommentLength && el <= this.maxCommentLength;
+    },
+  },
+  components: {
+    ControlButtons,
+    Rating,
   },
   data() {
     return {
@@ -195,7 +176,7 @@ export default {
       minCommentLength: 5,
       requesting: false,
       editor: { editing: -1, editingContent: "", requesting: false },
-      deletingComment: false,
+      deleting: false,
       comments: [],
       form: {
         comment: "",
@@ -206,6 +187,10 @@ export default {
     this.getComments();
   },
   methods: {
+    hasPermission(comment) {
+      if (!this.user) return false;
+      return comment.author_id == this.user.id || this.user.role > 0;
+    },
     async getComments() {
       return await axios
         .get("/comments", { params: { id: this.postID } })
@@ -218,7 +203,7 @@ export default {
     },
     async deleteComment(actualID, IDInList) {
       this.editor.editing = -1;
-      this.deletingComment = true;
+      this.deleting = true;
       return await axios
         .delete("comment/delete", { params: { id: actualID } })
         .then(() => {
@@ -228,15 +213,11 @@ export default {
           console.log(error.response.data);
           //TODO show alert
         })
-        .finally(() => (this.deletingComment = false));
+        .finally(() => (this.deleting = false));
     },
-    async leaveComment(e) {
+    async addComment(e) {
       if (e) e.preventDefault();
-      if (
-        this.commentLength < this.minCommentLength ||
-        this.commentLength > this.maxCommentLength
-      )
-        return;
+      if (!this.properCommentLength) return;
       this.editor.editing = -1;
       return await axios
         .post("comment/add", { id: this.postID, content: this.form.comment })
@@ -305,21 +286,19 @@ export default {
         }
       }, 10);
     },
-    async rate(id, reaction) {
+    async rate(reaction, comment) {
       if (this.requesting) return;
       this.requesting = true;
-      let self = this;
       let r = reaction == "up" ? 1 : -1;
       if (
-        (reaction == "up" && this.yourReaction == 1) ||
-        (reaction == "down" && this.yourReaction == -1)
+        (reaction == "up" && comment.your_reaction == 1) ||
+        (reaction == "down" && comment.your_reaction == -1)
       ) {
         r = 0;
       }
       await axios
-        .post("comment/rate", { id: id, reaction: r })
+        .post("comment/rate", { id: comment.id, reaction: r })
         .then((response) => {
-          let comment = this.comments.find((c) => c.id == id);
           comment.rating = response.data.data.rating;
           comment.your_reaction = response.data.data.your_reaction;
         })

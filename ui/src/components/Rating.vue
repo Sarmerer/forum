@@ -1,91 +1,50 @@
 <template>
   <div class="rating-column rating-col">
-    <svg
-      @click.prevent="rate('up')"
-      width="1.5em"
-      height="1.5em"
-      viewBox="0 0 16 16"
-      class="bi bi-chevron-up"
-      :fill="yourReaction == 1 ? 'green' : 'white'"
-      xmlns="http://www.w3.org/2000/svg"
+    <b-icon-chevron-up
+      :animation="animations[Math.floor(Math.random() * 6)]"
+      @click.prevent="callback('up', entity)"
+      shift-v="-7"
+      class="h4"
+      :style="`color: ${entity.your_reaction == 1 ? 'green' : 'white'}`"
     >
-      <path
-        fill-rule="evenodd"
-        d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"
-      />
-    </svg>
-    <span>{{ rating }}</span>
-    <svg
-      @click.prevent="rate('down')"
-      width="1.5em"
-      height="1.5em"
-      viewBox="0 0 16 16"
-      class="bi bi-chevron-down"
-      :fill="yourReaction == -1 ? 'red' : 'white'"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fill-rule="evenodd"
-        d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"
-      />
-    </svg>
+    </b-icon-chevron-up>
+    <span>{{ entity.rating }}</span>
+    <b-icon-chevron-down
+      :animation="animations[Math.floor(Math.random() * 6)]"
+      @click.prevent="callback('down', entity)"
+      shift-v="2"
+      class="h4"
+      :style="`color: ${entity.your_reaction == -1 ? 'red' : 'white'}`"
+    ></b-icon-chevron-down>
   </div>
 </template>
 <script>
-import axios from "axios";
-
 export default {
   props: {
-    postID: {
-      type: Number,
+    callback: {
+      type: Function,
       required: true,
-      default: -1,
     },
-    rating: {
-      type: Number,
+    entity: {
+      type: Object,
       required: true,
-      default: 0,
     },
-    yourReaction: {
-      type: Number,
+    type: {
+      type: String,
       required: true,
-      default: 0,
     },
   },
   data() {
     return {
-      requesting: false,
+      animations: [
+        "cylon",
+        "cylon-vertical",
+        "fade",
+        "spin",
+        "spin-reverse",
+        "throb",
+      ],
     };
-  },
-  methods: {
-    async rate(reaction) {
-      if (this.requesting) return;
-      this.requesting = true;
-      let r = reaction == "up" ? 1 : -1;
-      if (
-        (reaction == "up" && this.yourReaction == 1) ||
-        (reaction == "down" && this.yourReaction == -1)
-      ) {
-        r = 0;
-      }
-      await axios
-        .post("post/rate", { id: this.postID, reaction: r })
-        .then((response) => {
-          // self.yourReaction = response.data.data.your_reaction;
-          // self.rating = response.data.data.rating;
-          this.$emit("update", {
-            new_rating: response.data.data.rating,
-            new_your_reaction: response.data.data.your_reaction,
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-          //TODO show alert saying that you need to be logged in to rate
-        })
-        .finally(() => {
-          self.requesting = false;
-        });
-    },
   },
 };
 </script>
@@ -99,3 +58,4 @@ export default {
   margin-left: -100px;
 }
 </style>
+q
