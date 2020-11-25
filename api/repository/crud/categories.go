@@ -122,6 +122,20 @@ func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 	return nil
 }
 
+func (CategoryRepoCRUD) Update(postID int64, categories []string) error {
+	var (
+		repo CategoryRepoCRUD = NewCategoryRepoCRUD()
+		err  error
+	)
+	if err = repo.DeleteGroup(postID); err != nil {
+		return err
+	}
+	if err = repo.Create(postID, categories); err != nil {
+		return err
+	}
+	return nil
+}
+
 //Delete deletes category from the database
 func (CategoryRepoCRUD) Delete(categotyID int) error {
 	var (

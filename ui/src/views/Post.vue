@@ -6,9 +6,9 @@
       </div>
       <div class="main-col">
         <div class="card">
-          <b-row>
+          <b-row v-if="!editor.editing">
             <b-col cols="1">
-              <Rating :callback="rate" :entity="post" type="comment" />
+              <Rating :callback="rate" :entity="post" type="post" />
             </b-col>
             <b-col cols="11" style="margin-left: -35px">
               <h3 class="primary">{{ post.title }}</h3>
@@ -28,12 +28,47 @@
                   <ControlButtons
                     :hasPermission="hasPermission"
                     :deleteCallback="{ callback: deletePost }"
-                    :editCallback="{}"
-                    :disabled="deleting"
+                    :editCallback="{ callback: edit }"
+                    :disabled="requesting"
                   />
                 </div></div
             ></b-col>
           </b-row>
+          <b-form v-if="editor.editing">
+            <b-form-group label-for="title">
+              <b-form-input
+                id="title"
+                v-model="editor.title"
+                autocomplete="off"
+                placeholder="Enter title"
+              ></b-form-input>
+            </b-form-group>
+            <b-form-group id="input-group-2" label-for="input-2" fluid>
+              <b-form-textarea
+                id="textarea-auto-height"
+                v-model="editor.content"
+                rows="5"
+                max-rows="10"
+              ></b-form-textarea>
+            </b-form-group>
+            <b-form-tags
+              input-id="tags-basic"
+              remove-on-delete
+              v-model="editor.categories"
+              tag-variant="dark"
+            ></b-form-tags>
+            <b-button-group size="sm" vertical>
+              <b-button variant="outline-success" @click="updatePost()">
+                Save
+              </b-button>
+              <b-button
+                variant="outline-danger"
+                @click="editor.editing = false"
+              >
+                Cancel
+              </b-button>
+            </b-button-group>
+          </b-form>
         </div>
         <CommentsSection :postID="postID" />
       </div>
@@ -75,8 +110,15 @@ export default {
       post: {},
       postStats: {},
       categories: [],
+      editor: {
+        title: "",
+        content: "",
+        categories: [],
+        categoriesRaw: [],
+        editing: false,
+      },
       postID: Number.parseInt(this.$route.params.id),
-      deleting: false,
+      requesting: false,
     };
   },
   created() {
@@ -107,18 +149,41 @@ export default {
         });
     },
     async deletePost() {
-      this.deleting = true;
+      this.requesting = true;
       return await axios
         .delete("post/delete", { params: { id: this.post.id } })
         .then(() => {
           this.$router.push("/");
         })
-        .catch(() => {
-          // TODO show error notification
-        })
+        .catch(console.log)
         .finally(() => {
-          this.deleting = false;
+          this.requesting = false;
         });
+    },
+    async updatePost() {
+      this.requesting = true;
+      return await axios
+        .put("post/update", {
+          id: this.post.id,
+          title: this.editor.title,
+          content: this.editor.content,
+          categories: this.editor.categories,
+        })
+        .then((response) => {
+          this.post = response.data.data;
+        })
+        .catch(console.log)
+        .finally(() => {
+          this.requesting = false;
+          this.editor.editing = false;
+        });
+    },
+    edit() {
+      this.editor.title = this.post.title;
+      this.editor.content = this.post.content;
+      this.editor.categories = this.post.categories.map((c) => c.name);
+      this.editor.categoriesRaw = this.post.categories;
+      this.editor.editing = true;
     },
     async rate(reaction, post) {
       if (this.requesting) return;
