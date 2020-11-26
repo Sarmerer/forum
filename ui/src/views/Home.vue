@@ -161,20 +161,28 @@
           </div>
           <div class="card">
             <h3 class="primary">CATEGORIES</h3>
+            <div>
+              Selected: <strong>{{ selectedCategories }}</strong>
+            </div>
+            <b-button v-on:click="sortByCategories()">Sort</b-button>
             <!-- Start of categories -->
             <span v-if="categories.length == 0">None</span>
             <b-container v-else>
               <div class="categories">
-                <b-button-group
+                <b-form-checkbox-group
                   v-for="c in categories"
                   :key="c.ID"
                   :id="c.ID"
                   class="category-name"
                   size="sm"
-                  ><b-button disabled>{{ c.name }}</b-button>
-                  <b-button disabled class="category-count">
+                  v-model="selectedCategories"
+                  buttons
+                  ><b-form-checkbox :value="c.name">{{
+                    c.name
+                  }}</b-form-checkbox>
+                  <b-form-checkbox disabled class="category-count">
                     {{ c.use_count }}
-                  </b-button></b-button-group
+                  </b-form-checkbox></b-form-checkbox-group
                 >
               </div>
             </b-container>
@@ -207,6 +215,7 @@ export default {
       posts: [],
       recent: [],
       categories: [],
+      selectedCategories: [],
       sorter: { orderBy: "rating", asc: true, throttled: false },
       pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
       error: {
@@ -307,6 +316,21 @@ export default {
           console.log(error);
         });
     },
+    async sortByCategories() {
+      console.log(this.selectedCategories);
+      await axios
+        .post("post/find", {
+          by: "categories",
+          categories: this.selectedCategories,
+        })
+        .then((response) => {
+          console.log(response.data.data);
+          this.posts = response.data.data || [];
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
 };
 </script>
@@ -375,43 +399,6 @@ ul#filters li {
   border: none;
 }
 
-/* TOGGLE SWITCH START */
-
-input[type="checkbox"] {
-  height: 0;
-  width: 0;
-  visibility: hidden;
-}
-
-label {
-  cursor: pointer;
-  /* bottom: 5px; */
-  margin: 0;
-  text-indent: -9999px;
-  width: 35px;
-  height: 20px;
-  background: grey;
-  border-radius: 50px;
-  position: relative;
-}
-
-label:after {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: 0;
-  width: 15px;
-  height: 15px;
-  background: #278ea5;
-  border-radius: 30px;
-  transition: 0.3s;
-}
-
-input:checked + label:after {
-  left: calc(100%);
-  transform: translateX(-100%);
-}
-
 .btn-dark {
   // color: #fff;
   background-color: rgba(255, 255, 255, 0.05);
@@ -421,8 +408,6 @@ input:checked + label:after {
 .btn-dark:hover {
   background-color: rgba(255, 255, 255, 0.03);
 }
-
-/* TOGGLE SWITCH END */
 
 @media (max-width: 500px) {
   .post-content {
