@@ -47,7 +47,6 @@ func CheckDBIntegrity() (err error) {
 		`CREATE TABLE IF NOT EXISTS posts (
 			id INTEGER PRIMARY KEY,
 			author_id_fkey INTEGER REFERENCES users(id),
-			author_name_fkey TEXT REFERENCES users(display_name),
 			title TEXT,
 			content TEXT,
 			created TEXT,

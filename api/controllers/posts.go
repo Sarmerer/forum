@@ -84,7 +84,6 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		input   models.InputPostCreateUpdate
 		post    models.Post
 		newPost *models.Post
-		pid     int64
 		status  int
 		err     error
 	)
@@ -93,20 +92,19 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	post = models.Post{
-		Title:      input.Title,
-		Content:    input.Content,
-		AuthorID:   userCtx.ID,
-		AuthorName: userCtx.DisplayName,
-		Created:    time.Now().Format(config.TimeLayout),
-		Updated:    time.Now().Format(config.TimeLayout),
-		Rating:     0,
+		Title:    input.Title,
+		Content:  input.Content,
+		AuthorID: userCtx.ID,
+		Created:  time.Now().Format(config.TimeLayout),
+		Updated:  time.Now().Format(config.TimeLayout),
+		Rating:   0,
 	}
 	if newPost, status, err = repo.Create(&post); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	if len(input.Categories) > 0 {
-		if err = crud.NewCategoryRepoCRUD().Create(pid, input.Categories); err != nil {
+		if err = crud.NewCategoryRepoCRUD().Create(newPost.ID, input.Categories); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -128,7 +126,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	
+
 	if post, status, err = repo.FindByID(input.ID, -1); err != nil {
 		response.Error(w, status, err)
 		return
@@ -142,18 +140,14 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	post.Title = input.Title
 	post.Content = input.Content
 
-	if err = repo.Update(post); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-
 	if err = crud.NewCategoryRepoCRUD().Update(input.ID, input.Categories); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if post, status, err = repo.FindByID(input.ID, userCtx.ID); err != nil {
-		response.Error(w, status, err)
+	if post, err = repo.Update(post, userCtx); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
 	response.Success(w, fmt.Sprint("post has been updated"), post)

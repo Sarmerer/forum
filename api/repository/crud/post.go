@@ -21,6 +21,20 @@ func NewPostRepoCRUD() PostRepoCRUD {
 	return PostRepoCRUD{}
 }
 
+func fetchData(p *models.Post) (err error) {
+	var status int
+	if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
+		p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
+	}
+	if p.Author, status, err = NewUserRepoCRUD().FindByID(p.AuthorID); err != nil {
+		if status == http.StatusInternalServerError {
+			return err
+		}
+		p.Author = DeletedUser
+	}
+	return nil
+}
+
 //FindAll returns all posts in the database
 //TODO improve this MESS
 func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.Posts, error) {
@@ -71,10 +85,10 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	for posts.Next() {
 		var err error
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created,
+		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created,
 			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
-		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
-			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
+		if err = fetchData(&p); err != nil {
+			return nil, err
 		}
 		result.Hot = append(result.Hot, p)
 	}
@@ -106,7 +120,10 @@ func (PostRepoCRUD) FindRecent(amount int) ([]models.Post, error) {
 	}
 	for posts.Next() {
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
+		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
+		if err = fetchData(&p); err != nil {
+			return nil, err
+		}
 		result = append(result, p)
 	}
 	return result, nil
@@ -115,14 +132,13 @@ func (PostRepoCRUD) FindRecent(amount int) ([]models.Post, error) {
 //FindByID returns a specific post from the database
 func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, error) {
 	var (
-		post models.Post
-		err  error
+		p   models.Post
+		err error
 	)
 	// ? Query looks too bad
 	if err = repository.DB.QueryRow(
 		`SELECT id,
 		author_id_fkey,
-		author_name_fkey,
 		title,
 		content,
 		created,
@@ -163,10 +179,10 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 		WHERE p.id = $2`,
 		userID, postID,
 	).Scan(
-		&post.ID, &post.AuthorID, &post.AuthorName, &post.Title, &post.Content,
-		&post.Created, &post.Updated, &post.Rating, &post.YourReaction,
-		&post.CommentsCount, &post.ParticipantsCount, &post.LastCommentFromID,
-		&post.LastCommentFromName, &post.LastCommentDate,
+		&p.ID, &p.AuthorID, &p.Title, &p.Content,
+		&p.Created, &p.Updated, &p.Rating, &p.YourReaction,
+		&p.CommentsCount, &p.ParticipantsCount, &p.LastCommentFromID,
+		&p.LastCommentFromName, &p.LastCommentDate,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -174,10 +190,10 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 		return nil, http.StatusNotFound, errors.New("post not found")
 	}
 
-	if post.Categories, err = NewCategoryRepoCRUD().FindByPostID(post.ID); err != nil {
-		post.Categories = append(post.Categories, models.Category{ID: 0, Name: err.Error()})
+	if err = fetchData(&p); err != nil {
+		return nil, http.StatusInternalServerError, err
 	}
-	return &post, http.StatusOK, nil
+	return &p, http.StatusOK, nil
 }
 
 func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
@@ -215,9 +231,9 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
-		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
-			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
+		if err = fetchData(&p); err != nil {
+			return nil, err
 		}
 		posts = append(posts, p)
 	}
@@ -226,9 +242,10 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 
 func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {
 	var (
-		rows  *sql.Rows
-		posts []models.Post
-		err   error
+		rows   *sql.Rows
+		posts  []models.Post
+		status int
+		err    error
 	)
 	if rows, err = repository.DB.Query(
 		fmt.Sprintf(`SELECT p.*
@@ -244,7 +261,16 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
+		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
+			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
+		}
+		if p.Author, status, err = NewUserRepoCRUD().FindByID(p.AuthorID); err != nil {
+			if status == http.StatusInternalServerError {
+				return nil, err
+			}
+			p.Author = DeletedUser
+		}
 		posts = append(posts, p)
 	}
 	return posts, nil
@@ -263,14 +289,13 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 	if result, err = repository.DB.Exec(
 		`INSERT INTO posts (
 			author_id_fkey,
-			author_name_fkey,
 			title,
 			content,
 			created,
 			updated
 		)
-	VALUES (?, ?, ?, ?, ?, ?)`,
-		post.AuthorID, post.AuthorName, post.Title, post.Content,
+	VALUES (?, ?, ?, ?, ?)`,
+		post.AuthorID, post.Title, post.Content,
 		time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -284,6 +309,10 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 		return nil, status, err
 	}
 
+	if err = fetchData(newPost); err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
 	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -294,33 +323,39 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 }
 
 //Update updates existing post in the database
-func (PostRepoCRUD) Update(post *models.Post) error {
+func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.Post, error) {
 	var (
 		result       sql.Result
+		updatedPost  *models.Post
 		rowsAffected int64
 		err          error
 	)
 	if result, err = repository.DB.Exec(
 		`UPDATE posts
 		SET author_id_fkey = ?,
-			author_name_fkey = ?,
 			title = ?,
 			content = ?,
 			created = ?,
 			updated = ?
 		WHERE id = ?`,
-		post.AuthorID, post.AuthorName, post.Title, post.Content, post.Created, time.Now().Format(config.TimeLayout), post.ID,
+		post.AuthorID, post.Title, post.Content, post.Created, time.Now().Format(config.TimeLayout), post.ID,
 	); err != nil {
-		return err
+		return nil, err
 	}
 
-	if rowsAffected, err = result.RowsAffected(); err == nil {
-		return nil
+	if updatedPost, _, err = NewPostRepoCRUD().FindByID(post.ID, userCtx.ID); err != nil {
+		return nil, err
+	}
+	if err = fetchData(updatedPost); err != nil {
+		return nil, err
+	}
+	if rowsAffected, err = result.RowsAffected(); err != nil {
+		return nil, err
 	}
 	if rowsAffected > 0 {
-		return nil
+		return updatedPost, nil
 	}
-	return errors.New("could not update the post")
+	return nil, errors.New("could not update the post")
 }
 
 //Delete deletes post from the database

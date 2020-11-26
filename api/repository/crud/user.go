@@ -14,6 +14,15 @@ import (
 //UserRepoCRUD helps performing CRUD operations
 type UserRepoCRUD struct{}
 
+var DeletedUser = &models.User{
+	ID:          -1,
+	Login:       "deleted",
+	Email:       "deleted",
+	Avatar:      "https://avatars.dicebear.com/api/male/deleted",
+	DisplayName: "deleted",
+	Role:        0,
+}
+
 //NewUserRepoCRUD creates an instance of UserModel
 func NewUserRepoCRUD() UserRepoCRUD {
 	return UserRepoCRUD{}

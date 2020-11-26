@@ -22,15 +22,16 @@ type User struct {
 type Post struct {
 	ID           int64      `json:"id"`
 	AuthorID     int64      `json:"author_id"`
-	AuthorName   string     `json:"author_name"`
 	Title        string     `json:"title"`
 	Content      string     `json:"content"`
 	Created      string     `json:"created"`
 	Updated      string     `json:"updated"`
-	Categories   []Category `json:"categories,omitempty"`
-	Comments     []Comment  `json:"comments,omitempty"`
+	Categories   []Category `json:"categories"`
+	Comments     []Comment  `json:"comments"`
 	Rating       int        `json:"rating"`
 	YourReaction int        `json:"your_reaction"`
+
+	Author *User `json:"author"`
 
 	CommentsCount       int    `json:"comments_count"`
 	ParticipantsCount   int    `json:"participants_count"`

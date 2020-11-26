@@ -31,7 +31,7 @@ type PostRepo interface {
 	FindByCategories(categories []string) ([]models.Post, error)
 
 	Create(*models.Post) (post *models.Post, status int, err error)
-	Update(*models.Post) error
+	Update(*models.Post, models.UserCtx) (*models.Post, error)
 	Delete(postID int64) (int, error)
 
 	Rate(postID, userID int64, reaction int) error

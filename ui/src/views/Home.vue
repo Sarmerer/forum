@@ -133,8 +133,9 @@
               /></small>
               <small
                 >by
-                <router-link :to="'/user/' + post.author_id" class="secondary">
-                  {{ post.author_name }}
+                <b-img :src="post.author.avatar" width="15px"></b-img>
+                <router-link :to="'/user/' + post.author.id" class="secondary">
+                  {{ post.author.display_name }}
                 </router-link>
                 <timeago :datetime="post.created" :auto-update="60"></timeago
               ></small>
@@ -244,6 +245,7 @@ export default {
           ascending: this.sorter.asc,
         })
         .then((response) => {
+          console.log(response.data.data);
           this.error.show = false;
           this.posts = response.data.data.hot || [];
           this.recent = response.data.data.recent || [];

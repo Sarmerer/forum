@@ -184,7 +184,7 @@ export default {
           this.post = response.data.data;
         })
         .catch(console.log)
-        .finally(() => {
+        .then(() => {
           this.requesting = false;
           this.editor.editing = false;
         });
@@ -192,7 +192,9 @@ export default {
     edit() {
       this.editor.title = this.post.title;
       this.editor.content = this.post.content;
-      this.editor.categories = this.post.categories.map((c) => c.name);
+      this.editor.categories = this.post.categories
+        ? this.post.categories.map((c) => c.name)
+        : [];
       this.editor.editing = true;
     },
     async rate(reaction, post) {
