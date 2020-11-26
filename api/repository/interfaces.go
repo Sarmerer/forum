@@ -52,8 +52,8 @@ type CommentRepo interface {
 	FindByID(commentID int64) (*models.Comment, int, error)
 	FindByPostID(postID, requestorID int64) ([]models.Comment, error)
 	FindByUserID(userID, requestorID int64) (comments []models.Comment, status int, err error)
-	Create(comment *models.Comment) error
-	Update(comment *models.Comment) error
+	Create(comment *models.Comment) (*models.Comment, error)
+	Update(comment *models.Comment) (*models.Comment, error)
 	Delete(commentID int64) error
 	DeleteGroup(postID int64) error
 	Count(postID int64) (string, error)

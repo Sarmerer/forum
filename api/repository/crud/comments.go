@@ -21,6 +21,17 @@ func NewCommentRepoCRUD() CommentRepoCRUD {
 	return CommentRepoCRUD{}
 }
 
+func fetchAuthor(c *models.Comment) (err error) {
+	var status int
+	if c.Author, status, err = NewUserRepoCRUD().FindByID(c.AuthorID); err != nil {
+		if status == http.StatusInternalServerError {
+			return err
+		}
+		c.Author = DeletedUser
+	}
+	return nil
+}
+
 //FindAll returns all replies for the specified post
 func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, error) {
 	var (
@@ -55,9 +66,12 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 		return nil, nil
 	}
 	for rows.Next() {
-		var r models.Comment
-		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited, &r.Rating, &r.YourReaction)
-		comments = append(comments, r)
+		var c models.Comment
+		rows.Scan(&c.ID, &c.AuthorID, &c.Content, &c.Created, &c.PostID, &c.Edited, &c.Rating, &c.YourReaction)
+		if err = fetchAuthor(&c); err != nil {
+			return nil, err
+		}
+		comments = append(comments, c)
 	}
 	return comments, nil
 }
@@ -95,26 +109,29 @@ func (CommentRepoCRUD) FindByUserID(userID, requestorID int64) ([]models.Comment
 		return nil, http.StatusNotFound, nil
 	}
 	for rows.Next() {
-		var r models.Comment
-		rows.Scan(&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &r.Edited, &r.Rating, &r.YourReaction)
-		comments = append(comments, r)
+		var c models.Comment
+		rows.Scan(&c.ID, &c.AuthorID, &c.Content, &c.Created, &c.PostID, &c.Edited, &c.Rating, &c.YourReaction)
+		if err = fetchAuthor(&c); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+		comments = append(comments, c)
 	}
 	return comments, http.StatusOK, nil
 }
 
 //FindByID returns a specific reply from the database
-func (CommentRepoCRUD) FindByID(cid int64) (*models.Comment, int, error) {
+func (CommentRepoCRUD) FindByID(commentID int64) (*models.Comment, int, error) {
 	var (
-		r      models.Comment
-		edited int
-		err    error
+		comment models.Comment
+		edited  int
+		err     error
 	)
 	if err = repository.DB.QueryRow(
 		`SELECT *
 		FROM comments
-		WHERE id = ?`, cid,
+		WHERE id = ?`, commentID,
 	).Scan(
-		&r.ID, &r.AuthorID, &r.AuthorName, &r.Content, &r.Created, &r.PostID, &edited,
+		&comment.ID, &comment.AuthorID, &comment.Content, &comment.Created, &comment.PostID, &edited,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -122,72 +139,88 @@ func (CommentRepoCRUD) FindByID(cid int64) (*models.Comment, int, error) {
 		return nil, http.StatusBadRequest, errors.New("reply not found")
 	}
 	if edited == 1 {
-		r.Edited = true
+		comment.Edited = true
 	} else {
-		r.Edited = false
+		comment.Edited = false
 	}
-	return &r, http.StatusOK, nil
+	if err = fetchAuthor(&comment); err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return &comment, http.StatusOK, nil
 }
 
 //Create adds a new reply to the database
-func (CommentRepoCRUD) Create(r *models.Comment) error {
+func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) {
 	var (
 		result       sql.Result
+		newComment   *models.Comment
 		rowsAffected int64
 		err          error
 	)
 	if result, err = repository.DB.Exec(
 		`INSERT INTO comments (
 			author_id_fkey,
-			author_name_fkey,
 			content,
 			created,
 			post_id_fkey,
 			edited
 		)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		r.AuthorID, r.AuthorName, r.Content, time.Now().Format(config.TimeLayout), r.PostID, 0,
+		VALUES (?, ?, ?, ?, ?)`,
+		comment.AuthorID, comment.Content, time.Now().Format(config.TimeLayout), comment.PostID, 0,
 	); err != nil {
-		return err
+		return nil, err
 	}
-
+	if comment.ID, err = result.LastInsertId(); err != nil {
+		return nil, err
+	}
+	if newComment, _, err = NewCommentRepoCRUD().FindByID(comment.ID); err != nil {
+		return nil, err
+	}
+	if err = fetchAuthor(newComment); err != nil {
+		return nil, err
+	}
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return err
+		return nil, err
 	}
 	if rowsAffected > 0 {
-		return nil
+		return newComment, err
 	}
-	return nil
+	return nil, errors.New("could not create a comment")
 }
 
 //Update updates existing reply in the database
-func (CommentRepoCRUD) Update(r *models.Comment) error {
+func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) {
 	var (
-		result       sql.Result
-		rowsAffected int64
-		err          error
+		result         sql.Result
+		updatedComment *models.Comment
+		rowsAffected   int64
+		err            error
 	)
 	if result, err = repository.DB.Exec(
 		`UPDATE comments
 		SET author_id_fkey = ?,
-			author_name_fkey = ?,
 			content = ?,
 			created = ?,
 			post_id_fkey = ?,
 			edited = ?
 		WHERE id = ?`,
-		r.AuthorID, r.AuthorName, r.Content, r.Created, r.PostID, 1, r.ID,
+		comment.AuthorID, comment.Content, comment.Created, comment.PostID, 1, comment.ID,
 	); err != nil {
-		return err
+		return nil, err
 	}
-
+	if updatedComment, _, err = NewCommentRepoCRUD().FindByID(comment.ID); err != nil {
+		return nil, err
+	}
+	if err = fetchAuthor(updatedComment); err != nil {
+		return nil, err
+	}
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return err
+		return nil, err
 	}
 	if rowsAffected > 0 {
-		return nil
+		return updatedComment, nil
 	}
-	return errors.New("couldn't update the comment")
+	return nil, errors.New("couldn't update the comment")
 }
 
 //Delete deletes reply from the database

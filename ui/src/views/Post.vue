@@ -113,8 +113,7 @@ export default {
       user: "auth/user",
     }),
     hasPermission() {
-      if (!this.user) return false;
-      return this.post.author_id == this.user.id || this.user.role > 0;
+      return this.post?.author?.id == this.user?.id || this.user?.role > 0;
     },
   },
   data() {

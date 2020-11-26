@@ -64,8 +64,12 @@
       <div style="margin: 0.3rem; position: relative">
         <Rating :callback="rate" :entity="comment" type="comment" />
         <div v-if="index != editor.editing">
+          <b-img :src="comment.author.avatar" width="15px"></b-img>
           <p style="margin-bottom: 0px; display: block; margin-right: 4rem">
-            {{ comment.author_name }} says: {{ comment.content }}
+            <router-link :to="`/user/${comment.author.id}`">
+              {{ comment.author.display_name }}</router-link
+            >
+            says: {{ comment.content }}
           </p>
           <small v-b-tooltip.hover :title="comment.created">
             <timeago
@@ -188,8 +192,7 @@ export default {
   },
   methods: {
     hasPermission(comment) {
-      if (!this.user) return false;
-      return comment.author_id == this.user.id || this.user.role > 0;
+      return comment?.author?.id == this.user?.id || this.user?.role > 0;
     },
     async getComments() {
       return await axios
@@ -213,15 +216,16 @@ export default {
           console.log(error.response.data);
           //TODO show alert
         })
-        .finally(() => (this.deleting = false));
+        .then(() => (this.deleting = false));
     },
     async addComment() {
       if (!this.properCommentLength) return;
       this.editor.editing = -1;
       return await axios
         .post("comment/add", { id: this.postID, content: this.form.comment })
-        .then(() => {
-          this.appendComment();
+        .then((response) => {
+          if (response.data.data)
+            this.comments = [response.data.data, ...this.comments];
           this.form.comment = "";
         })
         .catch((error) => {
@@ -246,32 +250,17 @@ export default {
           id: actualID,
           content: this.editor.editingContent,
         })
-        .then(() => {
-          console.log(this.comments);
-          this.comments[
-            this.editor.editing
-          ].content = this.editor.editingContent;
-          this.comments[this.editor.editing].edited = true;
+        .then((response) => {
+          if (response.data.data)
+            this.comments[this.editor.editing] = response.data.data;
           this.editor.editing = -1;
         })
         .catch((error) => {
           console.log(error);
         })
-        .finally(() => {
+        .then(() => {
           this.editor.requesting = false;
         });
-    },
-    appendComment() {
-      let comment = {
-        id: this.comments.length != 0 ? this.comments[0].id + 1 : 1,
-        author_id: this.user.id,
-        author_name: this.user.display_name,
-        created: Date.now(),
-        content: this.form.comment,
-        post: this.postID,
-        edited: false,
-      };
-      this.comments = [comment, ...this.comments];
     },
     edit(index, content) {
       this.editor.editing = index;

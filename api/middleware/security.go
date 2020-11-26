@@ -27,7 +27,7 @@ func SetContext(next http.HandlerFunc) http.HandlerFunc {
 			if err != http.ErrNoCookie {
 				response.Error(w, http.StatusBadRequest, err)
 			}
-			userCtx = models.UserCtx{ID: -1, Role: -1, DisplayName: ""}
+			userCtx = models.UserCtx{ID: -1, Role: -1}
 			ctx = context.WithValue(r.Context(), config.UserCtxVarName, userCtx)
 			next(w, r.WithContext(ctx))
 		} else {

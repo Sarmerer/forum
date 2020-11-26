@@ -12,17 +12,16 @@ import (
 func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, status int, err error) {
 	if err = repository.DB.QueryRow(
 		`SELECT id,
-			role,
-			display_name
+			role
 		FROM users
 		WHERE session_id = ?`, sessionID,
 	).Scan(
-		&user.ID, &user.Role, &user.DisplayName,
+		&user.ID, &user.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return user, http.StatusInternalServerError, err
 		}
-		return models.UserCtx{ID: -1, Role: -1, DisplayName: ""}, http.StatusUnauthorized, errors.New("user not authorized")
+		return models.UserCtx{ID: -1, Role: -1}, http.StatusUnauthorized, errors.New("user not authorized")
 	}
 	return user, http.StatusOK, nil
 }

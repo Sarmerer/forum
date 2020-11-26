@@ -2,20 +2,19 @@ package models
 
 type UserCtx struct {
 	ID          int64
-	DisplayName string
 	Role        int
 }
 
 type User struct {
 	ID          int64  `json:"id"`
 	Login       string `json:"login"`
-	Password    string `json:"password"`
+	Password    string `json:"password,omitempty"`
 	Email       string `json:"email"`
 	Avatar      string `json:"avatar"`
 	DisplayName string `json:"display_name"`
-	Created     string `json:"created"`
-	LastOnline  string `json:"last_online"`
-	SessionID   string `json:"session_id"`
+	Created     string `json:"created,omitempty"`
+	LastOnline  string `json:"last_online,omitempty"`
+	SessionID   string `json:"session_id,omitempty"`
 	Role        int    `json:"role"`
 }
 
@@ -55,13 +54,14 @@ type Category struct {
 type Comment struct {
 	ID           int64  `json:"id"`
 	AuthorID     int64  `json:"author_id"`
-	AuthorName   string `json:"author_name"`
 	Content      string `json:"content"`
 	Created      string `json:"created"`
 	PostID       int64  `json:"post"`
 	Rating       int    `json:"rating"`
 	YourReaction int    `json:"your_reaction"`
 	Edited       bool   `json:"edited"`
+
+	Author *User `json:"author"`
 }
 
 type Rating struct {

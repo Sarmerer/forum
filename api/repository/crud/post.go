@@ -163,12 +163,10 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 			SELECT COUNT(id) AS comments_count,
 				COUNT(DISTINCT author_id_fkey) AS total_participants,
 				IFNULL(last_comment_from_id, -1) AS last_comment_from_id,
-				IFNULL(last_comment_from_name, "") AS last_comment_from_name,
 				IFNULL(last_comment_date, "") AS last_comment_date
 			FROM comments c
 				JOIN(
 					SELECT author_id_fkey AS last_comment_from_id,
-						author_name_fkey AS last_comment_from_name,
 						created AS last_comment_date
 					FROM comments
 					ORDER BY created
@@ -182,7 +180,7 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 		&p.ID, &p.AuthorID, &p.Title, &p.Content,
 		&p.Created, &p.Updated, &p.Rating, &p.YourReaction,
 		&p.CommentsCount, &p.ParticipantsCount, &p.LastCommentFromID,
-		&p.LastCommentFromName, &p.LastCommentDate,
+		&p.LastCommentDate,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -281,7 +279,6 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
-		pid          int64
 		newPost      *models.Post
 		status       int
 		err          error
@@ -301,11 +298,11 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 		return nil, http.StatusInternalServerError, err
 	}
 
-	if pid, err = result.LastInsertId(); err != nil {
+	if post.ID, err = result.LastInsertId(); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
-	if newPost, status, err = NewPostRepoCRUD().FindByID(pid, -1); err != nil {
+	if newPost, status, err = NewPostRepoCRUD().FindByID(post.ID, -1); err != nil {
 		return nil, status, err
 	}
 

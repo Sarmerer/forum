@@ -66,11 +66,12 @@ func FindComments(w http.ResponseWriter, r *http.Request) {
 
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		userCtx models.UserCtx         = utils.GetUserFromCtx(r)
-		input   models.InputCommentCreateUpdate
-		status  int
-		err     error
+		repo       repository.CommentRepo = crud.NewCommentRepoCRUD()
+		userCtx    models.UserCtx         = utils.GetUserFromCtx(r)
+		input      models.InputCommentCreateUpdate
+		newComment *models.Comment
+		status     int
+		err        error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -81,26 +82,26 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	comment := &models.Comment{
-		Content:    input.Content,
-		Created:    time.Now().Format(config.TimeLayout),
-		PostID:     input.ID,
-		AuthorID:   userCtx.ID,
-		AuthorName: userCtx.DisplayName,
+		Content:  input.Content,
+		Created:  time.Now().Format(config.TimeLayout),
+		PostID:   input.ID,
+		AuthorID: userCtx.ID,
 	}
-	if err = repo.Create(comment); err != nil {
+	if newComment, err = repo.Create(comment); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	response.Success(w, "reply has been added", nil)
+	response.Success(w, "reply has been added", newComment)
 }
 
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
-		input   models.InputCommentCreateUpdate
-		comment *models.Comment
-		status  int
-		err     error
+		repo           repository.CommentRepo = crud.NewCommentRepoCRUD()
+		input          models.InputCommentCreateUpdate
+		comment        *models.Comment
+		updatedComment *models.Comment
+		status         int
+		err            error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
@@ -117,11 +118,11 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comment.Content = input.Content
-	if err = repo.Update(comment); err != nil {
+	if updatedComment, err = repo.Update(comment); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	response.Success(w, "reply has been updated", nil)
+	response.Success(w, "reply has been updated", updatedComment)
 }
 
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
