@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/sarmerer/forum/api/config"
@@ -226,38 +227,24 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
-		args  string
 		posts []models.Post
 		err   error
 	)
-	for _, category := range categories {
-		if len(args) == 0 {
-			args += fmt.Sprintf(`"%s"`, category)
-		} else {
-			args += fmt.Sprintf(`, "%s"`, category)
-		}
-	}
 	if rows, err = repository.DB.Query(
-		`SELECT p.id,
-		p.author_id_fkey,
-		p.author_name_fkey,
-		p.title,
-		p.content,
-		p.created,
-		p.updated
+		fmt.Sprintf(`SELECT p.*
 	FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p ON p.id = pcb.post_id_fkey
 		INNER JOIN categories AS c ON c.id = pcb.category_id_fkey
-	WHERE c.name IN (`+args+`)
+	WHERE c.name IN (%s)
 	GROUP BY p.id
-	HAVING COUNT(DISTINCT c.id) = ?`,
+	HAVING COUNT(DISTINCT c.id) = ?`, fmt.Sprintf("\"%s\"", strings.Join(categories, "\", \""))),
 		len(categories),
 	); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
+		rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Content, &p.Created, &p.Updated)
 		posts = append(posts, p)
 	}
 	return posts, nil
