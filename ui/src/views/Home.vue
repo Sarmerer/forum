@@ -22,6 +22,7 @@
             v-if="posts.length > 0"
           >
             <b-pagination
+              v-if="posts.total_rows > pagination.perPage"
               v-model="pagination.currentPage"
               :total-rows="pagination.totalPages"
               :per-page="pagination.perPage"
@@ -29,8 +30,9 @@
               @change="handlePageChange"
               first-number
               last-number
-            ></b-pagination>
-            <div>
+            >
+            </b-pagination>
+            <div v-if="posts.length > 1">
               <b-button
                 variant="dark"
                 @click="sort(), toast('b-toaster-bottom-center', true)"
@@ -39,9 +41,8 @@
                 v-b-tooltip.hover
                 :title="sorter.asc ? 'Ascending' : 'Descending'"
               >
-                <b-icon
-                  :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"
-                ></b-icon>
+                <b-icon :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'">
+                </b-icon>
               </b-button>
               <b-button-group
                 ><b-button
@@ -50,8 +51,10 @@
                   v-b-tooltip.hover
                   title="Most liked"
                   :variant="sorter.orderBy == 'rating' ? 'info' : 'dark'"
-                  ><b-icon-heart></b-icon-heart></b-button
-                ><b-button
+                >
+                  <b-icon-heart></b-icon-heart>
+                </b-button>
+                <b-button
                   :disabled="sorter.throttled"
                   @click="order('created')"
                   v-b-tooltip.hover
@@ -67,8 +70,8 @@
                   :variant="
                     sorter.orderBy == 'comments_count' ? 'info' : 'dark'
                   "
-                  ><b-icon-chat-left></b-icon-chat-left
-                ></b-button>
+                  ><b-icon-chat-left></b-icon-chat-left>
+                </b-button>
                 <b-button
                   :disabled="sorter.throttled"
                   @click="order('total_participants')"
@@ -77,8 +80,10 @@
                   :variant="
                     sorter.orderBy == 'total_participants' ? 'info' : 'dark'
                   "
-                  ><b-icon-people></b-icon-people></b-button
-              ></b-button-group>
+                >
+                  <b-icon-people></b-icon-people>
+                </b-button>
+              </b-button-group>
             </div>
           </b-row>
           <!-- Start of posts -->
@@ -86,7 +91,7 @@
             :to="'/post/' + post.id"
             v-for="post in posts"
             :key="post.id"
-            class="card"
+            :class="isMobile() ? 'card-m' : 'card'"
             tag="div"
             style="cursor: pointer"
           >
@@ -95,10 +100,24 @@
                 <Rating :callback="rate" :entity="post" type="comment" />
               </b-col>
               <b-col cols="11" class="post-content">
+                <small v-if="isMobile()">
+                  <b-img :src="post.author.avatar" width="15px"></b-img>
+                  <router-link
+                    :to="'/user/' + post.author.id"
+                    class="secondary"
+                  >
+                    {{ post.author.display_name }}
+                  </router-link>
+                  <time-ago
+                    tooltip
+                    :datetime="post.created"
+                    :long="!isMobile()"
+                  ></time-ago>
+                </small>
                 <h5>
                   {{ post.title }}
                 </h5>
-                <p v-if="!isMobile()">{{ post.content }}</p>
+                <p>{{ post.content }}</p>
                 <b-form-tag
                   v-for="(category, index) in post.categories"
                   disabled
@@ -113,13 +132,10 @@
             </b-row>
             <div class="post-footer">
               <small>
-                <img
-                  src="@/assets/svg/post/comments.svg"
-                  alt="comments"
-                  srcset=""
-                />
+                <b-icon-chat></b-icon-chat>
                 {{ post.comments_count }}
-                <!-- {{ post.comments_count == 1 ? "comment" : "comments" }} -->
+                <b-icon-people></b-icon-people>
+                {{ post.participants_count }}
               </small>
 
               <!-- TODO: Make this look decent -->
@@ -128,11 +144,11 @@
                 <Rating
                   style="flex-direction: row; margin: 0"
                   type="post"
-                  :callbakc="rate"
+                  :callback="rate"
                   :entity="post"
                 />
               </small>
-              <small
+              <small v-if="!isMobile()"
                 >by
                 <b-img :src="post.author.avatar" width="15px"></b-img>
                 <router-link :to="'/user/' + post.author.id" class="secondary">
@@ -150,7 +166,7 @@
         </div>
 
         <div class="info-col">
-          <div class="card">
+          <div :class="isMobile() ? 'card-m' : 'card'">
             <h3 class="primary">RECENT</h3>
             <router-link
               :to="'/post/' + post.id"
@@ -170,7 +186,7 @@
               </p>
             </router-link>
           </div>
-          <div class="card">
+          <div :class="isMobile() ? 'card-m' : 'card'">
             <h3 class="primary">CATEGORIES</h3>
             <div>
               Selected: <strong>{{ selectedCategories }}</strong>

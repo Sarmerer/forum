@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div :class="isMobile() ? 'card-m' : 'card'">
     <p>{{ pluralize(stats.commentsCount, "comment") }}</p>
     <p>{{ pluralize(stats.participantsCount, "participant") }}</p>
     <p v-if="stats.lastCommentFromName">

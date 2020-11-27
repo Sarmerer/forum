@@ -5,7 +5,7 @@
         <PostStats :stats="postStats" />
       </div>
       <div class="main-col">
-        <div class="card">
+        <div :class="isMobile() ? 'card-m' : 'card'">
           <b-row v-if="!editor.editing">
             <b-col cols="start">
               <Rating :callback="rate" :entity="post" type="post" />

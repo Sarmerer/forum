@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div :class="isMobile() ? 'card-m' : 'card'">
     <!-- Comment form-start -->
     <b-form v-if="authenticated" @submit.prevent="addComment">
       <b-input-group class="mt-1 mb-1">
@@ -70,7 +70,7 @@
           <b-row>
             <b-col cols="start">
               <b-img :src="comment.author.avatar" width="15px"></b-img>
-              <router-link :to="`/user/${comment.author.id}`">
+              <router-link :to="`/user/${comment.author.id}`" class="secondary">
                 {{ comment.author.display_name }}
               </router-link>
             </b-col>
