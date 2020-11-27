@@ -9,14 +9,20 @@
       }}</router-link>
     </p>
     <p v-if="stats.lastCommentDate">
-      Last activity: {{ stats.lastCommentDate | formatDate }}
+      Last activity:
+      <time-ago :datetime="stats.lastCommentDate" long></time-ago>
     </p>
   </div>
 </template>
 <script>
+import TimeAgo from "vue2-timeago";
+
 export default {
   props: {
     stats: { type: Object, required: true },
+  },
+  components: {
+    TimeAgo,
   },
   methods: {
     pluralize(n, s) {
