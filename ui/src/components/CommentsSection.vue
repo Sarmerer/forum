@@ -60,81 +60,105 @@
     <!-- Comment form-end -->
 
     <!-- Comments-start -->
-    <div v-for="(comment, index) in comments" :key="index">
-      <div style="margin: 0.3rem; position: relative">
-        <Rating :callback="rate" :entity="comment" type="comment" />
+    <div
+      v-for="(comment, index) in comments"
+      :key="index"
+      class="ml-3 mr-3 mt-2"
+    >
+      <div>
         <div v-if="index != editor.editing">
-          <b-img :src="comment.author.avatar" width="15px"></b-img>
-          <p style="margin-bottom: 0px; display: block; margin-right: 4rem">
-            <router-link :to="`/user/${comment.author.id}`">
-              {{ comment.author.display_name }}</router-link
-            >
-            says: {{ comment.content }}
-          </p>
-          <small v-b-tooltip.hover :title="comment.created">
-            <timeago
-              v-if="comment.created"
-              :datetime="comment.created"
-              :auto-update="60"
-            >
-            </timeago>
-            <small v-if="comment.edited" class="text-muted"> edited</small>
-          </small>
-          <ControlButtons
-            :hasPermission="hasPermission(comment)"
-            :deleteCallback="{
-              callback: deleteComment,
-              args: [comment.id, index],
-            }"
-            :editCallback="{ callback: edit, args: [index, comment.content] }"
-            :disabled="deleting"
-          />
+          <b-row>
+            <b-col cols="start">
+              <b-img :src="comment.author.avatar" width="15px"></b-img>
+              <router-link :to="`/user/${comment.author.id}`">
+                {{ comment.author.display_name }}
+              </router-link>
+            </b-col>
+            <b-col md="auto">
+              <small v-b-tooltip.hover :title="comment.created">
+                <timeago
+                  v-if="comment.created"
+                  :datetime="comment.created"
+                  :auto-update="60"
+                >
+                </timeago>
+                <small v-if="comment.edited" class="text-muted"> edited</small>
+              </small>
+            </b-col>
+            <b-col>
+              <Rating
+                style="flex-direction: row; margin: 0"
+                :callback="rate"
+                :entity="comment"
+                type="comment"
+              />
+            </b-col>
+            <b-col cols="end">
+              <ControlButtons
+                :hasPermission="hasPermission(comment)"
+                :deleteCallback="{
+                  callback: deleteComment,
+                  args: [comment.id, index],
+                }"
+                :editCallback="{
+                  callback: edit,
+                  args: [index, comment.content],
+                }"
+                :disabled="deleting"
+              />
+            </b-col>
+          </b-row>
+          <b-row>
+            <span>
+              {{ comment.content }}
+            </span>
+          </b-row>
         </div>
         <div v-if="hasPermission(comment) && index == editor.editing">
-          <b-form-textarea
-            class="textarea"
-            ref="editComment"
-            v-model="editor.editingContent"
-            @keydown.enter.exact.prevent
-            @keyup.enter.exact="updateComment(comment.id)"
-            keydown.enter.shift.exact="newline"
-            rows="1"
-            no-resize
-            :disabled="editor.requesting"
-            max-rows="10"
-            style="margin-bottom: 0px; display: block; width: 85%"
-          ></b-form-textarea>
-          <small v-if="properEditorLength"
-            >{{ editorLength }}/{{ maxCommentLength }}</small
-          >
-          <small v-else style="color: red"
-            >{{ editorLength }}/{{ maxCommentLength }}</small
-          >
+          <b-row>
+            <b-col>
+              <b-form-textarea
+                class="textarea"
+                ref="editComment"
+                v-model="editor.editingContent"
+                @keydown.enter.exact.prevent
+                @keyup.enter.exact="updateComment(comment.id)"
+                keydown.enter.shift.exact="newline"
+                rows="1"
+                no-resize
+                :disabled="editor.requesting"
+                max-rows="10"
+              ></b-form-textarea>
+              <small v-if="properEditorLength"
+                >{{ editorLength }}/{{ maxCommentLength }}</small
+              >
+              <small v-else style="color: red"
+                >{{ editorLength }}/{{ maxCommentLength }}</small
+              >
+            </b-col>
+            <b-col cols="end">
+              <b-button-group size="sm" vertical v-if="index == editor.editing">
+                <b-button
+                  :disabled="
+                    editor.editingContent == comment.content ||
+                      !properEditorLength ||
+                      editor.requesting
+                  "
+                  variant="outline-success"
+                  @click="updateComment(comment.id, comment.content)"
+                >
+                  Save
+                </b-button>
+                <b-button
+                  variant="outline-danger"
+                  @click="editor.editing = -1"
+                  :disabled="editor.requesting"
+                  >Cancel</b-button
+                >
+              </b-button-group>
+            </b-col>
+          </b-row>
         </div>
-        <b-button-group
-          size="sm"
-          vertical
-          v-if="index == editor.editing"
-          style="position: absolute; right: 0px; top: 2px"
-        >
-          <b-button
-            :disabled="
-              editor.editingContent == comment.content ||
-                !properEditorLength ||
-                editor.requesting
-            "
-            variant="outline-success"
-            @click="updateComment(comment.id, comment.content)"
-          >
-            Save
-          </b-button>
-          <b-button
-            variant="outline-danger"
-            @click="editor.editing = -1"
-            :disabled="editor.requesting"
-            >Cancel</b-button
-          >
-        </b-button-group>
       </div>
     </div>
     <!-- Comments-end -->
