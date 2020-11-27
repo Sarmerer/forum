@@ -197,7 +197,6 @@
 
 <script>
 import axios from "axios";
-axios.defaults.withCredentials = true;
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
@@ -239,12 +238,16 @@ export default {
     },
     async getPosts(currentPage) {
       return await axios
-        .post("posts", {
-          per_page: this.pagination.perPage,
-          current_page: currentPage,
-          order_by: this.sorter.orderBy,
-          ascending: this.sorter.asc,
-        })
+        .post(
+          "posts",
+          {
+            per_page: this.pagination.perPage,
+            current_page: currentPage,
+            order_by: this.sorter.orderBy,
+            ascending: this.sorter.asc,
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           console.log(response.data.data);
           this.error.show = false;
@@ -264,7 +267,7 @@ export default {
     },
     async getCategories() {
       return await axios
-        .get("categories")
+        .get("categories", { withCredentials: true })
         .then((response) => {
           this.categories = response.data.data || [];
         })
@@ -310,7 +313,11 @@ export default {
         r = 0;
       }
       await axios
-        .post("post/rate", { id: post.id, reaction: r })
+        .post(
+          "post/rate",
+          { id: post.id, reaction: r },
+          { withCredentials: true }
+        )
         .then((response) => {
           post.your_reaction = response.data.data.your_reaction;
           post.rating = response.data.data.rating;
@@ -322,10 +329,14 @@ export default {
     async sortByCategories() {
       console.log(this.selectedCategories);
       await axios
-        .post("post/find", {
-          by: "categories",
-          categories: this.selectedCategories,
-        })
+        .post(
+          "post/find",
+          {
+            by: "categories",
+            categories: this.selectedCategories,
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           console.log(response.data.data);
           this.posts = response.data.data || [];

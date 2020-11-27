@@ -29,7 +29,6 @@
 </template>
 <script>
 import axios from "axios";
-axios.defaults.withCredentials = true;
 
 export default {
   data() {
@@ -53,7 +52,7 @@ export default {
   methods: {
     async getUsers() {
       return await axios
-        .get("/users")
+        .get("/users", { withCredentials: true })
         .then((response) => {
           this.users = response.data.data || [];
           let u = this.users[0];

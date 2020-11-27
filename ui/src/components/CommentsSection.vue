@@ -145,7 +145,6 @@ import ControlButtons from "@/components/ControlButtons";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
 import axios from "axios";
-axios.defaults.withCredentials = true;
 
 export default {
   props: {
@@ -197,7 +196,10 @@ export default {
     },
     async getComments() {
       return await axios
-        .get("/comments", { params: { id: this.postID } })
+        .get("/comments", {
+          params: { id: this.postID },
+          withCredentials: true,
+        })
         .then((response) => {
           this.comments = response.data.data || [];
         })
@@ -209,7 +211,10 @@ export default {
       this.editor.editing = -1;
       this.deleting = true;
       return await axios
-        .delete("comment/delete", { params: { id: actualID } })
+        .delete("comment/delete", {
+          params: { id: actualID },
+          withCredentials: true,
+        })
         .then(() => {
           this.comments.splice(IDInList, 1);
         })
@@ -223,7 +228,11 @@ export default {
       if (!this.properCommentLength) return;
       this.editor.editing = -1;
       return await axios
-        .post("comment/add", { id: this.postID, content: this.form.comment })
+        .post(
+          "comment/add",
+          { id: this.postID, content: this.form.comment },
+          { withCredentials: true }
+        )
         .then((response) => {
           if (response.data.data)
             this.comments = [response.data.data, ...this.comments];
@@ -234,11 +243,7 @@ export default {
         });
     },
     async updateComment(actualID, oldCommentContent) {
-      if (
-        this.editorLength < this.minCommentLength ||
-        this.editorLength > this.maxCommentLength
-      )
-        return;
+      if (!this.properEditorLength) return;
       if (this.editor.editingContent == oldCommentContent) {
         this.comments[this.editor.editing].content = this.editor.editingContent;
         this.comments[this.editor.editing].edited = true;
@@ -247,10 +252,14 @@ export default {
       }
       this.editor.requesting = true;
       return await axios
-        .put("comment/update", {
-          id: actualID,
-          content: this.editor.editingContent,
-        })
+        .put(
+          "comment/update",
+          {
+            id: actualID,
+            content: this.editor.editingContent,
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           if (response.data.data)
             this.comments[this.editor.editing] = response.data.data;
@@ -286,7 +295,11 @@ export default {
         r = 0;
       }
       await axios
-        .post("comment/rate", { id: comment.id, reaction: r })
+        .post(
+          "comment/rate",
+          { id: comment.id, reaction: r },
+          { withCredentials: true }
+        )
         .then((response) => {
           comment.rating = response.data.data.rating;
           comment.your_reaction = response.data.data.your_reaction;

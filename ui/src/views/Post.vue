@@ -97,7 +97,6 @@ import PostStats from "@/components/PostStats";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
 import axios from "axios";
-axios.defaults.withCredentials = true;
 
 export default {
   props: {
@@ -138,10 +137,14 @@ export default {
   methods: {
     async getPost() {
       return await axios
-        .post("post/find", {
-          by: "id",
-          id: this.postID,
-        })
+        .post(
+          "post/find",
+          {
+            by: "id",
+            id: this.postID,
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           //TODO create error page for post response.data.data;
           let result = response.data.data;
@@ -162,7 +165,10 @@ export default {
     async deletePost() {
       this.requesting = true;
       return await axios
-        .delete("post/delete", { params: { id: this.post.id } })
+        .delete("post/delete", {
+          params: { id: this.post.id },
+          withCredentials: true,
+        })
         .then(() => {
           this.$router.push("/");
         })
@@ -174,12 +180,16 @@ export default {
     async updatePost() {
       this.requesting = true;
       return await axios
-        .put("post/update", {
-          id: this.post.id,
-          title: this.editor.title,
-          content: this.editor.content,
-          categories: this.editor.categories,
-        })
+        .put(
+          "post/update",
+          {
+            id: this.post.id,
+            title: this.editor.title,
+            content: this.editor.content,
+            categories: this.editor.categories,
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           this.post = response.data.data;
         })

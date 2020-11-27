@@ -48,7 +48,6 @@
 </template>
 <script>
 import axios from "axios";
-axios.defaults.withCredentials = true;
 import { mapGetters } from "vuex";
 
 export default {
@@ -66,11 +65,15 @@ export default {
     onSubmit(e) {
       e.preventDefault();
       axios
-        .post("post/create", {
-          title: this.form.title,
-          content: this.form.content,
-          categories: this.form.categories,
-        })
+        .post(
+          "post/create",
+          {
+            title: this.form.title,
+            content: this.form.content,
+            categories: this.form.categories,
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           this.resetForm();
           this.$router.push({

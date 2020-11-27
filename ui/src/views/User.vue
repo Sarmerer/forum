@@ -50,7 +50,6 @@
 </template>
 <script>
 import axios from "axios";
-axios.defaults.withCredentials = true;
 import moment from "moment";
 
 export default {
@@ -76,7 +75,10 @@ export default {
   methods: {
     async getUser() {
       return await axios
-        .get("user", { params: { id: this.$route.params.id } })
+        .get("user", {
+          params: { id: this.$route.params.id },
+          withCredentials: true,
+        })
         .then((response) => {
           this.user = response.data.data;
         })
@@ -86,10 +88,14 @@ export default {
     },
     async getUserPosts() {
       return await axios
-        .post("post/find", {
-          by: "author",
-          author: Number.parseInt(this.$route.params.id),
-        })
+        .post(
+          "post/find",
+          {
+            by: "author",
+            author: Number.parseInt(this.$route.params.id),
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           this.posts = response.data.data || [];
           console.log(response);
@@ -100,10 +106,14 @@ export default {
     },
     async getReplies() {
       return await axios
-        .post("comments/find", {
-          by: "user_id",
-          id: Number.parseInt(this.$route.params.id),
-        })
+        .post(
+          "comments/find",
+          {
+            by: "user_id",
+            id: Number.parseInt(this.$route.params.id),
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           this.replies = response.data.data || [];
           console.log(response.data.data);
