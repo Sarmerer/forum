@@ -197,6 +197,7 @@
 
 <script>
 import axios from "axios";
+axios.defaults.withCredentials = true;
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";

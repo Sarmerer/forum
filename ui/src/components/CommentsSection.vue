@@ -145,6 +145,7 @@ import ControlButtons from "@/components/ControlButtons";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
 import axios from "axios";
+axios.defaults.withCredentials = true;
 
 export default {
   props: {

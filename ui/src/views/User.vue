@@ -50,6 +50,7 @@
 </template>
 <script>
 import axios from "axios";
+axios.defaults.withCredentials = true;
 import moment from "moment";
 
 export default {
@@ -66,7 +67,7 @@ export default {
     this.getReplies();
   },
   filters: {
-    formatDate: function (value) {
+    formatDate: function(value) {
       if (value) {
         return moment(String(value)).format("MM/DD/YYYY hh:mm");
       }

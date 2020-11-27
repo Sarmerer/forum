@@ -97,6 +97,7 @@ import PostStats from "@/components/PostStats";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
 import axios from "axios";
+axios.defaults.withCredentials = true;
 
 export default {
   props: {
