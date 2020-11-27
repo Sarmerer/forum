@@ -74,14 +74,12 @@
                 {{ comment.author.display_name }}
               </router-link>
             </b-col>
-            <b-col md="auto">
+            <b-col>
               <small v-b-tooltip.hover :title="comment.created">
-                <timeago
-                  v-if="comment.created"
+                <time-ago
                   :datetime="comment.created"
-                  :auto-update="60"
-                >
-                </timeago>
+                  :long="!isMobile()"
+                ></time-ago>
                 <small v-if="comment.edited" class="text-muted"> edited</small>
               </small>
             </b-col>
@@ -167,6 +165,7 @@
 <script>
 import ControlButtons from "@/components/ControlButtons";
 import Rating from "@/components/Rating";
+import TimeAgo from "vue2-timeago";
 import { mapGetters } from "vuex";
 import axios from "axios";
 
@@ -196,6 +195,7 @@ export default {
   },
   components: {
     ControlButtons,
+    TimeAgo,
     Rating,
   },
   data() {

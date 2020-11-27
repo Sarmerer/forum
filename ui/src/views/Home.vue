@@ -124,21 +124,26 @@
 
               <!-- TODO: Make this look decent -->
               <!-- style is embedded here for responsiveness. MB fix later -->
-              <small v-if="isMobile()"
-                ><Rating
+              <small v-if="isMobile()">
+                <Rating
                   style="flex-direction: row; margin: 0"
                   type="post"
                   :callbakc="rate"
                   :entity="post"
-              /></small>
+                />
+              </small>
               <small
                 >by
                 <b-img :src="post.author.avatar" width="15px"></b-img>
                 <router-link :to="'/user/' + post.author.id" class="secondary">
                   {{ post.author.display_name }}
                 </router-link>
-                <timeago :datetime="post.created" :auto-update="60"></timeago
-              ></small>
+                <time-ago
+                  tooltip
+                  :datetime="post.created"
+                  :long="!isMobile()"
+                ></time-ago>
+              </small>
             </div>
           </router-link>
           <!-- End of posts -->
@@ -153,9 +158,14 @@
               :key="index"
               tag="div"
               style="cursor: pointer"
-              ><p>
-                {{ post.title }}<br /><small class="text-muted"
-                  ><timeago :datetime="post.created" :auto-update="10"></timeago
+            >
+              <p>
+                {{ post.title }}<br /><small class="text-muted">
+                  <time-ago
+                    tooltip
+                    :datetime="post.created"
+                    :long="!isMobile()"
+                  ></time-ago
                 ></small>
               </p>
             </router-link>
@@ -200,6 +210,8 @@ import axios from "axios";
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
+import TimeAgo from "vue2-timeago";
+
 export default {
   name: "Home",
   computed: {
@@ -209,6 +221,7 @@ export default {
   },
   components: {
     Rating,
+    TimeAgo,
     Error,
   },
   data() {

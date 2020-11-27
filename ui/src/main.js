@@ -12,12 +12,6 @@ import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
 
-import VueTimeago from "vue-timeago";
-Vue.use(VueTimeago, {
-  name: "Timeago", // Component name, `Timeago` by default
-  locale: "en", // Default locale
-});
-
 Vue.config.productionTip = false;
 
 axios.defaults.withCredentials = true;
