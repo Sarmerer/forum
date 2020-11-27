@@ -11,9 +11,9 @@
   </div>
 </template>
 <script>
-import Sidenav from "../src/components/Sidenav";
-import Navbar from "../src/components/Navbar";
-import Footer from "../src/components/Footer";
+import Sidenav from "@/components/Sidenav";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default {
   name: "App",

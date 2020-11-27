@@ -10,7 +10,8 @@
     </p>
     <p v-if="stats.lastCommentDate">
       Last activity:
-      <time-ago :datetime="stats.lastCommentDate" long></time-ago>
+      <time-ago :datetime="stats.lastCommentDate" :long="!isMobile()">
+      </time-ago>
     </p>
   </div>
 </template>
