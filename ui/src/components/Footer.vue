@@ -118,7 +118,7 @@
   padding-bottom: 20px;
   color: white;
   /* background-color: rgba(255, 255, 255, 0.03); */
-  background-color: pink;
+  /* background-color: pink; */
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -187,11 +187,11 @@
             </router-link>
           </div>
           <div :class="isMobile() ? 'card-m' : 'card'">
-            <h3 class="primary">CATEGORIES</h3>
-            <div>
-              Selected: <strong>{{ selectedCategories }}</strong>
-            </div>
-            <b-button v-on:click="sortByCategories()">Sort</b-button>
+            <h3 class="primary">
+              CATEGORIES<b-button id="popover-filter-button"
+                ><b-icon-three-dots-vertical></b-icon-three-dots-vertical
+              ></b-button>
+            </h3>
             <!-- Start of categories -->
             <span v-if="categories.length == 0">None</span>
             <b-container v-else>
@@ -215,6 +215,21 @@
             </b-container>
             <!-- End of categories -->
           </div>
+          <b-popover
+            target="popover-filter-button"
+            triggers="focus"
+            variant="dark"
+          >
+            <b-button
+              v-on:click="sortByCategories()"
+              class="mb-1"
+              style="width: 135px"
+              ><b-icon-filter></b-icon-filter> filter</b-button
+            ><br />
+            <b-button v-on:click="resetCategories()" style="width: 135px"
+              ><b-icon-arrow-clockwise></b-icon-arrow-clockwise> reset</b-button
+            >
+          </b-popover>
         </div>
       </div>
     </div>
@@ -356,7 +371,6 @@ export default {
         });
     },
     async sortByCategories() {
-      console.log(this.selectedCategories);
       await axios
         .post(
           "post/find",
@@ -373,6 +387,10 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    async resetCategories() {
+      this.selectedCategories = [];
+      this.getPosts(0);
     },
   },
 };
@@ -450,6 +468,14 @@ ul#filters li {
 
 .btn-dark:hover {
   background-color: rgba(255, 255, 255, 0.03);
+}
+
+#popover-filter-button {
+  background-color: rgba(10, 10, 10, 0);
+  border: none;
+  color: #278ea5;
+  padding: 0 2px 4px 2px;
+  font-size: 23px;
 }
 
 @media (max-width: 500px) {
