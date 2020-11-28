@@ -73,6 +73,7 @@ export default {
         })
         .then((response) => {
           this.user = response.data.data;
+          document.title = this.user.display_name;
         })
         .catch((error) => {
           console.log(error);

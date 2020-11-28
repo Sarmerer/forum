@@ -97,7 +97,7 @@
           >
             <b-row>
               <b-col cols="start">
-                <Rating :callback="rate" :entity="post" type="comment" />
+                <Rating :callback="rate" :entity="post" type="post" />
               </b-col>
               <b-col class="ml-2">
                 <small v-if="isMobile()">
@@ -148,7 +148,7 @@
                   />
                 </small>
               </b-col>
-              <b-col cols="end">
+              <b-col cols="end" class="mr-4">
                 <small v-if="!isMobile()"
                   >by
                   <b-img :src="post.author.avatar" width="15px"></b-img>
@@ -189,9 +189,10 @@
           </div>
           <div :class="isMobile() ? 'card-m' : 'card'">
             <h3 class="primary">
-              CATEGORIES<b-button id="popover-filter-button"
-                ><b-icon-three-dots-vertical></b-icon-three-dots-vertical
-              ></b-button>
+              CATEGORIES
+              <b-button id="popover-filter-button">
+                <b-icon-three-dots-vertical></b-icon-three-dots-vertical>
+              </b-button>
             </h3>
             <!-- Start of categories -->
             <span v-if="categories.length == 0">None</span>
@@ -225,10 +226,12 @@
               v-on:click="sortByCategories()"
               class="mb-1"
               style="width: 135px"
-              ><b-icon-filter></b-icon-filter> filter</b-button
-            ><br />
-            <b-button v-on:click="resetCategories()" style="width: 135px"
-              ><b-icon-arrow-clockwise></b-icon-arrow-clockwise> reset</b-button
+            >
+              <b-icon-filter> </b-icon-filter> filter</b-button
+            >
+            <br />
+            <b-button v-on:click="resetCategories()" style="width: 135px">
+              <b-icon-arrow-clockwise></b-icon-arrow-clockwise> reset</b-button
             >
           </b-popover>
         </div>

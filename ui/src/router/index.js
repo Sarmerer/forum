@@ -24,6 +24,9 @@ const routes = [
     path: "/post/:id",
     name: "Post",
     props: true,
+    meta: {
+      titleSetInComponent: true,
+    },
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -38,6 +41,9 @@ const routes = [
   {
     path: "/user/:id",
     name: "User",
+    meta: {
+      titleSetInComponent: true,
+    },
     component: () => import(/* webpackChunkName: "user" */ "@/views/User.vue"),
   },
   {
@@ -58,6 +64,11 @@ const router = new VueRouter({
   mode: "history",
   base: process.env.BASE_URL,
   routes,
+});
+
+router.beforeEach((to, _from, next) => {
+  if (!to.meta?.titleSetInComponent) document.title = to.name;
+  next();
 });
 
 export default router;

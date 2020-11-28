@@ -148,6 +148,7 @@ export default {
         .then((response) => {
           //TODO create error page for post response.data.data;
           let result = response.data.data;
+          document.title = result.title;
           this.post = result;
           this.postStats = {
             commentsCount: result.comments_count,
