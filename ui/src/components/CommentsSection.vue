@@ -83,15 +83,7 @@
                 <small v-if="comment.edited" class="text-muted"> edited</small>
               </small>
             </b-col>
-            <b-col>
-              <Rating
-                style="flex-direction: row; margin: 0"
-                :callback="rate"
-                :entity="comment"
-                type="comment"
-              />
-            </b-col>
-            <b-col cols="end">
+            <b-col cols="end" class="mr-n2">
               <ControlButtons
                 :hasPermission="hasPermission(comment)"
                 :deleteCallback="{
@@ -103,6 +95,7 @@
                   args: [index, comment.content],
                 }"
                 :disabled="deleting"
+                :compact="isMobile()"
               />
             </b-col>
           </b-row>
@@ -110,6 +103,9 @@
             <span>
               {{ comment.content }}
             </span>
+          </b-row>
+          <b-row>
+            <Rating :callback="rate" :entity="comment" compact />
           </b-row>
         </div>
         <div v-if="hasPermission(comment) && index == editor.editing">
@@ -332,8 +328,8 @@ export default {
           console.log(error);
           //TODO show alert saying that you need to be logged in to rate
         })
-        .finally(() => {
-          self.requesting = false;
+        .then(() => {
+          this.requesting = false;
         });
     },
   },

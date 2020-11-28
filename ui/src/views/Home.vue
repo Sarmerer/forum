@@ -50,7 +50,7 @@
           >
             <b-row>
               <b-col v-if="!isMobile()" cols="start">
-                <Rating :callback="rate" :entity="post" type="post" />
+                <Rating :callback="rate" :entity="post" class="ml-n4" />
               </b-col>
               <b-col class="ml-2">
                 <small v-if="isMobile()">
@@ -79,7 +79,7 @@
                 </b-form-tag>
               </b-col>
             </b-row>
-            <b-row class="ml-2">
+            <b-row class="ml-1">
               <b-col>
                 <small>
                   <span v-b-tooltip.hover title="Comments">
@@ -107,8 +107,8 @@
               <b-col v-if="isMobile()" cols="end" class="mr-4">
                 <small>
                   <Rating
-                    style="flex-direction: row; margin: 0"
-                    type="post"
+                    class="mr-2"
+                    compact
                     :callback="rate"
                     :entity="post"
                   />

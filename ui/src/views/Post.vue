@@ -1,5 +1,9 @@
 <template>
   <div class="grid">
+    <b-modal id="modal-menu" centered hide-footer hide-header>
+      <b-icon-x color="black" class="fixed-top"></b-icon-x>
+      <p style="color:black">Delete</p>
+    </b-modal>
     <div class="columns">
       <div v-if="isMobile()" class="info-col">
         <PostStats :stats="postStats" />
@@ -8,19 +12,20 @@
         <div :class="isMobile() ? 'card-m' : 'card'">
           <b-row v-if="!editor.editing">
             <b-col cols="start">
-              <Rating :callback="rate" :entity="post" type="post" />
+              <Rating :callback="rate" :entity="post" class="ml-n4" />
             </b-col>
             <b-col class="ml-2">
               <b-row>
                 <b-col>
                   <h3 class="primary">{{ post.title }}</h3>
                 </b-col>
-                <b-col cols="end">
+                <b-col cols="end" class="mr-2">
                   <ControlButtons
                     :hasPermission="hasPermission"
                     :deleteCallback="{ callback: deletePost }"
                     :editCallback="{ callback: edit }"
                     :disabled="requesting"
+                    :compact="isMobile()"
                   />
                 </b-col>
               </b-row>
@@ -37,9 +42,10 @@
                 </b-form-tag>
               </div>
             </b-col>
-            <b-col cols="end" align-v="start" class="mr-3" display="flex">
-            </b-col>
           </b-row>
+          <b-row v-if="isMobile()" class="ml-2">
+            <Rating :callback="rate" :entity="post" compact
+          /></b-row>
           <b-form v-if="editor.editing">
             <b-form-row>
               <b-col>

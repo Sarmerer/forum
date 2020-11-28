@@ -1,17 +1,17 @@
 <template>
-  <div class="rating-column rating-col">
-    <b-icon-chevron-up
+  <div :class="compact ? '' : 'rating-col'">
+    <b-icon-arrow-up-short
       @click.prevent="callback('up', entity)"
-      :class="type === 'post' ? 'h4 m-0' : 'h5 m-0'"
+      :class="compact ? 'h4 m-0' : 'h3 m-0'"
       :style="`color: ${entity.your_reaction == 1 ? 'green' : 'white'}`"
     >
-    </b-icon-chevron-up>
+    </b-icon-arrow-up-short>
     <span>{{ entity.rating }}</span>
-    <b-icon-chevron-down
+    <b-icon-arrow-down-short
       @click.prevent="callback('down', entity)"
-      :class="type === 'post' ? 'h4 m-0' : 'h5 m-0'"
+      :class="compact ? 'h4 m-0' : 'h3 m-0'"
       :style="`color: ${entity.your_reaction == -1 ? 'red' : 'white'}`"
-    ></b-icon-chevron-down>
+    ></b-icon-arrow-down-short>
   </div>
 </template>
 <script>
@@ -25,9 +25,8 @@ export default {
       type: Object,
       required: true,
     },
-    type: {
-      type: String,
-      required: true,
+    compact: {
+      type: Boolean,
     },
   },
 };
@@ -36,10 +35,9 @@ export default {
 <style lang="scss">
 .rating-col {
   display: flex;
-  align-items: center;
   flex-direction: column;
   text-align: left;
-  margin-left: -100px;
+  align-items: center;
 }
 </style>
 q

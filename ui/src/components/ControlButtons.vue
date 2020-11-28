@@ -1,50 +1,58 @@
 <template>
-  <transition name="fade">
-    <b-button-group v-if="hasPermission && !confirm" size="sm">
-      <b-button
-        size="sm"
-        class="controls-button"
-        variant="light"
-        title="Edit"
-        :disabled="disabled"
-        @click="call(editCallback)"
-      >
-        <b-icon-pencil-square color="white"></b-icon-pencil-square>
-      </b-button>
-      <b-button
-        size="sm"
-        variant="outline-danger"
-        class="controls-button"
-        title="Delete"
-        @click="confirm = true"
-        :disabled="disabled"
-      >
-        <b-icon-trash color="red"></b-icon-trash>
-      </b-button>
-    </b-button-group>
-    <b-button-group v-if="hasPermission && confirm" size="sm">
-      <b-button
-        size="sm"
-        variant="outline-success"
-        class="confirm"
-        @click="call(deleteCallback).then((confirm = false))"
-        title="Confirm"
-        :disabled="disabled"
-      >
-        <b-icon-check></b-icon-check>
-      </b-button>
-      <b-button
-        size="sm"
-        variant="outline-danger"
-        @click="confirm = false"
-        class="confirm"
-        title="Dismiss"
-        :disabled="disabled"
-      >
-        <b-icon-x></b-icon-x>
-      </b-button>
-    </b-button-group>
-  </transition>
+  <div>
+    <transition name="fade">
+      <b-button-group v-if="hasPermission && !confirm && !compact" size="sm">
+        <b-button
+          size="sm"
+          class="controls-button"
+          variant="light"
+          title="Edit"
+          :disabled="disabled"
+          @click="call(editCallback)"
+        >
+          <b-icon-pencil-square color="white"></b-icon-pencil-square>
+        </b-button>
+        <b-button
+          size="sm"
+          variant="outline-danger"
+          class="controls-button"
+          title="Delete"
+          @click="confirm = true"
+          :disabled="disabled"
+        >
+          <b-icon-trash color="red"></b-icon-trash>
+        </b-button>
+      </b-button-group>
+      <b-button-group v-if="hasPermission && confirm" size="sm">
+        <b-button
+          size="sm"
+          variant="outline-success"
+          class="confirm"
+          @click="call(deleteCallback).then((confirm = false))"
+          title="Confirm"
+          :disabled="disabled"
+        >
+          <b-icon-check></b-icon-check>
+        </b-button>
+        <b-button
+          size="sm"
+          variant="outline-danger"
+          @click="confirm = false"
+          class="confirm"
+          title="Dismiss"
+          :disabled="disabled"
+        >
+          <b-icon-x></b-icon-x>
+        </b-button>
+      </b-button-group>
+    </transition>
+    <b-icon-three-dots
+      v-if="compact"
+      class="mr-3"
+      @click="$bvModal.show('modal-menu')"
+    >
+    </b-icon-three-dots>
+  </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
@@ -55,6 +63,7 @@ export default {
     deleteCallback: { type: Object, required: true },
     editCallback: { type: Object, required: true },
     disabled: { type: Boolean, required: true },
+    compact: { type: Boolean },
   },
   computed: {
     ...mapGetters({
