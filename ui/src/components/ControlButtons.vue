@@ -49,7 +49,7 @@
     <b-icon-three-dots
       v-if="compact"
       class="mr-3"
-      @click="$bvModal.show('modal-menu')"
+      @click="$bvModal.show(modalID)"
     >
     </b-icon-three-dots>
   </div>
@@ -64,6 +64,7 @@ export default {
     editCallback: { type: Object, required: true },
     disabled: { type: Boolean, required: true },
     compact: { type: Boolean },
+    modalID: { type: String },
   },
   computed: {
     ...mapGetters({

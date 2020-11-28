@@ -116,35 +116,35 @@ export default {
     return {
       form: {
         login: "",
-        password: ""
+        password: "",
       },
       response: "",
-      authmodal: ["auth-modal"]
+      authmodal: ["auth-modal"],
     };
   },
   validations: {
     form: {
       login: {
-        required
+        required,
       },
       password: {
         required,
-        minLength: minLength(6)
-      }
-    }
+        minLength: minLength(6),
+      },
+    },
   },
   methods: {
     ...mapActions({
       signIn: "auth/signIn",
-      signUp: "auth/signUp"
+      signUp: "auth/signUp",
     }),
     submitSignIn() {
       this.signIn(this.form);
     },
     submitSignUp() {
       this.signUp(this.form);
-    }
-  }
+    },
+  },
 };
 </script>
 <style>

@@ -1,9 +1,10 @@
 <template>
   <div class="grid">
-    <b-modal id="modal-menu" centered hide-footer hide-header>
-      <b-icon-x color="black" class="fixed-top"></b-icon-x>
-      <p style="color:black">Delete</p>
-    </b-modal>
+    <ControlModal
+      :editCallback="{ callback: edit }"
+      :deleteCallback="{ callback: deletePost }"
+      modalID="modal-menu"
+    />
     <div class="columns">
       <div v-if="isMobile()" class="info-col">
         <PostStats :stats="postStats" />
@@ -26,6 +27,7 @@
                     :editCallback="{ callback: edit }"
                     :disabled="requesting"
                     :compact="isMobile()"
+                    modalID="modal-menu"
                   />
                 </b-col>
               </b-row>
@@ -43,7 +45,7 @@
               </div>
             </b-col>
           </b-row>
-          <b-row v-if="isMobile()" class="ml-2">
+          <b-row v-if="isMobile() && !editor.editing" class="ml-2">
             <Rating :callback="rate" :entity="post" compact
           /></b-row>
           <b-form v-if="editor.editing">
@@ -98,6 +100,7 @@
 </template>
 <script>
 import CommentsSection from "@/components/CommentsSection";
+import ControlModal from "@/components/ControlModal";
 import ControlButtons from "@/components/ControlButtons";
 import PostStats from "@/components/PostStats";
 import Rating from "@/components/Rating";
@@ -110,6 +113,7 @@ export default {
   },
   components: {
     CommentsSection,
+    ControlModal,
     ControlButtons,
     PostStats,
     Rating,

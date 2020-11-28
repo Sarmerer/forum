@@ -4,7 +4,7 @@
       <p class="made-with">
         Made with
         <a target="_blank" rel="noopener noreferrer" href="https://golang.org">
-          <img src="@/assets/svg/golang.svg" alt="Go" /></a
+          <img src="@/assets/svg/golang.svg" alt="Go"/></a
         >,
         <a target="_blank" rel="noopener noreferrer" href="https://vuejs.org">
           <img src="@/assets/svg/vue.svg" alt="Vue.js" />
@@ -44,6 +44,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  opacity: 0.87;
 }
 
 .container-m {
@@ -54,10 +55,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.made-with {
-  opacity: 87%;
+  opacity: 0.87;
 }
 
 .contacts {
@@ -69,6 +67,6 @@
 }
 
 .mentions p {
-  font-size: 0.5em;
+  font-size: 0.6em;
 }
 </style>

@@ -103,7 +103,6 @@ html {
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-  opacity: 87%;
 }
 
 .card-m {
@@ -111,13 +110,13 @@ html {
   padding: 10px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 5px 5px 6px 2px rgba(10, 10, 10, 0.3);
-  opacity: 87%;
 }
 
 .card,
 .card-m {
   word-break: break-word !important;
   overflow-wrap: break-word !important;
+  opacity: 0.87;
 }
 
 .card a {
