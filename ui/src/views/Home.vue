@@ -157,8 +157,7 @@
           </div>
           <div :class="isMobile() ? 'card-m' : 'card'">
             <h3 class="primary">
-              CATEGORIES
-              <b-button id="popover-filter-button">
+              CATEGORIES<b-button id="popover-filter-button">
                 <b-icon-three-dots-vertical></b-icon-three-dots-vertical>
               </b-button>
             </h3>
