@@ -96,10 +96,10 @@
             style="cursor: pointer"
           >
             <b-row>
-              <b-col cols="1">
+              <b-col cols="start">
                 <Rating :callback="rate" :entity="post" type="comment" />
               </b-col>
-              <b-col cols="11" class="post-content">
+              <b-col class="ml-2">
                 <small v-if="isMobile()">
                   <b-img :src="post.author.avatar" width="15px"></b-img>
                   <router-link
@@ -108,11 +108,7 @@
                   >
                     {{ post.author.display_name }}
                   </router-link>
-                  <time-ago
-                    tooltip
-                    :datetime="post.created"
-                    :long="!isMobile()"
-                  ></time-ago>
+                  <time-ago tooltip :datetime="post.created"></time-ago>
                 </small>
                 <h5>
                   {{ post.title }}
@@ -130,37 +126,42 @@
                 </b-form-tag>
               </b-col>
             </b-row>
-            <div class="post-footer">
-              <small>
-                <b-icon-chat></b-icon-chat>
-                {{ post.comments_count }}
-                <b-icon-people></b-icon-people>
-                {{ post.participants_count }}
-              </small>
+            <b-row class="ml-2">
+              <b-col cols="start">
+                <small>
+                  <b-icon-chat></b-icon-chat>
+                  {{ post.comments_count }}
+                  <b-icon-people></b-icon-people>
+                  {{ post.participants_count }}
+                </small>
+              </b-col>
 
               <!-- TODO: Make this look decent -->
               <!-- style is embedded here for responsiveness. MB fix later -->
-              <small v-if="isMobile()">
-                <Rating
-                  style="flex-direction: row; margin: 0"
-                  type="post"
-                  :callback="rate"
-                  :entity="post"
-                />
-              </small>
-              <small v-if="!isMobile()"
-                >by
-                <b-img :src="post.author.avatar" width="15px"></b-img>
-                <router-link :to="'/user/' + post.author.id" class="secondary">
-                  {{ post.author.display_name }}
-                </router-link>
-                <time-ago
-                  tooltip
-                  :datetime="post.created"
-                  :long="!isMobile()"
-                ></time-ago>
-              </small>
-            </div>
+              <b-col>
+                <small v-if="isMobile()">
+                  <Rating
+                    style="flex-direction: row; margin: 0"
+                    type="post"
+                    :callback="rate"
+                    :entity="post"
+                  />
+                </small>
+              </b-col>
+              <b-col cols="end">
+                <small v-if="!isMobile()"
+                  >by
+                  <b-img :src="post.author.avatar" width="15px"></b-img>
+                  <router-link
+                    :to="'/user/' + post.author.id"
+                    class="secondary"
+                  >
+                    {{ post.author.display_name }}
+                  </router-link>
+                  <time-ago tooltip :datetime="post.created" long></time-ago>
+                </small>
+              </b-col>
+            </b-row>
           </router-link>
           <!-- End of posts -->
         </div>
