@@ -44,7 +44,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  opacity: 87%;
+  opacity: 0.87;
 }
 
 .container-m {
@@ -55,7 +55,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  opacity: 87%;
+  opacity: 0.87;
 }
 
 .contacts {
