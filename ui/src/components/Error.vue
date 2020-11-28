@@ -2,13 +2,18 @@
   <div class="error-container">
     <h3 class="mb-4">{{ errorData.status }} {{ errorData.message }}</h3>
     <!-- TODO add overlay to prevent request spam -->
-    <b-button @click="errorData.callback()" variant="outline-light">retry</b-button>
+    <b-button @click="errorData.callback()" variant="outline-light"
+      >retry</b-button
+    >
   </div>
 </template>
 <script>
 export default {
   props: {
-    errorData: { type: Object, required: true },
+    errorData: {
+      type: Object,
+      default: () => ({ status: 500, message: "Something went wrong" }),
+    },
   },
 };
 </script>

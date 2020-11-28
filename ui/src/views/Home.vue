@@ -32,59 +32,12 @@
               last-number
             >
             </b-pagination>
-            <div v-if="posts.length > 1">
-              <b-button
-                variant="dark"
-                @click="sort(), toast('b-toaster-bottom-center', true)"
-                :disabled="sorter.throttled"
-                class="mx-2"
-                v-b-tooltip.hover
-                :title="sorter.asc ? 'Ascending' : 'Descending'"
-              >
-                <b-icon :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'">
-                </b-icon>
-              </b-button>
-              <b-button-group
-                ><b-button
-                  :disabled="sorter.throttled"
-                  @click="order('rating')"
-                  v-b-tooltip.hover
-                  title="Most liked"
-                  :variant="sorter.orderBy == 'rating' ? 'info' : 'dark'"
-                >
-                  <b-icon-heart></b-icon-heart>
-                </b-button>
-                <b-button
-                  :disabled="sorter.throttled"
-                  @click="order('created')"
-                  v-b-tooltip.hover
-                  title="Most recent"
-                  :variant="sorter.orderBy == 'created' ? 'info' : 'dark'"
-                  ><b-icon-clock></b-icon-clock>
-                </b-button>
-                <b-button
-                  :disabled="sorter.throttled"
-                  @click="order('comments_count')"
-                  v-b-tooltip.hover
-                  title="Most commented"
-                  :variant="
-                    sorter.orderBy == 'comments_count' ? 'info' : 'dark'
-                  "
-                  ><b-icon-chat-left></b-icon-chat-left>
-                </b-button>
-                <b-button
-                  :disabled="sorter.throttled"
-                  @click="order('total_participants')"
-                  v-b-tooltip.hover
-                  title="Most participants"
-                  :variant="
-                    sorter.orderBy == 'total_participants' ? 'info' : 'dark'
-                  "
-                >
-                  <b-icon-people></b-icon-people>
-                </b-button>
-              </b-button-group>
-            </div>
+            <PostFilters
+              v-if="posts.length > 1"
+              :orderCallback="order"
+              :sortCallback="sort"
+              :sorter="sorter"
+            />
           </b-row>
           <!-- Start of posts -->
           <router-link
@@ -96,7 +49,7 @@
             style="cursor: pointer"
           >
             <b-row>
-              <b-col cols="start">
+              <b-col v-if="!isMobile()" cols="start">
                 <Rating :callback="rate" :entity="post" type="post" />
               </b-col>
               <b-col class="ml-2">
@@ -127,25 +80,15 @@
               </b-col>
             </b-row>
             <b-row class="ml-2">
-              <b-col cols="start">
-                <small>
-                  <b-icon-chat></b-icon-chat>
-                  {{ post.comments_count }}
-                  <b-icon-people></b-icon-people>
-                  {{ post.participants_count }}
-                </small>
-              </b-col>
-
-              <!-- TODO: Make this look decent -->
-              <!-- style is embedded here for responsiveness. MB fix later -->
               <b-col>
-                <small v-if="isMobile()">
-                  <Rating
-                    style="flex-direction: row; margin: 0"
-                    type="post"
-                    :callback="rate"
-                    :entity="post"
-                  />
+                <small>
+                  <span v-b-tooltip.hover title="Comments">
+                    <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                  </span>
+                  <span v-b-tooltip.hover title="Participants">
+                    <b-icon-people></b-icon-people>
+                    {{ post.participants_count }}
+                  </span>
                 </small>
               </b-col>
               <b-col cols="end" class="mr-4">
@@ -161,6 +104,16 @@
                   <time-ago tooltip :datetime="post.created" long></time-ago>
                 </small>
               </b-col>
+              <b-col v-if="isMobile()" cols="end" class="mr-4">
+                <small>
+                  <Rating
+                    style="flex-direction: row; margin: 0"
+                    type="post"
+                    :callback="rate"
+                    :entity="post"
+                  />
+                </small>
+              </b-col>
             </b-row>
           </router-link>
           <!-- End of posts -->
@@ -169,23 +122,38 @@
         <div class="info-col">
           <div :class="isMobile() ? 'card-m' : 'card'">
             <h3 class="primary">RECENT</h3>
-            <router-link
-              :to="'/post/' + post.id"
-              v-for="(post, index) in recent"
-              :key="index"
-              tag="div"
-              style="cursor: pointer"
-            >
-              <p>
-                {{ post.title }}<br /><small class="text-muted">
+            <span v-if="recent.length == 0"
+              >None...
+              <router-link to="/new-post" class="secondary">yet</router-link>
+            </span>
+            <span v-else>
+              <router-link
+                :to="'/post/' + post.id"
+                v-for="(post, index) in recent"
+                :key="index"
+                tag="div"
+                class="ml-2"
+                style="cursor: pointer"
+              >
+                <small>
+                  <router-link
+                    :to="'/user/' + post.author.id"
+                    class="secondary"
+                  >
+                    {{ post.author.display_name }}
+                  </router-link>
                   <time-ago
                     tooltip
                     :datetime="post.created"
                     :long="!isMobile()"
-                  ></time-ago
-                ></small>
-              </p>
-            </router-link>
+                  >
+                  </time-ago>
+                </small>
+                <p>
+                  {{ post.title }}
+                </p>
+              </router-link>
+            </span>
           </div>
           <div :class="isMobile() ? 'card-m' : 'card'">
             <h3 class="primary">
@@ -195,7 +163,10 @@
               </b-button>
             </h3>
             <!-- Start of categories -->
-            <span v-if="categories.length == 0">None</span>
+            <span v-if="categories.length == 0"
+              >None...
+              <router-link to="/new-post" class="secondary">yet</router-link>
+            </span>
             <b-container v-else>
               <div class="categories">
                 <b-form-checkbox-group
@@ -231,7 +202,8 @@
             >
             <br />
             <b-button v-on:click="resetCategories()" style="width: 135px">
-              <b-icon-arrow-clockwise></b-icon-arrow-clockwise> reset</b-button
+              <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
+              reset</b-button
             >
           </b-popover>
         </div>
@@ -246,6 +218,7 @@ import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
+import PostFilters from "@/components/PostFilters";
 
 export default {
   name: "Home",
@@ -255,8 +228,9 @@ export default {
     }),
   },
   components: {
-    Rating,
+    PostFilters,
     TimeAgo,
+    Rating,
     Error,
   },
   data() {
@@ -339,17 +313,6 @@ export default {
           this.sorter.throttled = false;
         }, 1000)
       );
-    },
-    toast(toaster, append = true) {
-      var message = this.sorter.asc ? "ascending" : "descending";
-      this.$bvToast.toast(`Posts sorted in ${message} order.`, {
-        // title: `YAY`,
-        toaster: toaster,
-        solid: true,
-        // variant: "secondary",
-        appendToast: append,
-        noCloseButton: true,
-      });
     },
     async rate(reaction, post) {
       if (this.requesting) return;
@@ -434,17 +397,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-}
-
-ul#filters {
-  padding: 0;
-  margin: 0;
-}
-
-ul#filters li {
-  display: inline;
-  padding: 7px;
-  font-size: 22px;
 }
 
 .categories {
