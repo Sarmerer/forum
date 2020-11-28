@@ -383,6 +383,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: large;
+  opacity: 87%;
 }
 
 .post-content {

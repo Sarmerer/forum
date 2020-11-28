@@ -1,12 +1,22 @@
 <template>
   <div :class="isMobile() ? 'container-m' : 'container'">
     <div class="contacts">
-      <p>
+      <p class="made-with">
         Made with
-        <img src="@/assets/svg/golang.svg" alt="Go" srcset="" />,
-        <img src="@/assets/svg/vue.svg" alt="Vue.js" srcset="" />
+        <a target="_blank" rel="noopener noreferrer" href="https://golang.org">
+          <img src="@/assets/svg/golang.svg" alt="Go"/></a
+        >,
+        <a target="_blank" rel="noopener noreferrer" href="https://vuejs.org">
+          <img src="@/assets/svg/vue.svg" alt="Vue.js" />
+        </a>
         and
-        <img src="@/assets/svg/heart.svg" alt="love" srcset="" />
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLneRaqXoYlV10RUsU6uP-6cicVmwr0g2O&index=400"
+        >
+          <img src="@/assets/svg/heart.svg" alt="love" />
+        </a>
       </p>
     </div>
     <div class="mentions primary">
@@ -44,6 +54,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.made-with {
+  opacity: 87%;
 }
 
 .contacts {
