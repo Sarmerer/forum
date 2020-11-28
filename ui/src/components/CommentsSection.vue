@@ -65,6 +65,11 @@
       :key="index"
       class="ml-3 mr-3 mt-2"
     >
+      <ControlModal
+        :editCallback="{ callback: edit, args: [index, comment.content] }"
+        :deleteCallback="{ callback: deleteComment, args: [comment.id, index] }"
+        :modalID="'modal-menu' + index"
+      />
       <div>
         <div v-if="index != editor.editing">
           <b-row>
@@ -96,6 +101,7 @@
                 }"
                 :disabled="deleting"
                 :compact="isMobile()"
+                :modalID="'modal-menu' + index"
               />
             </b-col>
           </b-row>
@@ -160,6 +166,7 @@
 </template>
 <script>
 import ControlButtons from "@/components/ControlButtons";
+import ControlModal from "./ControlModal";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
 import { mapGetters } from "vuex";
@@ -191,6 +198,7 @@ export default {
   },
   components: {
     ControlButtons,
+    ControlModal,
     TimeAgo,
     Rating,
   },
