@@ -4,7 +4,7 @@
       <p class="made-with">
         Made with
         <a target="_blank" rel="noopener noreferrer" href="https://golang.org">
-          <img src="@/assets/svg/golang.svg" alt="Go"/></a
+          <img src="@/assets/svg/golang.svg" alt="Go" /></a
         >,
         <a target="_blank" rel="noopener noreferrer" href="https://vuejs.org">
           <img src="@/assets/svg/vue.svg" alt="Vue.js" />
@@ -19,7 +19,7 @@
         </a>
       </p>
     </div>
-    <div class="mentions primary">
+    <div class="mentions">
       <p>
         2020 | by
         <a href="http://github.com/sarmerer" class="secondary">
