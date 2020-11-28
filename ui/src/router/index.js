@@ -36,7 +36,14 @@ const routes = [
     path: "/new-post",
     name: "New Post",
     component: () =>
-      import(/* webpackChunkName: "user" */ "@/views/NewPost.vue"),
+      import(/* webpackChunkName: "New Post" */ "@/views/NewPost.vue"),
+    beforeEnter(to, from, next) {
+      if (!store.getters["auth/authenticated"]) {
+        next("/authorize");
+      } else {
+        next();
+      }
+    },
   },
   {
     path: "/user/:id",
@@ -45,6 +52,19 @@ const routes = [
       titleSetInComponent: true,
     },
     component: () => import(/* webpackChunkName: "user" */ "@/views/User.vue"),
+  },
+  {
+    path: "/authorize",
+    name: "Authorize",
+    component: () =>
+      import(/* webpackChunkName: "Authorize" */ "@/views/Auth.vue"),
+    beforeEnter(to, from, next) {
+      if (store.getters["auth/authenticated"]) {
+        next("/");
+      } else {
+        next();
+      }
+    },
   },
   {
     path: "/dashboard/:role",
