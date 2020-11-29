@@ -2,7 +2,6 @@ package response
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -31,9 +30,9 @@ func JSON(w http.ResponseWriter, responseStatus string, httpStatus int, message,
 // Error acts as a template for a JSON function.
 // It automatically sets status to "error"
 func Error(w http.ResponseWriter, httpStatus int, err error) {
-	fmt.Println(err)
 	w.WriteHeader(httpStatus)
 	JSON(w, "error", httpStatus, err.Error(), nil)
+	panic(err)
 }
 
 // Success acts as a template for a JSON function.

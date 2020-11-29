@@ -33,24 +33,32 @@
         </b-form>
       </div>
       <div class="info-col">
-        <div class="card user-card">
-          <img :src="user.avatar" alt="avatar" />
-          <h3 class="primary">
-            {{ user.display_name }}
-            <b-badge v-if="user.role == 2" class="background-variant"
-              >Admin</b-badge
-            >
-          </h3>
-        </div>
+        <UserCard :userData="user" />
       </div>
     </div>
   </div>
 </template>
 <script>
 import axios from "axios";
+import UserCard from "@/components/UserCard";
 import { mapGetters } from "vuex";
 
 export default {
+  watch: {
+    "$route.params": {
+      handler(newID) {
+        const { id } = newID;
+        this.postID = Number.parseInt(id);
+      },
+      immediate: true,
+    },
+  },
+  computed: {
+    ...mapGetters({
+      user: "auth/user",
+    }),
+  },
+  components: { UserCard },
   data() {
     return {
       form: {
@@ -91,20 +99,6 @@ export default {
       this.form.categories = [];
     },
   },
-  watch: {
-    "$route.params": {
-      handler(newID) {
-        const { id } = newID;
-        this.postID = Number.parseInt(id);
-      },
-      immediate: true,
-    },
-  },
-  computed: {
-    ...mapGetters({
-      user: "auth/user",
-    }),
-  },
 };
 </script>
 <style lang="scss">
@@ -117,15 +111,6 @@ form .btn {
 form .btn:hover {
   background-color: #278ea5;
   opacity: 0.8;
-}
-.user-card img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 15px;
-  width: 150px;
-  height: 150px;
-  border-radius: 150px;
 }
 
 #new-post {

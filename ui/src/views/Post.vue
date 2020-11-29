@@ -7,7 +7,7 @@
     />
     <div class="columns">
       <div v-if="isMobile()" class="info-col">
-        <PostStats :stats="postStats" />
+        <UserCard v-if="post.author" :userData="post.author" />
       </div>
       <div class="main-col">
         <div :class="isMobile() ? 'card-m' : 'card'">
@@ -93,7 +93,7 @@
         <CommentsSection :postID="postID" />
       </div>
       <div v-if="!isMobile()" class="info-col">
-        <PostStats :stats="postStats" />
+        <UserCard v-if="post.author" :userData="post.author" />
       </div>
     </div>
   </div>
@@ -102,7 +102,7 @@
 import CommentsSection from "@/components/CommentsSection";
 import ControlModal from "@/components/ControlModal";
 import ControlButtons from "@/components/ControlButtons";
-import PostStats from "@/components/PostStats";
+import UserCard from "@/components/UserCard";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
 import axios from "axios";
@@ -115,7 +115,7 @@ export default {
     CommentsSection,
     ControlModal,
     ControlButtons,
-    PostStats,
+    UserCard,
     Rating,
   },
   computed: {
@@ -163,9 +163,7 @@ export default {
           this.postStats = {
             commentsCount: result.comments_count,
             participantsCount: result.participants_count,
-            lastCommentFromID: result.last_comment_from_id,
-            lastCommentFromName: result.last_comment_from_name,
-            lastCommentDate: result.last_comment_date,
+            lastComment: result.last_comment,
           };
         })
         .catch((error) => {

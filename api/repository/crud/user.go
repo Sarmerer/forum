@@ -28,6 +28,32 @@ func NewUserRepoCRUD() UserRepoCRUD {
 	return UserRepoCRUD{}
 }
 
+func fetchUserStats(user *models.User) error {
+	var (
+		err error
+	)
+	if err = repository.DB.QueryRow(
+		`SELECT
+  		COUNT(id) as posts_count,
+    		(SELECT
+      		COUNT(id)
+    	FROM
+      		comments
+    	WHERE
+      		author_id_fkey = $1
+ 	 	) AS comments_count
+		FROM
+  			posts_reactions
+		WHERE
+		  user_id_fkey = $1`, user.ID,
+	).Scan(&user.Posts, &user.Comments); err != nil {
+		if err == sql.ErrNoRows {
+			return err
+		}
+	}
+	return nil
+}
+
 //FindAll returns all users in the database
 //FIXME don't scan for sensetive data, like password and session id
 func (UserRepoCRUD) FindAll() ([]models.User, error) {
@@ -62,16 +88,20 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 				email,
 				avatar,
 				display_name,
+				last_online,
 				role
 		FROM users
 		WHERE id = ?`, userID,
 	).Scan(
-		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Role,
+		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.LastOnline, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusNotFound, errors.New("user not found")
+	}
+	if err = fetchUserStats(&u); err != nil {
+		return nil, http.StatusInternalServerError, err
 	}
 	return &u, http.StatusOK, nil
 }

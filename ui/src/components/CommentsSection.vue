@@ -80,12 +80,21 @@
               </router-link>
             </b-col>
             <b-col>
-              <small v-b-tooltip.hover :title="comment.created">
+              <small>
                 <time-ago
+                  v-b-tooltip.hover
+                  :title="comment.created"
                   :datetime="comment.created"
                   :long="!isMobile()"
                 ></time-ago>
-                <small v-if="comment.edited" class="text-muted"> edited</small>
+                <small
+                  v-b-tooltip.hover
+                  :title="comment.edited"
+                  v-if="comment.edited != comment.created"
+                  class="text-muted"
+                >
+                  edited</small
+                >
               </small>
             </b-col>
             <b-col cols="end" class="mr-n2">

@@ -2,15 +2,7 @@
   <div class="grid">
     <div class="columns">
       <div class="info-col">
-        <div :class="`user-card ${isMobile() ? 'card-m' : 'card'}`">
-          <img :src="user.avatar" alt="avatar" />
-          <h3 class="primary">
-            {{ user.display_name }}
-            <b-badge v-if="user.role == 2" class="background-variant"
-              >Admin</b-badge
-            >
-          </h3>
-        </div>
+        <UserCard :userData="user" />
       </div>
       <div class="main-col">
         <div class="user-info">
@@ -54,7 +46,7 @@
                 </small>
               </router-link>
             </b-tab>
-            <b-tab title="Replies" @click="getComments()">
+            <b-tab title="Comments" @click="getComments()">
               <router-link
                 :to="'/post/' + comment.post"
                 :class="`user-card ${isMobile() ? 'card-m' : 'card'}`"
@@ -93,6 +85,7 @@
 <script>
 import axios from "axios";
 import TimeAgo from "vue2-timeago";
+import UserCard from "@/components/UserCard";
 
 export default {
   data() {
@@ -109,6 +102,7 @@ export default {
   },
   components: {
     TimeAgo,
+    UserCard,
   },
   methods: {
     reactionColor(yourReaction) {

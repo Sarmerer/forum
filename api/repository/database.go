@@ -76,7 +76,7 @@ func CheckDBIntegrity() (err error) {
 			content TEXT,
 			created TEXT,
 			post_id_fkey INTEGER REFERENCES posts(id),
-			edited INTEGER
+			edited TEXT
 		)`); err != nil {
 		return err
 	}
