@@ -21,8 +21,11 @@ func NewPostRepoCRUD() PostRepoCRUD {
 	return PostRepoCRUD{}
 }
 
-func fetchAuthorAndCategories(p *models.Post) (err error) {
-	var status int
+func fetchAuthorAndCategories(p *models.Post) error {
+	var (
+		status int
+		err    error
+	)
 	if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 		p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 	}
@@ -48,37 +51,38 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	if posts, err = repository.DB.Query(
 		fmt.Sprintf(
 			`SELECT *,
-	(
-		SELECT TOTAL(reaction)
-		FROM posts_reactions
-		WHERE post_id_fkey = p.id
-	) AS rating,
-	IFNULL (
-		(
-			SELECT reaction
-			FROM posts_reactions
-			WHERE user_id_fkey = $1
-				AND post_id_fkey = p.id
-		),
-		0
-	) AS your_reaction,
-	(
-		SELECT count(id)
-		FROM comments
-		WHERE post_id_fkey = p.id
-	) AS comments_count,
-	IFNULL (
-		(
-			SELECT COUNT(DISTINCT author_id_fkey)
-			FROM comments
-			WHERE post_id_fkey = p.id
-		),
-		0
-	) AS total_participants
-	FROM posts p
-	ORDER BY %s
-	LIMIT $2
-	OFFSET $3`, input.OrderBy), userID, input.PerPage, offset,
+			(
+				SELECT TOTAL(reaction)
+				FROM posts_reactions
+				WHERE post_id_fkey = p.id
+			) AS rating,
+			IFNULL (
+				(
+					SELECT reaction
+					FROM posts_reactions
+					WHERE user_id_fkey = $1
+						AND post_id_fkey = p.id
+				),
+				0
+			) AS your_reaction,
+			(
+				SELECT count(id)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			) AS comments_count,
+			IFNULL (
+				(
+					SELECT COUNT(DISTINCT author_id_fkey)
+					FROM comments
+					WHERE post_id_fkey = p.id
+				),
+				0
+			) AS total_participants
+			FROM posts p
+			ORDER BY %s
+			LIMIT $2 OFFSET $3`,
+			input.OrderBy),
+		userID, input.PerPage, offset,
 	); err != nil {
 		return nil, err
 	}
@@ -157,14 +161,20 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 			),
 			0
 		) AS your_reaction,
-		c.*
+		(
+			SELECT COUNT(id)
+			FROM comments
+			WHERE post_id_fkey = p.id
+		) AS comments_count,
+		IFNULL (
+			(
+				SELECT COUNT(DISTINCT author_id_fkey)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			),
+			0
+		) AS total_participants
 		FROM posts p
-		JOIN(
-			SELECT COUNT(id) AS comments_count,
-				COUNT(DISTINCT author_id_fkey) AS total_participants
-			FROM comments c
-			WHERE post_id_fkey = $2
-		) AS c
 		WHERE p.id = $2`,
 		userID, postID,
 	).Scan(
@@ -184,7 +194,7 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 	return &p, http.StatusOK, nil
 }
 
-func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
+func (PostRepoCRUD) FindByAuthor(userID int64) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
@@ -213,7 +223,7 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 		) AS comments_count
 	FROM posts p
 	WHERE p.author_id_fkey = $1`,
-		uid,
+		userID,
 	); err != nil {
 		return nil, err
 	}
