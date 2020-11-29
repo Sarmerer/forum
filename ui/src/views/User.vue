@@ -1,7 +1,7 @@
 <template>
   <div class="grid">
     <div class="columns">
-      <div class="info-col">
+      <div class="info-col" v-if="user && isMobile()">
         <UserCard :userData="user" />
       </div>
       <div class="main-col">
@@ -78,6 +78,9 @@
             </b-tab>
           </b-tabs>
         </div>
+      </div>
+      <div class="info-col" v-if="user && !isMobile()">
+        <UserCard :userData="user" />
       </div>
     </div>
   </div>
@@ -166,23 +169,13 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .user-info .user-card {
   cursor: pointer;
 }
 
 .user-info .user-card:hover {
   opacity: 0.8;
-}
-
-.user-card img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 15px;
-  width: 150px;
-  height: 150px;
-  border-radius: 150px;
 }
 
 .user-card h3 {

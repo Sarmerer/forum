@@ -15,30 +15,52 @@
           <div>
             <Error v-if="error.show" :errorData="error" />
           </div>
-          <b-row
-            align-h="between"
-            align-v="end"
-            class="mx-3 mt-3"
-            v-if="posts.length > 0"
-          >
-            <b-pagination
-              v-if="posts.total_rows > pagination.perPage"
-              v-model="pagination.currentPage"
-              :total-rows="pagination.totalPages"
-              :per-page="pagination.perPage"
-              aria-controls="my-table"
-              @change="handlePageChange"
-              first-number
-              last-number
-            >
-            </b-pagination>
-            <PostFilters
-              v-if="posts.length > 1"
-              :orderCallback="order"
-              :sortCallback="sort"
-              :sorter="sorter"
-            />
+          <b-row class="mx-3 mt-3" v-if="posts.length > 0 && !isMobile()">
+            <b-col align=" start" v-if="posts.total_rows > pagination.perPage">
+              <b-pagination
+                v-model="pagination.currentPage"
+                :total-rows="pagination.totalPages"
+                :per-page="pagination.perPage"
+                aria-controls="my-table"
+                @change="handlePageChange"
+                first-number
+                last-number
+              >
+              </b-pagination>
+            </b-col>
+            <b-col v-if="posts.length > 1" align="end">
+              <PostFilters
+                :orderCallback="order"
+                :sortCallback="sort"
+                :sorter="sorter"
+              />
+            </b-col>
           </b-row>
+          <b-container v-if="posts.length > 0 && isMobile()">
+            <b-row
+              v-if="posts.total_rows > pagination.perPage"
+              align-h="center"
+              class="mb-2"
+            >
+              <b-pagination
+                v-model="pagination.currentPage"
+                :total-rows="pagination.totalPages"
+                :per-page="pagination.perPage"
+                aria-controls="my-table"
+                @change="handlePageChange"
+                first-number
+                last-number
+              >
+              </b-pagination>
+            </b-row>
+            <b-row v-if="posts.length > 1" align-h="center">
+              <PostFilters
+                :orderCallback="order"
+                :sortCallback="sort"
+                :sorter="sorter"
+              />
+            </b-row>
+          </b-container>
           <!-- Start of posts -->
           <router-link
             :to="'/post/' + post.id"
