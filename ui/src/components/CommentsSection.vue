@@ -116,7 +116,7 @@
         </div>
         <div v-if="hasPermission(comment) && index == editor.editing">
           <b-row>
-            <b-col>
+            <b-col class="ml-n3">
               <b-form-textarea
                 class="textarea"
                 ref="editComment"
@@ -160,6 +160,7 @@
           </b-row>
         </div>
       </div>
+      <hr v-if="index != comments.length - 1" class="comment-divider" />
     </div>
     <!-- Comments-end -->
   </div>
@@ -380,5 +381,11 @@ export default {
 .authorize-button:hover {
   background-color: #21e6c1;
   opacity: 0.8;
+}
+
+.comment-divider {
+  margin: 5px -10px 5px;
+  border: 0;
+  border-top: 1px solid #121212;
 }
 </style>
