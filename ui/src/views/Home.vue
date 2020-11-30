@@ -288,7 +288,6 @@ export default {
           ascending: this.sorter.asc,
         })
         .then((response) => {
-          console.log(response.data.data);
           this.error.show = false;
           this.posts = response.data.data.hot || [];
           this.recent = response.data.data.recent || [];
@@ -319,6 +318,7 @@ export default {
       this.throttle();
     },
     order(by) {
+      if (this.sorter.orderBy === by) return;
       this.sorter.orderBy = this.sorter.orderBy = by;
       this.throttle();
     },

@@ -39,29 +39,34 @@ func fetchUserStats(user *models.User) error {
 			FROM comments
 			WHERE author_id_fkey = $1
 		) AS comments_count,
-		SUM (
-			(
-				SELECT IFNULL(pr.rating, 0)
-				FROM posts p
-					LEFT JOIN (
-						SELECT post_id_fkey,
-							TOTAL(reaction) AS rating
-						FROM posts_reactions
-					) pr ON pr.post_id_fkey = p.id
-				WHERE author_id_fkey = $1
-			) + (
-				SELECT IFNULL(cr.rating, 0)
-				FROM comments c
-					LEFT JOIN (
-						SELECT comment_id_fkey,
-							TOTAL(reaction) AS rating
-						FROM comments_reactions
-					) cr ON cr.comment_id_fkey = c.id
-				WHERE author_id_fkey = $1
+		SUM(
+			IFNULL(
+				(
+					SELECT (
+							SELECT TOTAL(reaction)
+							FROM posts_reactions pr
+							WHERE pr.post_id_fkey = p.id
+						)
+					FROM posts p
+					WHERE author_id_fkey = $1
+				),
+				0
+			) + IFNULL(
+				(
+					SELECT (
+							SELECT TOTAL(reaction)
+							FROM comments_reactions cr
+							WHERE cr.comment_id_fkey = c.id
+						)
+					FROM comments c
+					WHERE author_id_fkey = $1
+				),
+				0
 			)
 		) AS rating
-		FROM posts_reactions
-		WHERE user_id_fkey = $1`, user.ID,
+		FROM posts
+		WHERE author_id_fkey = $1`,
+		user.ID,
 	).Scan(&user.Posts, &user.Comments, &user.Rating); err != nil {
 		if err == sql.ErrNoRows {
 			return err

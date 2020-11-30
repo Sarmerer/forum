@@ -2,12 +2,12 @@
   <div class="grid">
     <div class="columns">
       <div class="info-col" v-if="user && isMobile()">
-        <UserCard s:userData="user" />
+        <UserCard :userData="user" />
       </div>
       <div class="main-col">
         <div class="user-info">
-          <b-tabs card>
-            <b-tab title="Posts" active @click="getPosts()">
+          <b-tabs card v-if="posts.length > 0 || comments.length > 0">
+            <b-tab v-if="posts.length" title="Posts" active @click="getPosts()">
               <router-link
                 :to="'/post/' + post.id"
                 v-for="post in posts"
@@ -46,7 +46,11 @@
                 </small>
               </router-link>
             </b-tab>
-            <b-tab title="Comments" @click="getComments()">
+            <b-tab
+              v-if="comments.length"
+              title="Comments"
+              @click="getComments()"
+            >
               <router-link
                 :to="'/post/' + comment.post"
                 :class="`user-card ${isMobile() ? 'card-m' : 'card'}`"
@@ -77,6 +81,10 @@
               </router-link>
             </b-tab>
           </b-tabs>
+          <b-container v-else align="center">
+            <b-img fluid src="@/assets/img/masterpiece.png"> </b-img>
+            <p>It's so empty here...</p>
+          </b-container>
         </div>
       </div>
       <div class="info-col" v-if="user && !isMobile()">
@@ -91,6 +99,11 @@ import TimeAgo from "vue2-timeago";
 import UserCard from "@/components/UserCard";
 
 export default {
+  watch: {
+    "$route.params.id": function() {
+      this.$router.go();
+    },
+  },
   data() {
     return {
       user: {},
@@ -160,7 +173,7 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
 .user-info .user-card {
   cursor: pointer;
 }

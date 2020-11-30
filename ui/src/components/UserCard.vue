@@ -55,7 +55,7 @@
           <h4 class="primary m-0">
             {{ userData.display_name }}
             <b-badge v-if="userData.role == 2" class="background-variant">
-              <b-icon-people></b-icon-people>
+              <b-icon-code-slash></b-icon-code-slash>
             </b-badge>
           </h4>
         </b-col>

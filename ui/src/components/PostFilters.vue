@@ -14,7 +14,7 @@
       <b-button
         v-for="filter in filters"
         :key="filter.orderBy"
-        :disabled="sorter.throttled || sorter.orderBy == filter.orderBy"
+        :disabled="sorter.throttled"
         @click="orderCallback(filter.orderBy)"
         v-b-tooltip.hover
         :title="`${sorter.asc ? 'Most' : 'Least'} ${filter.title}`"
