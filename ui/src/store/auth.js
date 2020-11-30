@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/router/api";
 
 export default {
   namespaced: true,
@@ -20,7 +20,7 @@ export default {
   },
   actions: {
     async signUp({ dispatch }, credentials) {
-      await axios
+      await api
         .post(`auth/signup`, credentials)
         .then(() => {
           dispatch("attempt");
@@ -28,7 +28,7 @@ export default {
         .catch((error) => console.log(error));
     },
     async signIn({ dispatch }, credentials) {
-      await axios
+      await api
         .post(`auth/signin`, credentials)
         .then(() => {
           dispatch("attempt");
@@ -37,12 +37,12 @@ export default {
     },
     async signOut({ commit }) {
       //FIXME fix case when you log in from a new place, and then try to log out from the first session
-      return axios.post("auth/signout").finally(() => {
+      return api.post("auth/signout").finally(() => {
         commit("setUser", null);
       });
     },
     async attempt({ commit }) {
-      return await axios
+      return await api
         .get("auth/me")
         .then((response) => commit("setUser", response.data.data))
         .catch(() => commit("setUser", null));

@@ -39,7 +39,7 @@
   </div>
 </template>
 <script>
-import axios from "axios";
+import api from "@/router/api";
 import UserCard from "@/components/UserCard";
 import { mapGetters } from "vuex";
 
@@ -72,16 +72,12 @@ export default {
   methods: {
     onSubmit(e) {
       e.preventDefault();
-      axios
-        .post(
-          "post/create",
-          {
-            title: this.form.title,
-            content: this.form.content,
-            categories: this.form.categories,
-          },
-          { withCredentials: true }
-        )
+      api
+        .post("post/create", {
+          title: this.form.title,
+          content: this.form.content,
+          categories: this.form.categories,
+        })
         .then((response) => {
           this.resetForm();
           this.$router.push({
@@ -101,7 +97,7 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 form .btn {
   background-color: #278ea5;
   border: none;

@@ -2,7 +2,7 @@
   <div class="grid">
     <div class="columns">
       <div class="info-col" v-if="user && isMobile()">
-        <UserCard :userData="user" />
+        <UserCard s:userData="user" />
       </div>
       <div class="main-col">
         <div class="user-info">
@@ -86,7 +86,7 @@
   </div>
 </template>
 <script>
-import axios from "axios";
+import api from "@/router/api";
 import TimeAgo from "vue2-timeago";
 import UserCard from "@/components/UserCard";
 
@@ -115,10 +115,9 @@ export default {
       return yourReaction === -1 ? "arrow-down" : "arrow-up";
     },
     async getUser() {
-      return await axios
+      return await api
         .get("user", {
           params: { id: this.$route.params.id },
-          withCredentials: true,
         })
         .then((response) => {
           this.user = response.data.data;
@@ -131,15 +130,11 @@ export default {
     async getPosts() {
       if (this.activeTab === "posts") return;
       this.activeTab = "posts";
-      return await axios
-        .post(
-          "post/find",
-          {
-            by: "author",
-            author: Number.parseInt(this.$route.params.id),
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .post("post/find", {
+          by: "author",
+          author: Number.parseInt(this.$route.params.id),
+        })
         .then((response) => {
           this.posts = response.data.data || [];
         })
@@ -150,15 +145,11 @@ export default {
     async getComments() {
       if (this.activeTab === "comments") return;
       this.activeTab = "comments";
-      return await axios
-        .post(
-          "comments/find",
-          {
-            by: "user_id",
-            id: Number.parseInt(this.$route.params.id),
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .post("comments/find", {
+          by: "user_id",
+          id: Number.parseInt(this.$route.params.id),
+        })
         .then((response) => {
           this.comments = response.data.data || [];
         })

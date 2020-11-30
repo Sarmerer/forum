@@ -1,9 +1,10 @@
 <template>
   <div :class="isMobile() ? 'card-m' : 'card'">
     <div v-if="!isMobile()">
-      <b-row >
+      <b-row>
         <b-col align="center">
           <b-img-lazy
+            v-if="userData.avatar"
             :src="userData.avatar"
             alt="avatar"
             rounded="circle"
@@ -39,11 +40,11 @@
       </b-row>
     </div>
 
-    
     <div v-else>
       <b-row align-v="center">
         <b-col align="center">
           <b-img-lazy
+            v-if="userData.avatar"
             :src="userData.avatar"
             alt="avatar"
             rounded="circle"
@@ -89,18 +90,3 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-.user-card {
-  cursor: pointer;
-}
-
-// .user-card img {
-//   display: block;
-//   margin-left: auto;
-//   margin-right: auto;
-//   margin-bottom: 15px;
-//   width: 150px;
-//   height: 150px;
-//   border-radius: 150px;
-// }
-</style>

@@ -180,7 +180,7 @@ import ControlModal from "./ControlModal";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
 import { mapGetters } from "vuex";
-import axios from "axios";
+import api from "@/router/api";
 
 export default {
   props: {
@@ -233,10 +233,9 @@ export default {
       return comment?.author?.id == this.user?.id || this.user?.role > 0;
     },
     async getComments() {
-      return await axios
+      return await api
         .get("/comments", {
           params: { id: this.postID },
-          withCredentials: true,
         })
         .then((response) => {
           this.comments = response.data.data || [];
@@ -248,10 +247,9 @@ export default {
     async deleteComment(actualID, IDInList) {
       this.editor.editing = -1;
       this.deleting = true;
-      return await axios
+      return await api
         .delete("comment/delete", {
           params: { id: actualID },
-          withCredentials: true,
         })
         .then(() => {
           this.comments.splice(IDInList, 1);
@@ -265,12 +263,8 @@ export default {
     async addComment() {
       if (!this.properCommentLength) return;
       this.editor.editing = -1;
-      return await axios
-        .post(
-          "comment/add",
-          { id: this.postID, content: this.form.comment },
-          { withCredentials: true }
-        )
+      return await api
+        .post("comment/add", { id: this.postID, content: this.form.comment })
         .then((response) => {
           if (response.data.data)
             this.comments = [response.data.data, ...this.comments];
@@ -289,15 +283,11 @@ export default {
         return;
       }
       this.editor.requesting = true;
-      return await axios
-        .put(
-          "comment/update",
-          {
-            id: actualID,
-            content: this.editor.editingContent,
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .put("comment/update", {
+          id: actualID,
+          content: this.editor.editingContent,
+        })
         .then((response) => {
           if (response.data.data)
             this.comments[this.editor.editing] = response.data.data;
@@ -332,12 +322,8 @@ export default {
       ) {
         r = 0;
       }
-      await axios
-        .post(
-          "comment/rate",
-          { id: comment.id, reaction: r },
-          { withCredentials: true }
-        )
+      await api
+        .post("comment/rate", { id: comment.id, reaction: r })
         .then((response) => {
           comment.rating = response.data.data.rating;
           comment.your_reaction = response.data.data.your_reaction;

@@ -28,7 +28,7 @@
   </div>
 </template>
 <script>
-import axios from "axios";
+import api from "@/router/api";
 
 export default {
   data() {
@@ -51,8 +51,8 @@ export default {
   },
   methods: {
     async getUsers() {
-      return await axios
-        .get("/users", { withCredentials: true })
+      return await api
+        .get("/users")
         .then((response) => {
           this.users = response.data.data || [];
           let u = this.users[0];

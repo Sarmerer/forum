@@ -234,7 +234,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import api from "@/router/api";
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
@@ -280,17 +280,13 @@ export default {
       await this.getPosts(value);
     },
     async getPosts(currentPage) {
-      return await axios
-        .post(
-          "posts",
-          {
-            per_page: this.pagination.perPage,
-            current_page: currentPage,
-            order_by: this.sorter.orderBy,
-            ascending: this.sorter.asc,
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .post("posts", {
+          per_page: this.pagination.perPage,
+          current_page: currentPage,
+          order_by: this.sorter.orderBy,
+          ascending: this.sorter.asc,
+        })
         .then((response) => {
           console.log(response.data.data);
           this.error.show = false;
@@ -309,8 +305,8 @@ export default {
         });
     },
     async getCategories() {
-      return await axios
-        .get("categories", { withCredentials: true })
+      return await api
+        .get("categories")
         .then((response) => {
           this.categories = response.data.data || [];
         })
@@ -344,12 +340,8 @@ export default {
       ) {
         r = 0;
       }
-      await axios
-        .post(
-          "post/rate",
-          { id: post.id, reaction: r },
-          { withCredentials: true }
-        )
+      await api
+        .post("post/rate", { id: post.id, reaction: r })
         .then((response) => {
           post.your_reaction = response.data.data.your_reaction;
           post.rating = response.data.data.rating;
@@ -359,15 +351,11 @@ export default {
         });
     },
     async sortByCategories() {
-      await axios
-        .post(
-          "post/find",
-          {
-            by: "categories",
-            categories: this.selectedCategories,
-          },
-          { withCredentials: true }
-        )
+      await api
+        .post("post/find", {
+          by: "categories",
+          categories: this.selectedCategories,
+        })
         .then((response) => {
           console.log(response.data.data);
           this.posts = response.data.data || [];

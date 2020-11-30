@@ -5,21 +5,19 @@ import "./plugins/bootstrap-vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import axios from "axios";
 import "./assets/styles.scss"; // Global styles
 import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
+import api from "@/router/api";
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
 
 Vue.config.productionTip = false;
 
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = process.env.VUE_APP_API_URL;
-
 store.dispatch("auth/attempt").then(() => {
   new Vue({
     router,
+    api,
     store,
     render: (h) => h(App),
   }).$mount("#app");
