@@ -215,21 +215,29 @@ func (PostRepoCRUD) FindByAuthor(userID int64) ([]models.Post, error) {
 					AND post_id_fkey = p.id
 			),
 			0
-		) AS yor_reaction,
+		) AS your_reaction,
 		(
 			SELECT count(id)
 			FROM comments
 			WHERE post_id_fkey = p.id
-		) AS comments_count
-	FROM posts p
-	WHERE p.author_id_fkey = $1`,
+		) AS comments_count,
+		IFNULL (
+			(
+				SELECT COUNT(DISTINCT author_id_fkey)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			),
+			0
+		) AS total_participants
+		FROM posts p
+		WHERE p.author_id_fkey = $1`,
 		userID,
 	); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
 		if err = fetchAuthorAndCategories(&p); err != nil {
 			return nil, err
 		}
@@ -240,10 +248,9 @@ func (PostRepoCRUD) FindByAuthor(userID int64) ([]models.Post, error) {
 
 func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {
 	var (
-		rows   *sql.Rows
-		posts  []models.Post
-		status int
-		err    error
+		rows  *sql.Rows
+		posts []models.Post
+		err   error
 	)
 	if rows, err = repository.DB.Query(
 		fmt.Sprintf(`SELECT p.*
@@ -260,14 +267,8 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 	for rows.Next() {
 		var p models.Post
 		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
-		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
-			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
-		}
-		if p.Author, status, err = NewUserRepoCRUD().FindByID(p.AuthorID); err != nil {
-			if status == http.StatusInternalServerError {
-				return nil, err
-			}
-			p.Author = DeletedUser
+		if err = fetchAuthorAndCategories(&p); err != nil {
+			return nil, err
 		}
 		posts = append(posts, p)
 	}
@@ -275,7 +276,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 }
 
 //Create adds a new post to the database
-func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
+func (PostRepoCRUD) Create(post *models.Post, categories []string) (*models.Post, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -302,12 +303,13 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 		return nil, http.StatusInternalServerError, err
 	}
 
+	if len(categories) > 0 {
+		if err = NewCategoryRepoCRUD().Create(post.ID, categories); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+	}
 	if newPost, status, err = NewPostRepoCRUD().FindByID(post.ID, -1); err != nil {
 		return nil, status, err
-	}
-
-	if err = fetchAuthorAndCategories(newPost); err != nil {
-		return nil, http.StatusInternalServerError, err
 	}
 
 	if rowsAffected, err = result.RowsAffected(); err != nil {
@@ -320,11 +322,12 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 }
 
 //Update updates existing post in the database
-func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.Post, error) {
+func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.Post, int, error) {
 	var (
 		result       sql.Result
 		updatedPost  *models.Post
 		rowsAffected int64
+		status       int
 		err          error
 	)
 	if result, err = repository.DB.Exec(
@@ -337,22 +340,20 @@ func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.P
 		WHERE id = ?`,
 		post.AuthorID, post.Title, post.Content, post.Created, time.Now().Format(config.TimeLayout), post.ID,
 	); err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
-	if updatedPost, _, err = NewPostRepoCRUD().FindByID(post.ID, userCtx.ID); err != nil {
-		return nil, err
+	if updatedPost, status, err = NewPostRepoCRUD().FindByID(post.ID, userCtx.ID); err != nil {
+		return nil, status, err
 	}
-	if err = fetchAuthorAndCategories(updatedPost); err != nil {
-		return nil, err
-	}
+
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 	if rowsAffected > 0 {
-		return updatedPost, nil
+		return updatedPost, http.StatusOK, nil
 	}
-	return nil, errors.New("could not update the post")
+	return nil, http.StatusBadRequest, errors.New("could not update the post")
 }
 
 //Delete deletes post from the database

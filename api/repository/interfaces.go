@@ -32,8 +32,8 @@ type PostRepo interface {
 	FindByAuthor(userID int64) ([]models.Post, error)
 	FindByCategories(categories []string) ([]models.Post, error)
 
-	Create(*models.Post) (post *models.Post, status int, err error)
-	Update(*models.Post, models.UserCtx) (*models.Post, error)
+	Create(post *models.Post, categories []string) (newPost *models.Post, status int, err error)
+	Update(*models.Post, models.UserCtx) (updatedPost *models.Post, status int, err error)
 	Delete(postID int64) (int, error)
 
 	Rate(postID, userID int64, reaction int) error

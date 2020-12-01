@@ -30,7 +30,6 @@ type Post struct {
 	Created      string     `json:"created"`
 	Updated      string     `json:"updated"`
 	Categories   []Category `json:"categories"`
-	Comments     []Comment  `json:"comments"`
 	Rating       int        `json:"rating"`
 	YourReaction int        `json:"your_reaction"`
 
