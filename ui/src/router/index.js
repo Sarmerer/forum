@@ -39,7 +39,7 @@ const routes = [
       import(/* webpackChunkName: "New Post" */ "@/views/NewPost.vue"),
     beforeEnter(to, from, next) {
       if (!store.getters["auth/authenticated"]) {
-        next("/authorize");
+        next("/auth");
       } else {
         next();
       }
