@@ -3,9 +3,10 @@
     <b-modal
       :id="modalID"
       centered
-      hide-footer
+      body-bg-variant="darker"
+      header-bg-variant="darker"
       hide-header
-      body-bg-variant="dark"
+      hide-footer
       no-fade
     >
       <b-row class="mb-1" @click="$bvModal.hide(modalID)">
@@ -23,24 +24,32 @@
     <b-modal
       :id="modalID + 'confirm'"
       centered
-      body-bg-variant="dark"
-      header-bg-variant="dark"
-      footer-bg-variant="dark"
+      body-bg-variant="darker"
+      hide-header
+      hide-footer
       no-fade
       title="Are you sure?"
     >
-      <template #modal-footer="{ ok,cancel}">
-        <b-button
-          size="sm"
-          variant="danger"
-          @click="call(deleteCallback), ok()"
-        >
-          Yes
-        </b-button>
-        <b-button size="sm" variant="outline-success" @click="cancel()">
-          Forget it
-        </b-button>
-      </template>
+      <p>Are you sure?</p>
+      <b-row align-h="end">
+        <b-col cols="end" class="mr-3">
+          <b-button
+            size="sm"
+             class="mr-2"
+            variant="danger"
+            @click="call(deleteCallback), $bvModal.hide(modalID + 'confirm')"
+          >
+            Yes
+          </b-button>
+          <b-button
+            size="sm"
+            variant="outline-success"
+            @click="$bvModal.hide(modalID + 'confirm')"
+          >
+            Forget it
+          </b-button>
+        </b-col>
+      </b-row>
     </b-modal>
   </div>
 </template>

@@ -28,6 +28,47 @@ func NewUserRepoCRUD() UserRepoCRUD {
 	return UserRepoCRUD{}
 }
 
+func fetchUserStats(user *models.User) error {
+	var (
+		err error
+	)
+	if err = repository.DB.QueryRow(
+		`SELECT COUNT(id) as posts_count,
+		(
+			SELECT COUNT(id)
+			FROM comments
+			WHERE author_id_fkey = $1
+		) AS comments_count,
+		SUM(
+			(
+				SELECT TOTAL(reaction)
+				FROM posts_reactions
+				WHERE post_id_fkey IN (
+						SELECT id
+						FROM posts
+						WHERE author_id_fkey = $1
+					)
+			) + (
+				SELECT TOTAL(reaction)
+				FROM comments_reactions
+				WHERE comment_id_fkey IN (
+						SELECT id
+						FROM comments
+						WHERE author_id_fkey = $1
+					)
+			)
+		) AS rating
+		FROM posts
+		WHERE author_id_fkey = $1`,
+		user.ID,
+	).Scan(&user.Posts, &user.Comments, &user.Rating); err != nil {
+		if err == sql.ErrNoRows {
+			return err
+		}
+	}
+	return nil
+}
+
 //FindAll returns all users in the database
 //FIXME don't scan for sensetive data, like password and session id
 func (UserRepoCRUD) FindAll() ([]models.User, error) {
@@ -44,7 +85,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	}
 	for rows.Next() {
 		var u models.User
-		rows.Scan(&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role)
+		rows.Scan(&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.SessionID, &u.Role)
 		users = append(users, u)
 	}
 	return users, nil
@@ -62,16 +103,20 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 				email,
 				avatar,
 				display_name,
+				last_online,
 				role
 		FROM users
 		WHERE id = ?`, userID,
 	).Scan(
-		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Role,
+		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.LastActive, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusNotFound, errors.New("user not found")
+	}
+	if err = fetchUserStats(&u); err != nil {
+		return nil, http.StatusInternalServerError, err
 	}
 	return &u, http.StatusOK, nil
 }
@@ -149,6 +194,30 @@ func (UserRepoCRUD) Update(user *models.User) (int, error) {
 	return http.StatusNotModified, errors.New("could not update the user")
 }
 
+func (UserRepoCRUD) UpdateLastActivity(userID int64) error {
+	var (
+		result       sql.Result
+		rowsAffected int64
+		err          error
+	)
+	if result, err = repository.DB.Exec(
+		`UPDATE users
+		SET last_online = ?
+		WHERE id = ?`,
+		time.Now().Format(config.TimeLayout), userID,
+	); err != nil {
+		return err
+	}
+
+	if rowsAffected, err = result.RowsAffected(); err != nil {
+		return err
+	}
+	if rowsAffected > 0 {
+		return nil
+	}
+	return errors.New("could not update user activity")
+}
+
 //Delete deletes user from the database
 func (UserRepoCRUD) Delete(userID int64) (int, error) {
 	var (
@@ -187,7 +256,7 @@ func (UserRepoCRUD) FindByNameOrEmail(login string) (*models.User, int, error) {
 		WHERE login = ?
 			OR email = ?`, login, login,
 	).Scan(
-		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastOnline, &u.SessionID, &u.Role,
+		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.SessionID, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err

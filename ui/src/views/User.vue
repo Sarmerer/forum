@@ -1,75 +1,157 @@
 <template>
   <div class="grid">
     <div class="columns">
-      <div class="info-col">
-        <div class="card user-card">
-          <img :src="user.avatar" alt="avatar" />
-          <h3 class="primary">
-            {{ user.display_name }}
-            <b-badge v-if="user.role == 2" class="background-variant"
-              >Admin</b-badge
-            >
-          </h3>
-        </div>
+      <div class="info-col" v-if="user && isMobile()">
+        <UserCard :userData="user" />
       </div>
       <div class="main-col">
         <div class="user-info">
-          <b-tabs card>
-            <b-tab title="Posts" active>
+          <b-tabs card v-if="user.posts || user.comments">
+            <b-tab
+              v-if="user.posts > 0"
+              title="Posts"
+              :active="user.posts > 0"
+              @click="getPosts()"
+            >
               <router-link
                 :to="'/post/' + post.id"
                 v-for="post in posts"
                 :key="post.id"
-                class="card user-card"
+                :class="
+                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                "
                 tag="div"
               >
                 <h5>
                   <strong>{{ post.title }}</strong>
                 </h5>
-                {{ post.content }}
-              </router-link></b-tab
+                <p>{{ post.content }}</p>
+                <small>
+                  <span v-b-tooltip.hover title="Rating">
+                    <b-icon
+                      :icon="reactionIcon(post.your_reaction)"
+                      :color="reactionColor(post.your_reaction)"
+                    >
+                    </b-icon
+                    >{{ post.rating }}
+                  </span>
+                  <span v-b-tooltip.hover title="Comments">
+                    <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                  </span>
+                  <span v-b-tooltip.hover title="Participants">
+                    <b-icon-people></b-icon-people>
+                    {{ post.participants_count }}
+                  </span>
+                  <time-ago
+                    v-b-tooltip.hover
+                    :title="post.created"
+                    :datetime="post.created"
+                    :long="!isMobile()"
+                  >
+                  </time-ago>
+                </small>
+              </router-link>
+            </b-tab>
+            <b-tab
+              v-if="user.comments"
+              title="Comments"
+              :active="!user.posts"
+              @click="getComments()"
             >
-            <b-tab title="Replies"
-              ><router-link
-                :to="'/post/' + reply.post"
-                class="card user-card"
-                v-for="(reply, index) in replies"
-                :key="index"
+              <router-link
+                :to="'/post/' + comment.post"
+                :class="
+                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                "
+                v-for="comment in comments"
+                :key="comment.id"
                 tag="div"
               >
                 <h5>
-                  {{ reply.content }}
+                  {{ comment.content }}
                 </h5>
-              </router-link></b-tab
-            >
+                <small>
+                  <span v-b-tooltip.hover title="Rating">
+                    <b-icon
+                      :icon="reactionIcon(comment.your_reaction)"
+                      :color="reactionColor(comment.your_reaction)"
+                    >
+                    </b-icon
+                    >{{ comment.rating }}
+                  </span>
+                  <time-ago
+                    v-b-tooltip.hover
+                    :title="comment.created"
+                    :datetime="comment.created"
+                    :long="!isMobile()"
+                  >
+                  </time-ago>
+                </small>
+              </router-link>
+            </b-tab>
           </b-tabs>
+          <b-container
+            v-if="posts.length === 0 && comments.length === 0 && madeRequest"
+            align="center"
+          >
+            <b-img-lazy fluid src="@/assets/img/masterpiece.png"> </b-img-lazy>
+            <p>It's so empty here...</p>
+          </b-container>
         </div>
+      </div>
+      <div class="info-col" v-if="user && !isMobile()">
+        <UserCard :userData="user" />
       </div>
     </div>
   </div>
 </template>
 <script>
-import axios from "axios";
+import api from "@/router/api";
+import TimeAgo from "vue2-timeago";
+import UserCard from "@/components/UserCard";
 
 export default {
+  watch: {
+    "$route.params.id": function() {
+      this.user = {};
+      this.posts = [];
+      this.comments = [];
+      this.activeTab = "";
+      this.madeRequest = false;
+      this.getUser().then(() => {
+        this.user.posts > 0 ? this.getPosts() : this.getComments();
+      });
+    },
+  },
   data() {
     return {
       user: {},
       posts: [],
-      replies: [],
+      comments: [],
+      activeTab: "",
+      madeRequest: false,
     };
   },
-  mounted() {
-    this.getUser();
-    this.getUserPosts();
-    this.getReplies();
+  created() {
+    this.getUser().then(() => {
+      this.user.posts > 0 ? this.getPosts() : this.getComments();
+    });
+  },
+  components: {
+    TimeAgo,
+    UserCard,
   },
   methods: {
+    reactionColor(yourReaction) {
+      return yourReaction === 1 ? "green" : yourReaction === -1 ? "red" : "";
+    },
+    reactionIcon(yourReaction) {
+      return yourReaction === -1 ? "arrow-down" : "arrow-up";
+    },
     async getUser() {
-      return await axios
+      return await api
         .get("user", {
           params: { id: this.$route.params.id },
-          withCredentials: true,
         })
         .then((response) => {
           this.user = response.data.data;
@@ -79,41 +161,37 @@ export default {
           console.log(error);
         });
     },
-    async getUserPosts() {
-      return await axios
-        .post(
-          "post/find",
-          {
-            by: "author",
-            author: Number.parseInt(this.$route.params.id),
-          },
-          { withCredentials: true }
-        )
+    async getPosts() {
+      if (this.activeTab === "posts") return;
+      this.activeTab = "posts";
+      return await api
+        .post("post/find", {
+          by: "author",
+          author: Number.parseInt(this.$route.params.id),
+        })
         .then((response) => {
           this.posts = response.data.data || [];
-          console.log(response);
         })
         .catch((error) => {
           console.log(error);
-        });
+        })
+        .then(() => (this.madeRequest = true));
     },
-    async getReplies() {
-      return await axios
-        .post(
-          "comments/find",
-          {
-            by: "user_id",
-            id: Number.parseInt(this.$route.params.id),
-          },
-          { withCredentials: true }
-        )
+    async getComments() {
+      if (this.activeTab === "comments") return;
+      this.activeTab = "comments";
+      return await api
+        .post("comments/find", {
+          by: "user_id",
+          id: Number.parseInt(this.$route.params.id),
+        })
         .then((response) => {
-          this.replies = response.data.data || [];
-          console.log(response.data.data);
+          this.comments = response.data.data || [];
         })
         .catch((error) => {
           console.log(error);
-        });
+        })
+        .then(() => (this.madeRequest = true));
     },
   },
 };
@@ -125,16 +203,6 @@ export default {
 
 .user-info .user-card:hover {
   opacity: 0.8;
-}
-
-.user-card img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 15px;
-  width: 150px;
-  height: 150px;
-  border-radius: 150px;
 }
 
 .user-card h3 {

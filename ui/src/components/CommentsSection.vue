@@ -80,12 +80,21 @@
               </router-link>
             </b-col>
             <b-col>
-              <small v-b-tooltip.hover :title="comment.created">
+              <small>
                 <time-ago
+                  v-b-tooltip.hover
+                  :title="comment.created"
                   :datetime="comment.created"
                   :long="!isMobile()"
                 ></time-ago>
-                <small v-if="comment.edited" class="text-muted"> edited</small>
+                <small
+                  v-b-tooltip.hover
+                  :title="comment.edited"
+                  v-if="comment.edited != comment.created"
+                  class="text-muted"
+                >
+                  edited</small
+                >
               </small>
             </b-col>
             <b-col cols="end" class="mr-n2">
@@ -116,7 +125,7 @@
         </div>
         <div v-if="hasPermission(comment) && index == editor.editing">
           <b-row>
-            <b-col>
+            <b-col class="ml-n3">
               <b-form-textarea
                 class="textarea"
                 ref="editComment"
@@ -160,6 +169,7 @@
           </b-row>
         </div>
       </div>
+      <hr v-if="index != comments.length - 1" class="comment-divider" />
     </div>
     <!-- Comments-end -->
   </div>
@@ -170,7 +180,7 @@ import ControlModal from "./ControlModal";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
 import { mapGetters } from "vuex";
-import axios from "axios";
+import api from "@/router/api";
 
 export default {
   props: {
@@ -182,14 +192,14 @@ export default {
       authenticated: "auth/authenticated",
     }),
     commentLength() {
-      return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
+      return this.form.comment.replace(/(\r\n|\n|\r|\s)/g, "").length;
     },
     properCommentLength() {
       let cl = this.commentLength;
       return cl >= this.minCommentLength && cl <= this.maxCommentLength;
     },
     editorLength() {
-      return this.editor.editingContent.replace(/(\r\n|\n|\r)/g, "").length;
+      return this.editor.editingContent.replace(/(\r\n|\n|\r|\s)/g, "").length;
     },
     properEditorLength() {
       let el = this.editorLength;
@@ -223,10 +233,9 @@ export default {
       return comment?.author?.id == this.user?.id || this.user?.role > 0;
     },
     async getComments() {
-      return await axios
+      return await api
         .get("/comments", {
           params: { id: this.postID },
-          withCredentials: true,
         })
         .then((response) => {
           this.comments = response.data.data || [];
@@ -238,10 +247,9 @@ export default {
     async deleteComment(actualID, IDInList) {
       this.editor.editing = -1;
       this.deleting = true;
-      return await axios
+      return await api
         .delete("comment/delete", {
           params: { id: actualID },
-          withCredentials: true,
         })
         .then(() => {
           this.comments.splice(IDInList, 1);
@@ -255,12 +263,8 @@ export default {
     async addComment() {
       if (!this.properCommentLength) return;
       this.editor.editing = -1;
-      return await axios
-        .post(
-          "comment/add",
-          { id: this.postID, content: this.form.comment },
-          { withCredentials: true }
-        )
+      return await api
+        .post("comment/add", { id: this.postID, content: this.form.comment })
         .then((response) => {
           if (response.data.data)
             this.comments = [response.data.data, ...this.comments];
@@ -279,15 +283,11 @@ export default {
         return;
       }
       this.editor.requesting = true;
-      return await axios
-        .put(
-          "comment/update",
-          {
-            id: actualID,
-            content: this.editor.editingContent,
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .put("comment/update", {
+          id: actualID,
+          content: this.editor.editingContent,
+        })
         .then((response) => {
           if (response.data.data)
             this.comments[this.editor.editing] = response.data.data;
@@ -322,12 +322,8 @@ export default {
       ) {
         r = 0;
       }
-      await axios
-        .post(
-          "comment/rate",
-          { id: comment.id, reaction: r },
-          { withCredentials: true }
-        )
+      await api
+        .post("comment/rate", { id: comment.id, reaction: r })
         .then((response) => {
           comment.rating = response.data.data.rating;
           comment.your_reaction = response.data.data.your_reaction;
@@ -380,5 +376,11 @@ export default {
 .authorize-button:hover {
   background-color: #21e6c1;
   opacity: 0.8;
+}
+
+.comment-divider {
+  margin: 5px -10px 5px;
+  border: 0;
+  border-top: 1px solid #121212;
 }
 </style>

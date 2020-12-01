@@ -21,8 +21,11 @@ func NewPostRepoCRUD() PostRepoCRUD {
 	return PostRepoCRUD{}
 }
 
-func fetchData(p *models.Post) (err error) {
-	var status int
+func fetchAuthorAndCategories(p *models.Post) error {
+	var (
+		status int
+		err    error
+	)
 	if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
 		p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
 	}
@@ -48,37 +51,38 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 	if posts, err = repository.DB.Query(
 		fmt.Sprintf(
 			`SELECT *,
-	(
-		SELECT TOTAL(reaction)
-		FROM posts_reactions
-		WHERE post_id_fkey = p.id
-	) AS rating,
-	IFNULL (
-		(
-			SELECT reaction
-			FROM posts_reactions
-			WHERE user_id_fkey = $1
-				AND post_id_fkey = p.id
-		),
-		0
-	) AS your_reaction,
-	(
-		SELECT count(id)
-		FROM comments
-		WHERE post_id_fkey = p.id
-	) AS comments_count,
-	IFNULL (
-		(
-			SELECT COUNT(DISTINCT author_id_fkey)
-			FROM comments
-			WHERE post_id_fkey = p.id
-		),
-		0
-	) AS total_participants
-	FROM posts p
-	ORDER BY %s
-	LIMIT $2
-	OFFSET $3`, input.OrderBy), userID, input.PerPage, offset,
+			(
+				SELECT TOTAL(reaction)
+				FROM posts_reactions
+				WHERE post_id_fkey = p.id
+			) AS rating,
+			IFNULL (
+				(
+					SELECT reaction
+					FROM posts_reactions
+					WHERE user_id_fkey = $1
+						AND post_id_fkey = p.id
+				),
+				0
+			) AS your_reaction,
+			(
+				SELECT count(id)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			) AS comments_count,
+			IFNULL (
+				(
+					SELECT COUNT(DISTINCT author_id_fkey)
+					FROM comments
+					WHERE post_id_fkey = p.id
+				),
+				0
+			) AS total_participants
+			FROM posts p
+			ORDER BY %s
+			LIMIT $2 OFFSET $3`,
+			input.OrderBy),
+		userID, input.PerPage, offset,
 	); err != nil {
 		return nil, err
 	}
@@ -87,7 +91,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		var p models.Post
 		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created,
 			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
-		if err = fetchData(&p); err != nil {
+		if err = fetchAuthorAndCategories(&p); err != nil {
 			return nil, err
 		}
 		result.Hot = append(result.Hot, p)
@@ -121,7 +125,7 @@ func (PostRepoCRUD) FindRecent(amount int) ([]models.Post, error) {
 	for posts.Next() {
 		var p models.Post
 		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
-		if err = fetchData(&p); err != nil {
+		if err = fetchAuthorAndCategories(&p); err != nil {
 			return nil, err
 		}
 		result = append(result, p)
@@ -157,30 +161,26 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 			),
 			0
 		) AS your_reaction,
-		c.*
+		(
+			SELECT COUNT(id)
+			FROM comments
+			WHERE post_id_fkey = p.id
+		) AS comments_count,
+		IFNULL (
+			(
+				SELECT COUNT(DISTINCT author_id_fkey)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			),
+			0
+		) AS total_participants
 		FROM posts p
-		JOIN(
-			SELECT COUNT(id) AS comments_count,
-				COUNT(DISTINCT author_id_fkey) AS total_participants,
-				IFNULL(last_comment_from_id, -1) AS last_comment_from_id,
-				IFNULL(last_comment_date, "") AS last_comment_date
-			FROM comments c
-				JOIN(
-					SELECT author_id_fkey AS last_comment_from_id,
-						created AS last_comment_date
-					FROM comments
-					ORDER BY created
-					LIMIT 1
-				)
-			WHERE post_id_fkey = $2
-		) AS c
 		WHERE p.id = $2`,
 		userID, postID,
 	).Scan(
 		&p.ID, &p.AuthorID, &p.Title, &p.Content,
 		&p.Created, &p.Updated, &p.Rating, &p.YourReaction,
-		&p.CommentsCount, &p.ParticipantsCount, &p.LastCommentFromID,
-		&p.LastCommentDate,
+		&p.CommentsCount, &p.ParticipantsCount,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -188,13 +188,13 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 		return nil, http.StatusNotFound, errors.New("post not found")
 	}
 
-	if err = fetchData(&p); err != nil {
+	if err = fetchAuthorAndCategories(&p); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	return &p, http.StatusOK, nil
 }
 
-func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
+func (PostRepoCRUD) FindByAuthor(userID int64) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
@@ -215,22 +215,30 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 					AND post_id_fkey = p.id
 			),
 			0
-		) AS yor_reaction,
+		) AS your_reaction,
 		(
 			SELECT count(id)
 			FROM comments
 			WHERE post_id_fkey = p.id
-		) AS comments_count
-	FROM posts p
-	WHERE p.author_id_fkey = $1`,
-		uid,
+		) AS comments_count,
+		IFNULL (
+			(
+				SELECT COUNT(DISTINCT author_id_fkey)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			),
+			0
+		) AS total_participants
+		FROM posts p
+		WHERE p.author_id_fkey = $1`,
+		userID,
 	); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount)
-		if err = fetchData(&p); err != nil {
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
+		if err = fetchAuthorAndCategories(&p); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)
@@ -240,10 +248,9 @@ func (PostRepoCRUD) FindByAuthor(uid int64) ([]models.Post, error) {
 
 func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {
 	var (
-		rows   *sql.Rows
-		posts  []models.Post
-		status int
-		err    error
+		rows  *sql.Rows
+		posts []models.Post
+		err   error
 	)
 	if rows, err = repository.DB.Query(
 		fmt.Sprintf(`SELECT p.*
@@ -260,14 +267,8 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 	for rows.Next() {
 		var p models.Post
 		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
-		if p.Categories, err = NewCategoryRepoCRUD().FindByPostID(p.ID); err != nil {
-			p.Categories = append(p.Categories, models.Category{ID: 0, Name: err.Error()})
-		}
-		if p.Author, status, err = NewUserRepoCRUD().FindByID(p.AuthorID); err != nil {
-			if status == http.StatusInternalServerError {
-				return nil, err
-			}
-			p.Author = DeletedUser
+		if err = fetchAuthorAndCategories(&p); err != nil {
+			return nil, err
 		}
 		posts = append(posts, p)
 	}
@@ -275,7 +276,7 @@ func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error)
 }
 
 //Create adds a new post to the database
-func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
+func (PostRepoCRUD) Create(post *models.Post, categories []string) (*models.Post, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -302,12 +303,13 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 		return nil, http.StatusInternalServerError, err
 	}
 
+	if len(categories) > 0 {
+		if err = NewCategoryRepoCRUD().Create(post.ID, categories); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+	}
 	if newPost, status, err = NewPostRepoCRUD().FindByID(post.ID, -1); err != nil {
 		return nil, status, err
-	}
-
-	if err = fetchData(newPost); err != nil {
-		return nil, http.StatusInternalServerError, err
 	}
 
 	if rowsAffected, err = result.RowsAffected(); err != nil {
@@ -320,11 +322,12 @@ func (PostRepoCRUD) Create(post *models.Post) (*models.Post, int, error) {
 }
 
 //Update updates existing post in the database
-func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.Post, error) {
+func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.Post, int, error) {
 	var (
 		result       sql.Result
 		updatedPost  *models.Post
 		rowsAffected int64
+		status       int
 		err          error
 	)
 	if result, err = repository.DB.Exec(
@@ -337,22 +340,20 @@ func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.P
 		WHERE id = ?`,
 		post.AuthorID, post.Title, post.Content, post.Created, time.Now().Format(config.TimeLayout), post.ID,
 	); err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
-	if updatedPost, _, err = NewPostRepoCRUD().FindByID(post.ID, userCtx.ID); err != nil {
-		return nil, err
+	if updatedPost, status, err = NewPostRepoCRUD().FindByID(post.ID, userCtx.ID); err != nil {
+		return nil, status, err
 	}
-	if err = fetchData(updatedPost); err != nil {
-		return nil, err
-	}
+
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 	if rowsAffected > 0 {
-		return updatedPost, nil
+		return updatedPost, http.StatusOK, nil
 	}
-	return nil, errors.New("could not update the post")
+	return nil, http.StatusBadRequest, errors.New("could not update the post")
 }
 
 //Delete deletes post from the database

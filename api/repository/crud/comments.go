@@ -122,37 +122,32 @@ func (CommentRepoCRUD) FindByUserID(userID, requestorID int64) ([]models.Comment
 //FindByID returns a specific reply from the database
 func (CommentRepoCRUD) FindByID(commentID int64) (*models.Comment, int, error) {
 	var (
-		comment models.Comment
-		edited  int
-		err     error
+		c   models.Comment
+		err error
 	)
 	if err = repository.DB.QueryRow(
 		`SELECT *
 		FROM comments
 		WHERE id = ?`, commentID,
 	).Scan(
-		&comment.ID, &comment.AuthorID, &comment.Content, &comment.Created, &comment.PostID, &edited,
+		&c.ID, &c.AuthorID, &c.Content, &c.Created, &c.PostID, &c.Edited,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusBadRequest, errors.New("reply not found")
 	}
-	if edited == 1 {
-		comment.Edited = true
-	} else {
-		comment.Edited = false
-	}
-	if err = fetchAuthor(&comment); err != nil {
+	if err = fetchAuthor(&c); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	return &comment, http.StatusOK, nil
+	return &c, http.StatusOK, nil
 }
 
 //Create adds a new reply to the database
 func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) {
 	var (
 		result       sql.Result
+		now          string = time.Now().Format(config.TimeLayout)
 		newComment   *models.Comment
 		rowsAffected int64
 		err          error
@@ -166,7 +161,7 @@ func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) 
 			edited
 		)
 		VALUES (?, ?, ?, ?, ?)`,
-		comment.AuthorID, comment.Content, time.Now().Format(config.TimeLayout), comment.PostID, 0,
+		comment.AuthorID, comment.Content, now, comment.PostID, now,
 	); err != nil {
 		return nil, err
 	}
@@ -204,7 +199,7 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 			post_id_fkey = ?,
 			edited = ?
 		WHERE id = ?`,
-		comment.AuthorID, comment.Content, comment.Created, comment.PostID, 1, comment.ID,
+		comment.AuthorID, comment.Content, comment.Created, comment.PostID, time.Now().Format(config.TimeLayout), comment.ID,
 	); err != nil {
 		return nil, err
 	}

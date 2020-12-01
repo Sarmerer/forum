@@ -47,7 +47,7 @@
       </b-button-group>
     </transition>
     <b-icon-three-dots
-      v-if="compact"
+      v-if="hasPermission && compact"
       class="mr-3"
       @click="$bvModal.show(modalID)"
     >

@@ -1,8 +1,8 @@
 package models
 
 type UserCtx struct {
-	ID          int64
-	Role        int
+	ID   int64
+	Role int
 }
 
 type User struct {
@@ -13,9 +13,13 @@ type User struct {
 	Avatar      string `json:"avatar"`
 	DisplayName string `json:"display_name"`
 	Created     string `json:"created,omitempty"`
-	LastOnline  string `json:"last_online,omitempty"`
+	LastActive  string `json:"last_active,omitempty"`
 	SessionID   string `json:"session_id,omitempty"`
 	Role        int    `json:"role"`
+
+	Rating   int `json:"rating"`
+	Posts    int `json:"posts"`
+	Comments int `json:"comments"`
 }
 
 type Post struct {
@@ -26,17 +30,13 @@ type Post struct {
 	Created      string     `json:"created"`
 	Updated      string     `json:"updated"`
 	Categories   []Category `json:"categories"`
-	Comments     []Comment  `json:"comments"`
 	Rating       int        `json:"rating"`
 	YourReaction int        `json:"your_reaction"`
 
 	Author *User `json:"author"`
 
-	CommentsCount       int    `json:"comments_count"`
-	ParticipantsCount   int    `json:"participants_count"`
-	LastCommentFromID   int64  `json:"last_comment_from_id"`
-	LastCommentFromName string `json:"last_comment_from_name"`
-	LastCommentDate     string `json:"last_comment_date"`
+	CommentsCount     int `json:"comments_count"`
+	ParticipantsCount int `json:"participants_count"`
 }
 
 type Posts struct {
@@ -59,7 +59,7 @@ type Comment struct {
 	PostID       int64  `json:"post"`
 	Rating       int    `json:"rating"`
 	YourReaction int    `json:"your_reaction"`
-	Edited       bool   `json:"edited"`
+	Edited       string `json:"edited"`
 
 	Author *User `json:"author"`
 }

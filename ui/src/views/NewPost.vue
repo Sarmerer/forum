@@ -1,96 +1,84 @@
 <template>
   <div class="grid">
     <div class="columns">
-      <div class="main-col" id="new-post">
+      <div v-if="isMobile()" class="info-col">
+        <UserCard :userData="user" link />
+      </div>
+      <div
+        :class="`main-col p-3 ${isMobile() ? 'card-m' : 'card'}`"
+        id="new-post"
+      >
         <b-form @submit="onSubmit">
           <b-form-group label-for="title">
-            <b-form-input
-              id="title"
+            <small>* - required</small>
+            <b-form-textarea
+              class="mt-1"
               v-model="form.title"
               autocomplete="off"
+              rows="1"
+              :state="form.title ? properTitleLength : null"
+              max-rows="8"
+              no-resize
               required
-              placeholder="Enter title"
-            ></b-form-input>
+              placeholder="* Catchy title..."
+            ></b-form-textarea>
+            <small
+              v-if="form.title"
+              :style="`color: ${properTitleLength ? 'green' : 'red'}`"
+              >{{ titleLength }}/{{ maxTitleLength }}
+            </small>
           </b-form-group>
           <b-form-group id="input-group-2" label-for="input-2" fluid>
             <b-form-textarea
               id="textarea-auto-height"
               v-model="form.content"
-              placeholder="Enter content"
+              placeholder="* Cool content..."
               reqired
-              :state="form.content.length >= 10 && form.content.length <= 2000"
-              rows="5"
-              max-rows="10"
+              :state="form.content ? properContentLength : null"
+              rows="4"
+              max-rows="50"
             ></b-form-textarea>
+            <small
+              v-if="form.content"
+              :style="`color: ${properContentLength ? 'green' : 'red'}`"
+              >{{ contentLength }}/{{ maxContentLength }}
+            </small>
           </b-form-group>
           <b-form-tags
-            input-id="tags-basic"
+            autocomplete="off"
             remove-on-delete
             v-model="form.categories"
             tag-variant="dark"
+            :placeholder="`Lowercase, ${minTagLength}-${maxTagLength} symbols`"
+            :tag-validator="tagValidator"
+            @tag-state="onTagState"
           ></b-form-tags>
-          <b-button type="submit" class="mt-3">Submit</b-button>
+          <b-button
+            :disabled="
+              !properTitleLength ||
+                !properContentLength ||
+                invalidTags.length > 0 ||
+                duplicateTags.length > 0
+            "
+            type="submit"
+            class="mt-3"
+            variant="info"
+            >Submit</b-button
+          >
         </b-form>
       </div>
-      <div class="info-col">
-        <div class="card user-card">
-          <img :src="user.avatar" alt="avatar" />
-          <h3 class="primary">
-            {{ user.display_name }}
-            <b-badge v-if="user.role == 2" class="background-variant"
-              >Admin</b-badge
-            >
-          </h3>
-        </div>
+      <div v-if="!isMobile()" class="info-col">
+        <UserCard :userData="user" link />
       </div>
     </div>
   </div>
 </template>
 <script>
-import axios from "axios";
+import api from "@/router/api";
+import UserCard from "@/components/UserCard";
 import { mapGetters } from "vuex";
 
 export default {
-  data() {
-    return {
-      form: {
-        title: "",
-        amount: 1,
-        content: "",
-        categories: [],
-      },
-    };
-  },
-  methods: {
-    onSubmit(e) {
-      e.preventDefault();
-      axios
-        .post(
-          "post/create",
-          {
-            title: this.form.title,
-            content: this.form.content,
-            categories: this.form.categories,
-          },
-          { withCredentials: true }
-        )
-        .then((response) => {
-          this.resetForm();
-          this.$router.push({
-            name: "Post",
-            params: { id: response.data.data.id, postData: response.data.data },
-          });
-        })
-        .catch((error) => {
-          alert(error.response.data.code + " " + error.response.data.message);
-        });
-    },
-    resetForm() {
-      this.form.title = "";
-      this.form.content = "";
-      this.form.categories = [];
-    },
-  },
   watch: {
     "$route.params": {
       handler(newID) {
@@ -104,31 +92,111 @@ export default {
     ...mapGetters({
       user: "auth/user",
     }),
+    titleLength() {
+      return this.form.title.replace(/(\r\n|\n|\r|\s)/g, "").length;
+    },
+    contentLength() {
+      return this.form.content.replace(/(\r\n|\n|\r|\s)/g, "").length;
+    },
+    properTitleLength() {
+      return (
+        this.titleLength >= this.minTitleLength &&
+        this.titleLength <= this.maxTitleLength
+      );
+    },
+    properContentLength() {
+      return (
+        this.contentLength >= this.minContentLength &&
+        this.contentLength <= this.maxContentLength
+      );
+    },
+  },
+  beforeRouteLeave(to, from, next) {
+    if (
+      this.form.title.length ||
+      this.form.content.length ||
+      this.form.categories.length
+    ) {
+      if (window.confirm("Are tou sure?")) next();
+    } else {
+      next();
+    }
+  },
+  components: { UserCard },
+  data() {
+    return {
+      form: {
+        title: "",
+        amount: 1,
+        content: "",
+        categories: [],
+      },
+
+      invalidTags: [],
+      duplicateTags: [],
+
+      minTitleLength: 5,
+      maxTitleLength: 300,
+
+      minContentLength: 5,
+      maxContentLength: 2000,
+
+      minTagLength: 3,
+      maxTagLength: 20,
+    };
+  },
+  methods: {
+    onSubmit(e) {
+      e.preventDefault();
+      api
+        .post("post/create", {
+          title: this.form.title,
+          content: this.form.content,
+          categories: this.form.categories,
+        })
+        .then((response) => {
+          this.resetForm();
+          this.$router.push({
+            name: "Post",
+            params: { id: response.data.data.id, postData: response.data.data },
+          });
+        })
+        .catch((error) => {
+          alert(error.response.data.code + " " + error.response.data.message);
+        });
+    },
+    onTagState(_valid, invalid, duplicate) {
+      this.invalidTags = invalid;
+      this.duplicateTags = duplicate;
+    },
+    tagValidator(tag) {
+      return (
+        tag === tag.toLowerCase() &&
+        tag.length >= this.minTagLength &&
+        tag.length <= this.maxTagLength
+      );
+    },
+    resetForm() {
+      this.form.title = "";
+      this.form.content = "";
+      this.form.categories = [];
+    },
   },
 };
 </script>
-<style lang="scss">
-form .btn {
-  background-color: #278ea5;
-  border: none;
-  // display: block;
-  // width: 100%;
-}
-form .btn:hover {
-  background-color: #278ea5;
-  opacity: 0.8;
-}
-.user-card img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 15px;
-  width: 150px;
-  height: 150px;
-  border-radius: 150px;
-}
+<style lang="scss" scoped>
+// form .btn {
+//   background-color: #278ea5;
+//   border: none;
+//   // display: block;
+//   // width: 100%;
+// }
+// form .btn:hover {
+//   background-color: #278ea5;
+//   opacity: 0.8;
+// }
 
-#new-post {
-  margin: 20px;
-}
+// #new-post {
+//   margin: 20px;
+// }
 </style>

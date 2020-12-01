@@ -99,15 +99,9 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Updated:  time.Now().Format(config.TimeLayout),
 		Rating:   0,
 	}
-	if newPost, status, err = repo.Create(&post); err != nil {
+	if newPost, status, err = repo.Create(&post, input.Categories); err != nil {
 		response.Error(w, status, err)
 		return
-	}
-	if len(input.Categories) > 0 {
-		if err = crud.NewCategoryRepoCRUD().Create(newPost.ID, input.Categories); err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
-			return
-		}
 	}
 
 	response.Success(w, fmt.Sprintf("post has been created"), newPost)
@@ -145,8 +139,8 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if post, err = repo.Update(post, userCtx); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if post, status, err = repo.Update(post, userCtx); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 

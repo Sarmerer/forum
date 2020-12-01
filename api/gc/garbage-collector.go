@@ -19,26 +19,25 @@ func Start() {
 
 func garbageCollector() {
 	var (
-		um         repository.UserRepo
+		repo       repository.UserRepo = crud.NewUserRepoCRUD()
 		lastOnline time.Time
 		users      []models.User
 		err        error
 	)
-	um = crud.NewUserRepoCRUD()
 	for {
 		<-time.After(config.GCInterval)
 		counter := 0
 		start := time.Now()
-		if users, err = um.FindAll(); err != nil {
+		if users, err = repo.FindAll(); err != nil {
 			logger.CheckErrAndLog("Garbage collector", "", err)
 			return
 		}
 		for _, user := range users {
-			if lastOnline, err = time.Parse(config.TimeLayout, user.LastOnline); err != nil {
+			if lastOnline, err = time.Parse(config.TimeLayout, user.LastActive); err != nil {
 				logger.CheckErrAndLog("Garbage collector", "time parsing error", err)
 			}
 			if time.Now().After(lastOnline.Add(config.SessionExpiration)) {
-				if err = um.UpdateSession(user.ID, ""); err != nil {
+				if err = repo.UpdateSession(user.ID, ""); err != nil {
 					logger.CheckErrAndLog("Garbage collector", "session closing error", err)
 				}
 				counter++

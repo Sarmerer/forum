@@ -15,36 +15,58 @@
           <div>
             <Error v-if="error.show" :errorData="error" />
           </div>
-          <b-row
-            align-h="between"
-            align-v="end"
-            class="mx-3 mt-3"
-            v-if="posts.length > 0"
-          >
-            <b-pagination
-              v-if="posts.total_rows > pagination.perPage"
-              v-model="pagination.currentPage"
-              :total-rows="pagination.totalPages"
-              :per-page="pagination.perPage"
-              aria-controls="my-table"
-              @change="handlePageChange"
-              first-number
-              last-number
-            >
-            </b-pagination>
-            <PostFilters
-              v-if="posts.length > 1"
-              :orderCallback="order"
-              :sortCallback="sort"
-              :sorter="sorter"
-            />
+          <b-row class="mx-3 mt-3" v-if="posts.length > 0 && !isMobile()">
+            <b-col align=" start" v-if="posts.total_rows > pagination.perPage">
+              <b-pagination
+                v-model="pagination.currentPage"
+                :total-rows="pagination.totalPages"
+                :per-page="pagination.perPage"
+                aria-controls="my-table"
+                @change="handlePageChange"
+                first-number
+                last-number
+              >
+              </b-pagination>
+            </b-col>
+            <b-col v-if="posts.length > 1" align="end">
+              <PostFilters
+                :orderCallback="order"
+                :sortCallback="sort"
+                :sorter="sorter"
+              />
+            </b-col>
           </b-row>
+          <b-container v-if="posts.length > 0 && isMobile()">
+            <b-row
+              v-if="posts.total_rows > pagination.perPage"
+              align-h="center"
+              class="mb-2"
+            >
+              <b-pagination
+                v-model="pagination.currentPage"
+                :total-rows="pagination.totalPages"
+                :per-page="pagination.perPage"
+                aria-controls="my-table"
+                @change="handlePageChange"
+                first-number
+                last-number
+              >
+              </b-pagination>
+            </b-row>
+            <b-row v-if="posts.length > 1" align-h="center">
+              <PostFilters
+                :orderCallback="order"
+                :sortCallback="sort"
+                :sorter="sorter"
+              />
+            </b-row>
+          </b-container>
           <!-- Start of posts -->
           <router-link
             :to="'/post/' + post.id"
             v-for="post in posts"
             :key="post.id"
-            :class="isMobile() ? 'card-m' : 'card'"
+            :class="`text-break ${isMobile() ? 'card-m' : 'card'}`"
             tag="div"
             style="cursor: pointer"
           >
@@ -120,7 +142,7 @@
         </div>
 
         <div class="info-col">
-          <div :class="isMobile() ? 'card-m' : 'card'">
+          <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
             <h3 class="primary">RECENT</h3>
             <span v-if="recent.length == 0"
               >None...
@@ -155,7 +177,7 @@
               </router-link>
             </span>
           </div>
-          <div :class="isMobile() ? 'card-m' : 'card'">
+          <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
             <h3 class="primary">
               CATEGORIES<b-button id="popover-filter-button">
                 <b-icon-three-dots-vertical></b-icon-three-dots-vertical>
@@ -212,7 +234,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import api from "@/router/api";
 import { mapGetters } from "vuex";
 import Error from "@/components/Error";
 import Rating from "@/components/Rating";
@@ -258,19 +280,14 @@ export default {
       await this.getPosts(value);
     },
     async getPosts(currentPage) {
-      return await axios
-        .post(
-          "posts",
-          {
-            per_page: this.pagination.perPage,
-            current_page: currentPage,
-            order_by: this.sorter.orderBy,
-            ascending: this.sorter.asc,
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .post("posts", {
+          per_page: this.pagination.perPage,
+          current_page: currentPage,
+          order_by: this.sorter.orderBy,
+          ascending: this.sorter.asc,
+        })
         .then((response) => {
-          console.log(response.data.data);
           this.error.show = false;
           this.posts = response.data.data.hot || [];
           this.recent = response.data.data.recent || [];
@@ -287,8 +304,8 @@ export default {
         });
     },
     async getCategories() {
-      return await axios
-        .get("categories", { withCredentials: true })
+      return await api
+        .get("categories")
         .then((response) => {
           this.categories = response.data.data || [];
         })
@@ -301,6 +318,7 @@ export default {
       this.throttle();
     },
     order(by) {
+      if (this.sorter.orderBy === by) return;
       this.sorter.orderBy = this.sorter.orderBy = by;
       this.throttle();
     },
@@ -322,12 +340,8 @@ export default {
       ) {
         r = 0;
       }
-      await axios
-        .post(
-          "post/rate",
-          { id: post.id, reaction: r },
-          { withCredentials: true }
-        )
+      await api
+        .post("post/rate", { id: post.id, reaction: r })
         .then((response) => {
           post.your_reaction = response.data.data.your_reaction;
           post.rating = response.data.data.rating;
@@ -337,15 +351,11 @@ export default {
         });
     },
     async sortByCategories() {
-      await axios
-        .post(
-          "post/find",
-          {
-            by: "categories",
-            categories: this.selectedCategories,
-          },
-          { withCredentials: true }
-        )
+      await api
+        .post("post/find", {
+          by: "categories",
+          categories: this.selectedCategories,
+        })
         .then((response) => {
           console.log(response.data.data);
           this.posts = response.data.data || [];

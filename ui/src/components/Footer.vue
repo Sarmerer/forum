@@ -68,5 +68,6 @@
 
 .mentions p {
   font-size: 0.6em;
+  text-align: center;
 }
 </style>

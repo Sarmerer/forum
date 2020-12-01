@@ -7,10 +7,10 @@
     />
     <div class="columns">
       <div v-if="isMobile()" class="info-col">
-        <PostStats :stats="postStats" />
+        <UserCard v-if="post.author" link :userData="post.author" />
       </div>
       <div class="main-col">
-        <div :class="isMobile() ? 'card-m' : 'card'">
+        <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
           <b-row v-if="!editor.editing">
             <b-col cols="start">
               <Rating :callback="rate" :entity="post" class="ml-n4" />
@@ -46,8 +46,8 @@
             </b-col>
           </b-row>
           <b-row v-if="isMobile() && !editor.editing" class="ml-2">
-            <Rating :callback="rate" :entity="post" compact
-          /></b-row>
+            <Rating :callback="rate" :entity="post" compact />
+          </b-row>
           <b-form v-if="editor.editing">
             <b-form-row>
               <b-col>
@@ -93,7 +93,7 @@
         <CommentsSection :postID="postID" />
       </div>
       <div v-if="!isMobile()" class="info-col">
-        <PostStats :stats="postStats" />
+        <UserCard v-if="post.author" link :userData="post.author" />
       </div>
     </div>
   </div>
@@ -102,20 +102,20 @@
 import CommentsSection from "@/components/CommentsSection";
 import ControlModal from "@/components/ControlModal";
 import ControlButtons from "@/components/ControlButtons";
-import PostStats from "@/components/PostStats";
+import UserCard from "@/components/UserCard";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
-import axios from "axios";
+import api from "@/router/api";
 
 export default {
   props: {
-    postData: { type: Object, required: false },
+    postData: { type: Object },
   },
   components: {
     CommentsSection,
     ControlModal,
     ControlButtons,
-    PostStats,
+    UserCard,
     Rating,
   },
   computed: {
@@ -129,7 +129,6 @@ export default {
   data() {
     return {
       post: {},
-      postStats: {},
       categories: [],
       editor: {
         title: "",
@@ -142,31 +141,21 @@ export default {
     };
   },
   created() {
+    if (this.postData) document.title = this.postData.title;
     this.postData ? (this.post = this.postData) : this.getPost();
   },
   methods: {
     async getPost() {
-      return await axios
-        .post(
-          "post/find",
-          {
-            by: "id",
-            id: this.postID,
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .post("post/find", {
+          by: "id",
+          id: this.postID,
+        })
         .then((response) => {
           //TODO create error page for post response.data.data;
           let result = response.data.data;
           document.title = result.title;
           this.post = result;
-          this.postStats = {
-            commentsCount: result.comments_count,
-            participantsCount: result.participants_count,
-            lastCommentFromID: result.last_comment_from_id,
-            lastCommentFromName: result.last_comment_from_name,
-            lastCommentDate: result.last_comment_date,
-          };
         })
         .catch((error) => {
           console.log(error);
@@ -175,10 +164,9 @@ export default {
     },
     async deletePost() {
       this.requesting = true;
-      return await axios
+      return await api
         .delete("post/delete", {
           params: { id: this.post.id },
-          withCredentials: true,
         })
         .then(() => {
           this.$router.push("/");
@@ -190,17 +178,13 @@ export default {
     },
     async updatePost() {
       this.requesting = true;
-      return await axios
-        .put(
-          "post/update",
-          {
-            id: this.post.id,
-            title: this.editor.title,
-            content: this.editor.content,
-            categories: this.editor.categories,
-          },
-          { withCredentials: true }
-        )
+      return await api
+        .put("post/update", {
+          id: this.post.id,
+          title: this.editor.title,
+          content: this.editor.content,
+          categories: this.editor.categories,
+        })
         .then((response) => {
           this.post = response.data.data;
         })
@@ -227,7 +211,7 @@ export default {
       ) {
         r = 0;
       }
-      await axios
+      await api
         .post("post/rate", { id: this.postID, reaction: r })
         .then((response) => {
           post.your_reaction = response.data.data.your_reaction;
