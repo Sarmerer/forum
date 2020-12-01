@@ -6,8 +6,13 @@
       </div>
       <div class="main-col">
         <div class="user-info">
-          <b-tabs card v-if="posts.length > 0 || comments.length > 0">
-            <b-tab v-if="posts.length" title="Posts" active @click="getPosts()">
+          <b-tabs card v-if="user.posts || user.comments">
+            <b-tab
+              v-if="user.posts > 0"
+              title="Posts"
+              :active="user.posts > 0"
+              @click="getPosts()"
+            >
               <router-link
                 :to="'/post/' + post.id"
                 v-for="post in posts"
@@ -18,8 +23,7 @@
                 <h5>
                   <strong>{{ post.title }}</strong>
                 </h5>
-
-                {{ post.content }}
+                <p>{{ post.content }}</p>
                 <small>
                   <span v-b-tooltip.hover title="Rating">
                     <b-icon
@@ -47,8 +51,9 @@
               </router-link>
             </b-tab>
             <b-tab
-              v-if="comments.length"
+              v-if="user.comments"
               title="Comments"
+              :active="!user.posts"
               @click="getComments()"
             >
               <router-link
@@ -104,7 +109,14 @@ import UserCard from "@/components/UserCard";
 export default {
   watch: {
     "$route.params.id": function() {
-      this.$router.go();
+      this.user = {};
+      this.posts = [];
+      this.comments = [];
+      this.activeTab = "";
+      this.madeRequest = false;
+      this.getUser().then(() => {
+        this.user.posts > 0 ? this.getPosts() : this.getComments();
+      });
     },
   },
   data() {
@@ -116,9 +128,10 @@ export default {
       madeRequest: false,
     };
   },
-  mounted() {
-    this.getUser();
-    this.getPosts();
+  created() {
+    this.getUser().then(() => {
+      this.user.posts > 0 ? this.getPosts() : this.getComments();
+    });
   },
   components: {
     TimeAgo,
@@ -173,7 +186,8 @@ export default {
         })
         .catch((error) => {
           console.log(error);
-        });
+        })
+        .then(() => (this.madeRequest = true));
     },
   },
 };
