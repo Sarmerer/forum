@@ -362,29 +362,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-/* The hero image */
-.hero-image {
-  background-image: url("../assets/img/home-hero.jpg");
-  box-shadow: 0 5px 6px 2px rgba(10, 10, 10, 0.3);
-  height: 200px;
-  width: 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  position: relative;
-  margin-bottom: 25px;
-}
-
-.hero-text {
-  text-align: center;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: large;
-  opacity: 0.87;
-}
-
 .post-content {
   margin-left: -40px;
 }

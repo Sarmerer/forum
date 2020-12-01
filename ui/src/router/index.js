@@ -68,7 +68,7 @@ const routes = [
   },
   {
     path: "/dashboard/:role",
-    name: "Admin Dashnoard",
+    name: "Admin Dashboard",
     component: () =>
       import(/* webpackChunkName: "user" */ "@/views/Dashboard.vue"),
     beforeEnter: (to, from, next) => {
