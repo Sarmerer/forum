@@ -32,7 +32,6 @@ func JSON(w http.ResponseWriter, responseStatus string, httpStatus int, message,
 func Error(w http.ResponseWriter, httpStatus int, err error) {
 	w.WriteHeader(httpStatus)
 	JSON(w, "error", httpStatus, err.Error(), nil)
-	panic(err)
 }
 
 // Success acts as a template for a JSON function.

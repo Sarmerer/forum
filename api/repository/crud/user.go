@@ -40,28 +40,22 @@ func fetchUserStats(user *models.User) error {
 			WHERE author_id_fkey = $1
 		) AS comments_count,
 		SUM(
-			IFNULL(
-				(
-					SELECT (
-							SELECT TOTAL(reaction)
-							FROM posts_reactions pr
-							WHERE pr.post_id_fkey = p.id
-						)
-					FROM posts p
-					WHERE author_id_fkey = $1
-				),
-				0
-			) + IFNULL(
-				(
-					SELECT (
-							SELECT TOTAL(reaction)
-							FROM comments_reactions cr
-							WHERE cr.comment_id_fkey = c.id
-						)
-					FROM comments c
-					WHERE author_id_fkey = $1
-				),
-				0
+			(
+				SELECT TOTAL(reaction)
+				FROM posts_reactions
+				WHERE post_id_fkey IN (
+						SELECT id
+						FROM posts
+						WHERE author_id_fkey = $1
+					)
+			) + (
+				SELECT TOTAL(reaction)
+				FROM comments_reactions
+				WHERE comment_id_fkey IN (
+						SELECT id
+						FROM comments
+						WHERE author_id_fkey = $1
+					)
 			)
 		) AS rating
 		FROM posts
