@@ -1,32 +1,48 @@
 <template>
   <div class="sidenav">
-    <router-link to="/" v-b-tooltip.hover.bottom title="Home">
+    <router-link
+      to="/"
+      v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
+      title="Home"
+    >
       <b-icon-house-door></b-icon-house-door>
     </router-link>
-    <div v-if="!authenticated" v-b-tooltip.hover.bottom title="Sign in">
+    <div
+      v-if="!authenticated"
+      v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
+      title="Sign in"
+    >
       <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed></a>
       <Login />
     </div>
     <div v-if="authenticated">
-      <router-link to="/new-post" v-b-tooltip.hover.bottom title="New post">
+      <router-link
+        to="/new-post"
+        v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
+        title="New post"
+      >
         <b-icon-pen></b-icon-pen>
       </router-link>
 
       <router-link :to="'/user/' + user.id">
         <b-img
           width="30px"
-          v-b-tooltip.hover.bottom
+          v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
           :title="user.display_name"
           :src="user.avatar"
         ></b-img>
       </router-link>
 
-      <a @click.prevent="signOut" v-b-tooltip.hover.bottom title="Sign out">
+      <a
+        @click.prevent="signOut"
+        v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
+        title="Sign out"
+      >
         <b-icon-door-open></b-icon-door-open>
       </a>
       <router-link
         to="/dashboard/admin"
-        v-b-tooltip.hover.bottom
+        v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
         title="Dashboard"
       >
         <b-icon-wrench></b-icon-wrench>
@@ -55,3 +71,8 @@ export default {
   },
 };
 </script>
+<style >
+.tooltip-sidenav {
+  margin-top: 22px;
+}
+</style>
