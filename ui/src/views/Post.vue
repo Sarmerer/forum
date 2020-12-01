@@ -7,7 +7,7 @@
     />
     <div class="columns">
       <div v-if="isMobile()" class="info-col">
-        <UserCard v-if="post.author" :userData="post.author" />
+        <UserCard v-if="post.author" link :userData="post.author" />
       </div>
       <div class="main-col">
         <div :class="isMobile() ? 'card-m' : 'card'">
@@ -46,8 +46,8 @@
             </b-col>
           </b-row>
           <b-row v-if="isMobile() && !editor.editing" class="ml-2">
-            <Rating :callback="rate" :entity="post" compact
-          /></b-row>
+            <Rating :callback="rate" :entity="post" compact />
+          </b-row>
           <b-form v-if="editor.editing">
             <b-form-row>
               <b-col>
@@ -93,7 +93,7 @@
         <CommentsSection :postID="postID" />
       </div>
       <div v-if="!isMobile()" class="info-col">
-        <UserCard v-if="post.author" :userData="post.author" />
+        <UserCard v-if="post.author" link :userData="post.author" />
       </div>
     </div>
   </div>

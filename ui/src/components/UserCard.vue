@@ -12,7 +12,15 @@
             width="100px"
           >
           </b-img-lazy>
-          <h3 class="primary">
+          <router-link v-if="link" :to="`/user/${userData.id}`">
+            <h3 class="primary">
+              {{ userData.display_name }}
+              <b-badge v-if="userData.role == 2" class="background-variant">
+                <b-icon-people></b-icon-people>
+              </b-badge>
+            </h3>
+          </router-link>
+          <h3 v-else class="primary">
             {{ userData.display_name }}
             <b-badge v-if="userData.role == 2" class="background-variant">
               <b-icon-people></b-icon-people>
@@ -25,9 +33,10 @@
           <p class="m-0 px-2">
             Last active:
             <time-ago
+              v-if="userData.last_active"
               v-b-tooltip.hover
-              :title="userData.last_online"
-              :datetime="userData.last_online"
+              :title="userData.last_active"
+              :datetime="userData.last_active"
               :long="!isMobile()"
             >
             </time-ago>
@@ -43,29 +52,49 @@
     <div v-else>
       <b-row align-v="center">
         <b-col align="center">
-          <b-img-lazy
-            v-if="userData.avatar"
-            :src="userData.avatar"
-            alt="avatar"
-            rounded="circle"
-            class="mb-1"
-            width="70px"
-          >
-          </b-img-lazy>
-          <h4 class="primary m-0">
-            {{ userData.display_name }}
-            <b-badge v-if="userData.role == 2" class="background-variant">
-              <b-icon-code-slash></b-icon-code-slash>
-            </b-badge>
-          </h4>
+          <router-link v-if="link" :to="`/user/${userData.id}`">
+            <b-img-lazy
+              v-if="userData.avatar"
+              :src="userData.avatar"
+              alt="avatar"
+              rounded="circle"
+              class="mb-1"
+              width="70px"
+            >
+            </b-img-lazy>
+            <h4 class="primary m-0">
+              {{ userData.display_name }}
+              <b-badge v-if="userData.role == 2" class="background-variant">
+                <b-icon-code-slash></b-icon-code-slash>
+              </b-badge>
+            </h4>
+          </router-link>
+
+          <div v-else>
+            <b-img-lazy
+              v-if="userData.avatar"
+              :src="userData.avatar"
+              alt="avatar"
+              rounded="circle"
+              class="mb-1"
+              width="70px"
+            >
+            </b-img-lazy>
+            <h4 class="primary m-0">
+              {{ userData.display_name }}
+              <b-badge v-if="userData.role == 2" class="background-variant">
+                <b-icon-code-slash></b-icon-code-slash>
+              </b-badge>
+            </h4>
+          </div>
         </b-col>
         <b-col>
           <p class="m-0">
             Last active:
             <time-ago
               v-b-tooltip.hover
-              :title="userData.last_online"
-              :datetime="userData.last_online"
+              :title="userData.last_active"
+              :datetime="userData.last_active"
               :long="!isMobile()"
             >
             </time-ago>
@@ -84,7 +113,7 @@ import TimeAgo from "vue2-timeago";
 
 export default {
   name: "user-card",
-  props: { userData: { type: Object } },
+  props: { userData: { type: Object }, link: { type: Boolean } },
   components: {
     TimeAgo,
   },

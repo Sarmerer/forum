@@ -81,8 +81,11 @@
               </router-link>
             </b-tab>
           </b-tabs>
-          <b-container v-else align="center">
-            <b-img fluid src="@/assets/img/masterpiece.png"> </b-img>
+          <b-container
+            v-if="posts.length === 0 && comments.length === 0 && madeRequest"
+            align="center"
+          >
+            <b-img-lazy fluid src="@/assets/img/masterpiece.png"> </b-img-lazy>
             <p>It's so empty here...</p>
           </b-container>
         </div>
@@ -110,6 +113,7 @@ export default {
       posts: [],
       comments: [],
       activeTab: "",
+      madeRequest: false,
     };
   },
   mounted() {
@@ -153,7 +157,8 @@ export default {
         })
         .catch((error) => {
           console.log(error);
-        });
+        })
+        .then(() => (this.madeRequest = true));
     },
     async getComments() {
       if (this.activeTab === "comments") return;
