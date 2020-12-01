@@ -17,15 +17,15 @@
                 :to="'/post/' + post.id"
                 v-for="post in posts"
                 :key="post.id"
-                :class="
-                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
-                "
+                :class="`user-card text-break ${
+                  isMobile() ? 'card-m' : 'card'
+                }`"
                 tag="div"
               >
                 <h5>
                   <strong>{{ post.title }}</strong>
                 </h5>
-                <p>{{ post.content }}</p>
+                <pre>{{ post.content }}</pre>
                 <small>
                   <span v-b-tooltip.hover title="Rating">
                     <b-icon
@@ -60,9 +60,9 @@
             >
               <router-link
                 :to="'/post/' + comment.post"
-                :class="
-                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
-                "
+                :class="`user-card text-break ${
+                  isMobile() ? 'card-m' : 'card'
+                }`"
                 v-for="comment in comments"
                 :key="comment.id"
                 tag="div"
@@ -112,7 +112,7 @@ import UserCard from "@/components/UserCard";
 
 export default {
   watch: {
-    "$route.params.id": function() {
+    "$route.params.id": function () {
       this.user = {};
       this.posts = [];
       this.comments = [];

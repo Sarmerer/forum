@@ -156,6 +156,12 @@ html {
   opacity: 0.87;
 }
 
+.card pre,
+.card-m pre {
+  color: rgba(255, 255, 255, 0.87) !important;
+  font-family: "Roboto Mono", monospace !important;
+}
+
 .card a {
   text-decoration: none;
 }
@@ -210,6 +216,10 @@ html {
 .form-control input {
   background-color: transparent;
   color: white;
+}
+
+.form-control textarea {
+  white-space: pre-wrap;
 }
 
 /* Form Control color scheme end */

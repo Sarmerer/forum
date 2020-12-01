@@ -31,7 +31,7 @@
                   />
                 </b-col>
               </b-row>
-              <p color="white">{{ post.content }}</p>
+              <pre color="white">{{ post.content }}</pre>
               <div>
                 <b-form-tag
                   v-for="category in post.categories"

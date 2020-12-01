@@ -88,7 +88,7 @@
                 <h5>
                   {{ post.title }}
                 </h5>
-                <p>{{ post.content }}</p>
+                <pre>{{ post.content }}</pre>
                 <b-form-tag
                   v-for="(category, index) in post.categories"
                   disabled
