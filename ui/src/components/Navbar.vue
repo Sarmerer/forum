@@ -1,42 +1,47 @@
 <template>
   <b-navbar type="dark" fixed="bottom">
-    <b-navbar-nav
-      ><b-nav-item>
-        <router-link to="/"
-          ><b-icon icon="house-door"></b-icon></router-link></b-nav-item
-    ></b-navbar-nav>
-    <b-navbar-nav v-if="authenticated"
-      ><b-nav-item>
-        <router-link to="/new-post"
-          ><b-icon icon="pen"></b-icon></router-link></b-nav-item
-    ></b-navbar-nav>
-    <b-navbar-nav v-if="!authenticated"
-      ><b-nav-item
-        ><a v-b-modal.auth-modal><b-icon icon="door-closed"></b-icon></a
-        ><Login /></b-nav-item
-    ></b-navbar-nav>
-    <b-navbar-nav v-if="authenticated"
-      ><b-nav-item>
-        <router-link :to="'/user/' + user.id"
-          ><b-icon icon="person"></b-icon
-        ></router-link>
+    <b-navbar-nav>
+      <b-nav-item>
+        <router-link to="/">
+          <b-icon-house-door></b-icon-house-door>
+        </router-link>
       </b-nav-item>
     </b-navbar-nav>
-    <!-- <b-navbar-nav v-if="authenticated"
-      ><b-nav-item>
-        <router-link to="/"><b-icon icon="gear"></b-icon></router-link>
+    <b-navbar-nav v-if="authenticated">
+      <b-nav-item>
+        <router-link to="/new-post"><b-icon-pen></b-icon-pen></router-link>
       </b-nav-item>
-    </b-navbar-nav> -->
-    <b-navbar-nav v-if="authenticated"
-      ><b-nav-item>
+    </b-navbar-nav>
+    <b-navbar-nav v-if="!authenticated">
+      <b-nav-item>
+        <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed> </a>
+        <Login />
+      </b-nav-item>
+    </b-navbar-nav>
+    <b-navbar-nav v-if="authenticated">
+      <b-nav-item>
+        <router-link :to="'/user/' + user.id">
+          <b-img
+            width="25px"
+            v-b-tooltip.hover
+            :title="user.display_name"
+            :src="user.avatar"
+          ></b-img>
+        </router-link>
+      </b-nav-item>
+    </b-navbar-nav>
+    <b-navbar-nav v-if="authenticated">
+      <b-nav-item>
         <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
       </b-nav-item>
     </b-navbar-nav>
-    <b-navbar-nav v-if="authenticated"
-      ><b-nav-item>
-        <router-link to="/dashboard/admin"
-          ><b-icon icon="wrench"></b-icon></router-link></b-nav-item
-    ></b-navbar-nav>
+    <b-navbar-nav v-if="authenticated && user.role > 0">
+      <b-nav-item>
+        <router-link to="/dashboard/admin">
+          <b-icon-wrench></b-icon-wrench>
+        </router-link>
+      </b-nav-item>
+    </b-navbar-nav>
   </b-navbar>
 </template>
 <script>

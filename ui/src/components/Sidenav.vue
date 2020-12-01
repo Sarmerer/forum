@@ -1,23 +1,32 @@
 <template>
   <div class="sidenav">
-    <router-link to="/"><b-icon icon="house-door"></b-icon></router-link>
-    <div v-if="!authenticated">
-      <a v-b-modal.auth-modal><b-icon icon="door-closed"></b-icon></a>
+    <router-link to="/" v-b-tooltip.hover title="Home">
+      <b-icon-house-door></b-icon-house-door>
+    </router-link>
+    <div v-if="!authenticated" v-b-tooltip.hover title="Sign in">
+      <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed></a>
       <Login />
     </div>
     <div v-if="authenticated">
-      <router-link to="/new-post"><b-icon icon="pen"></b-icon></router-link>
+      <router-link to="/new-post" v-b-tooltip.hover title="New post">
+        <b-icon-pen></b-icon-pen>
+      </router-link>
 
-      <router-link :to="'/user/' + user.id"
-        ><b-icon icon="person"></b-icon
-      ></router-link>
+      <router-link :to="'/user/' + user.id">
+        <b-img
+          width="30px"
+          v-b-tooltip.hover
+          :title="user.display_name"
+          :src="user.avatar"
+        ></b-img>
+      </router-link>
 
-      <!-- <router-link to="/"><b-icon icon="gear"></b-icon></router-link> -->
-
-      <a @click.prevent="signOut"><b-icon icon="door-open"></b-icon></a>
-      <router-link to="/dashboard/admin"
-        ><b-icon icon="wrench"></b-icon
-      ></router-link>
+      <a @click.prevent="signOut" v-b-tooltip.hover title="Sign out">
+        <b-icon-door-open></b-icon-door-open>
+      </a>
+      <router-link to="/dashboard/admin" v-b-tooltip.hover title="Dashboard">
+        <b-icon-wrench></b-icon-wrench>
+      </router-link>
     </div>
   </div>
 </template>
