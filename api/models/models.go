@@ -13,7 +13,7 @@ type User struct {
 	Avatar      string `json:"avatar"`
 	DisplayName string `json:"display_name"`
 	Created     string `json:"created,omitempty"`
-	LastOnline  string `json:"last_online,omitempty"`
+	LastActive  string `json:"last_active,omitempty"`
 	SessionID   string `json:"session_id,omitempty"`
 	Role        int    `json:"role"`
 

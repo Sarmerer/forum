@@ -17,6 +17,8 @@ type UserRepo interface {
 
 	GetRole(userID int64) (role int, status int, err error)
 	UpdateRole(userID int64, newRole int) error
+
+	UpdateLastActivity(userID int64) error
 }
 
 type PostRepo interface {

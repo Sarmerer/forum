@@ -14,6 +14,7 @@ type route struct {
 	Method   string
 	MinRole  int
 	NeedAuth bool
+	Activity bool
 }
 
 // SetupRoutes sets handlers with middleware chains to API routes
@@ -34,6 +35,9 @@ func (mux *Router) SetupRoutes() {
 		if route.MinRole == config.RoleAdmin {
 			seq = append(seq, middleware.AdminOnly)
 		}
+		if route.Activity {
+			seq = append(seq, middleware.UpdateUserActivity)
+		}
 		mux.HandleFunc(route.URI, route.Method, middleware.Chain(route.Handler, seq...))
 	}
 }
@@ -50,6 +54,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,
+		Activity: true,
 	},
 	{
 		URI:      "/api/auth/signup",
@@ -97,6 +102,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPut,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/user/delete",
@@ -130,6 +136,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/post/update",
@@ -137,6 +144,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPut,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/post/delete",
@@ -144,6 +152,7 @@ var apiRoutes = []route{
 		Method:   http.MethodDelete,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/post/rate",
@@ -151,6 +160,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                               Categories routes                            */
@@ -186,6 +196,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/comment/update",
@@ -193,6 +204,7 @@ var apiRoutes = []route{
 		Method:   http.MethodPut,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/comment/delete",
@@ -200,6 +212,7 @@ var apiRoutes = []route{
 		Method:   http.MethodDelete,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 	{
 		URI:      "/api/comment/rate",
@@ -207,5 +220,6 @@ var apiRoutes = []route{
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: true,
+		Activity: true,
 	},
 }
