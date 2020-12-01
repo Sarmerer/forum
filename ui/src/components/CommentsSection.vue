@@ -192,14 +192,14 @@ export default {
       authenticated: "auth/authenticated",
     }),
     commentLength() {
-      return this.form.comment.replace(/(\r\n|\n|\r)/g, "").length;
+      return this.form.comment.replace(/(\r\n|\n|\r|\s)/g, "").length;
     },
     properCommentLength() {
       let cl = this.commentLength;
       return cl >= this.minCommentLength && cl <= this.maxCommentLength;
     },
     editorLength() {
-      return this.editor.editingContent.replace(/(\r\n|\n|\r)/g, "").length;
+      return this.editor.editingContent.replace(/(\r\n|\n|\r|\s)/g, "").length;
     },
     properEditorLength() {
       let el = this.editorLength;

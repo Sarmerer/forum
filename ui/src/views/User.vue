@@ -17,7 +17,9 @@
                 :to="'/post/' + post.id"
                 v-for="post in posts"
                 :key="post.id"
-                :class="`user-card ${isMobile() ? 'card-m' : 'card'}`"
+                :class="
+                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                "
                 tag="div"
               >
                 <h5>
@@ -58,7 +60,9 @@
             >
               <router-link
                 :to="'/post/' + comment.post"
-                :class="`user-card ${isMobile() ? 'card-m' : 'card'}`"
+                :class="
+                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                "
                 v-for="comment in comments"
                 :key="comment.id"
                 tag="div"

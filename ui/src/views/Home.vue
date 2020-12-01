@@ -66,7 +66,7 @@
             :to="'/post/' + post.id"
             v-for="post in posts"
             :key="post.id"
-            :class="isMobile() ? 'card-m' : 'card'"
+            :class="`text-break ${isMobile() ? 'card-m' : 'card'}`"
             tag="div"
             style="cursor: pointer"
           >
@@ -142,7 +142,7 @@
         </div>
 
         <div class="info-col">
-          <div :class="isMobile() ? 'card-m' : 'card'">
+          <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
             <h3 class="primary">RECENT</h3>
             <span v-if="recent.length == 0"
               >None...
@@ -177,7 +177,7 @@
               </router-link>
             </span>
           </div>
-          <div :class="isMobile() ? 'card-m' : 'card'">
+          <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
             <h3 class="primary">
               CATEGORIES<b-button id="popover-filter-button">
                 <b-icon-three-dots-vertical></b-icon-three-dots-vertical>

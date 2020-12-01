@@ -16,14 +16,14 @@
             <h3 class="primary">
               {{ userData.display_name }}
               <b-badge v-if="userData.role == 2" class="background-variant">
-                <b-icon-people></b-icon-people>
+                <b-icon-code-slash></b-icon-code-slash>
               </b-badge>
             </h3>
           </router-link>
           <h3 v-else class="primary">
             {{ userData.display_name }}
             <b-badge v-if="userData.role == 2" class="background-variant">
-              <b-icon-people></b-icon-people>
+              <b-icon-code-slash></b-icon-code-slash>
             </b-badge>
           </h3>
         </b-col>

@@ -10,7 +10,7 @@
         <UserCard v-if="post.author" link :userData="post.author" />
       </div>
       <div class="main-col">
-        <div :class="isMobile() ? 'card-m' : 'card'">
+        <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
           <b-row v-if="!editor.editing">
             <b-col cols="start">
               <Rating :callback="rate" :entity="post" class="ml-n4" />
