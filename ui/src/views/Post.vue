@@ -109,7 +109,7 @@ import api from "@/router/api";
 
 export default {
   props: {
-    postData: { type: Object, required: false },
+    postData: { type: Object },
   },
   components: {
     CommentsSection,
@@ -129,7 +129,6 @@ export default {
   data() {
     return {
       post: {},
-      postStats: {},
       categories: [],
       editor: {
         title: "",
@@ -142,6 +141,7 @@ export default {
     };
   },
   created() {
+    if (this.postData) document.title = this.postData.title;
     this.postData ? (this.post = this.postData) : this.getPost();
   },
   methods: {
@@ -156,11 +156,6 @@ export default {
           let result = response.data.data;
           document.title = result.title;
           this.post = result;
-          this.postStats = {
-            commentsCount: result.comments_count,
-            participantsCount: result.participants_count,
-            lastComment: result.last_comment,
-          };
         })
         .catch((error) => {
           console.log(error);

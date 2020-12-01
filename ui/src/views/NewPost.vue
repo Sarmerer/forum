@@ -1,6 +1,9 @@
 <template>
   <div class="grid">
     <div class="columns">
+      <div v-if="isMobile()" class="info-col">
+        <UserCard :userData="user" link />
+      </div>
       <div class="main-col" id="new-post">
         <b-form @submit="onSubmit">
           <b-form-group label-for="title">
@@ -32,8 +35,8 @@
           <b-button type="submit" class="mt-3">Submit</b-button>
         </b-form>
       </div>
-      <div class="info-col">
-        <UserCard :userData="user" />
+      <div v-if="!isMobile()" class="info-col">
+        <UserCard :userData="user" link />
       </div>
     </div>
   </div>
