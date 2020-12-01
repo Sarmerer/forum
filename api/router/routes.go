@@ -54,7 +54,6 @@ var apiRoutes = []route{
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,
-		Activity: true,
 	},
 	{
 		URI:      "/api/auth/signup",
