@@ -12,7 +12,7 @@
       v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
       title="Sign in"
     >
-      <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed></a>
+      <a v-b-modal.signin-modal><b-icon-door-closed></b-icon-door-closed></a>
       <AuthModals />
     </div>
     <div v-if="authenticated">

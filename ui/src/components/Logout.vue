@@ -2,7 +2,7 @@
   <div>
     <b-modal
       id="signout-modal"
-      :modal-class="authmodal"
+      modal-class="auth-modal"
       hide-footer
       hide-header
       centered
@@ -32,13 +32,6 @@
 import { mapActions } from "vuex";
 
 export default {
-  // mixins: [validationMixin],
-  data() {
-    return {
-      authmodal: ["auth-modal"],
-    };
-  },
-
   methods: {
     ...mapActions({
       signOut: "auth/signOut",
@@ -46,4 +39,3 @@ export default {
   },
 };
 </script>
-

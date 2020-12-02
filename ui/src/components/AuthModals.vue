@@ -9,9 +9,9 @@
       no-stacking
       title="Sign In"
     >
-      <h4>SIGN IN</h4>
+      <h4 align="center">SIGN IN</h4>
       <SignInForm />
-      <small>
+      <small align="center">
         <p>
           Don't have an account yet?
           <span class="secondary" v-b-modal.signup-modal>Sign up</span>
@@ -27,10 +27,10 @@
       centered
       no-stacking
     >
-      <h4>SIGN UP</h4>
+      <h4 align="center">SIGN UP</h4>
       <SignUpForm />
 
-      <small>
+      <small align="center">
         <p>
           Already have an account?
           <span class="secondary" v-b-modal.signin-modal>Sign in</span>

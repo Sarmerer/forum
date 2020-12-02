@@ -14,7 +14,7 @@
     </b-navbar-nav>
     <b-navbar-nav v-if="!authenticated">
       <b-nav-item>
-        <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed> </a>
+        <a v-b-modal.signin-modal><b-icon-door-closed></b-icon-door-closed> </a>
         <AuthModals />
       </b-nav-item>
     </b-navbar-nav>
