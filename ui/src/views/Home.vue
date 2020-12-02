@@ -9,9 +9,9 @@
       </div>
     </div>
 
-    <b-skeleton-wrapper :loading="loading">
+    <b-skeleton-wrapper :loading="showSkeleton">
       <template #loading>
-        <HomeSkeleton v-bind:postsLength="posts.length" />
+        <HomeSkeleton />
       </template>
       <div class="grid">
         <div class="columns">
@@ -250,7 +250,6 @@
     </b-skeleton-wrapper>
   </div>
 </template>
-
 <script>
 import api from "@/router/api";
 import { mapGetters } from "vuex";
@@ -276,9 +275,7 @@ export default {
   },
   data() {
     return {
-      loading: false,
-      loadingTime: 0,
-      maxLoadingTime: 1,
+      showSkeleton: true,
       posts: [],
       recent: [],
       categories: [],
@@ -295,44 +292,13 @@ export default {
     };
   },
   created() {
-    this.getPosts(0);
-    this.getCategories();
-    this.$_loadingTimeInterval = null;
+    Promise.all([this.getPosts(0), this.getCategories()]).then(() => {
+      setTimeout(() => {
+        this.showSkeleton = false;
+      }, 1000);
+    });
   },
-  watch: {
-    loading(newVal, oldValue) {
-      if (newVal !== oldValue) {
-        this.clearLoadingTimeInterval();
-
-        if (newVal) {
-          this.$_loadingTimeInterval = setInterval(() => {
-            this.loadingTime++;
-          }, 1000);
-        }
-      }
-    },
-    loadingTime(newVal, oldValue) {
-      if (newVal !== oldValue) {
-        if (newVal === this.maxLoadingTime) {
-          this.loading = false;
-        }
-      }
-    },
-  },
-
-  mounted() {
-    this.startLoading();
-  },
-
   methods: {
-    clearLoadingTimeInterval() {
-      clearInterval(this.$_loadingTimeInterval);
-      this.$_loadingTimeInterval = null;
-    },
-    startLoading() {
-      this.loading = true;
-      this.loadingTime = 0;
-    },
     async handlePageChange(value) {
       await this.getPosts(value);
     },

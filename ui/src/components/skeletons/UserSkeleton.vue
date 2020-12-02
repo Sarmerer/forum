@@ -1,4 +1,4 @@
-      <template>
+<template>
   <div class="grid">
     <div class="columns">
       <div class="main-col">
@@ -61,6 +61,5 @@
 <script>
 export default {
   name: "UserSkeleton",
-  props: ["postsLength"],
 };
 </script>
