@@ -9,7 +9,7 @@
             type="button"
           ></b-skeleton>
           <div v-for="index in postsLength" v-bind:key="index">
-            <b-card>
+            <div :class="`${isMobile() ? 'card-m' : 'card'}`">
               <b-skeleton
                 variant="dark"
                 animation="wave"
@@ -25,7 +25,7 @@
                 animation="wave"
                 width="70%"
               ></b-skeleton>
-            </b-card>
+            </div>
           </div>
         </div>
         <!-- <div v-else>
@@ -33,7 +33,7 @@
         </div> -->
       </div>
       <div class="info-col">
-        <b-card>
+        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
           <b-skeleton
             variant="dark"
             type="avatar"
@@ -51,7 +51,7 @@
           <b-skeleton variant="dark" animation="wave" width="65%"></b-skeleton>
           <b-skeleton variant="dark" animation="wave" width="55%"></b-skeleton>
           <b-skeleton variant="dark" animation="wave" width="70%"></b-skeleton>
-        </b-card>
+        </div>
       </div>
     </div>
   </div>
