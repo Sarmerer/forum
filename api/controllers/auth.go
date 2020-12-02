@@ -60,15 +60,20 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		repo           repository.UserRepo = crud.NewUserRepoCRUD()
 		input          models.InputUserSignUp
 		hashedPassword []byte
-		status         int
 		cookie         string
+		role           int = 0
 		newUUID        string
 		newUserID      int64
+		status         int
 		err            error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
+	}
+
+	if input.Admin && input.AdminToken == config.AdminToken {
+		role = 2
 	}
 
 	if err = input.Validate(); err != nil {
@@ -87,7 +92,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Avatar:      "https://avatars.dicebear.com/api/male/" + input.Login + ".svg",
 		DisplayName: input.Login,
 		SessionID:   "",
-		Role:        config.RoleAdmin,
+		Role:        role,
 	}
 	if newUserID, status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)
