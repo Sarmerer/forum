@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="center">
-      <div v-if="show" class="auth">
+      <div v-if="!signUpForm" class="auth">
         <h4>SIGN IN</h4>
         <b-form @submit.prevent="submitSignIn">
           <b-input-group>
@@ -39,7 +39,7 @@
         <small
           ><p>
             Don't have an account yet?
-            <a class="secondary" v-on:click="show = false">Sign up</a>
+            <a class="secondary" v-on:click="signUp = true">Sign up</a>
           </p></small
         >
       </div>
@@ -91,7 +91,7 @@
         <small
           ><p>
             Already have an account?
-            <a class="secondary" v-on:click="show = true">Sign in</a>
+            <a class="secondary" v-on:click="signUp = false">Sign in</a>
           </p></small
         >
       </div>
@@ -99,18 +99,16 @@
   </div>
 </template>
 
-
-
 <script>
 import { mapActions } from "vuex";
-// import { validationMixin } from "vuelidate";
-// import { required, minLength } from "vuelidate/lib/validators";
 
 export default {
-  // mixins: [validationMixin],
+  props: {
+    signUpForm: { type: Boolean, default: false },
+    prevRoute: { type: String },
+  },
   data() {
     return {
-      show: true,
       form: {
         login: "",
         password: "",
@@ -125,11 +123,11 @@ export default {
     }),
     submitSignIn() {
       this.signIn(this.form);
-      this.$router.push("/");
+      this.$router.push(this.prevRoute || "/");
     },
     submitSignUp() {
       this.signUp(this.form);
-      this.$router.push("/");
+      this.$router.push(this.prevRoute || "/");
     },
   },
 };

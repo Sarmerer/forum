@@ -6,11 +6,10 @@ const api = axios.create({
 });
 
 api.interceptors.response.use(
-  (res) => {
+  function(res) {
     return res;
   },
-  (error) => {
-    console.log(error);
+  function(error) {
     return error;
   }
 );

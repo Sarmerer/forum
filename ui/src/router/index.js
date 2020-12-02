@@ -56,6 +56,7 @@ const routes = [
   {
     path: "/auth",
     name: "Auth",
+    props: true,
     component: () =>
       import(/* webpackChunkName: "Authorize" */ "@/views/Auth.vue"),
     beforeEnter(to, from, next) {
