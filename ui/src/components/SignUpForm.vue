@@ -43,7 +43,7 @@
         id="password"
         type="password"
         required
-        placeholder="Confirm Password"
+        placeholder="Confirm password"
         class="mb-2"
         :state="passwordsState"
       ></b-form-input>
@@ -54,11 +54,21 @@
       >
         {{ passwordsMatchFeedback }}
       </b-form-invalid-feedback>
+
+      <b-form-checkbox v-model="form.admin">Sign up as admin</b-form-checkbox>
+      <b-form-input
+        v-if="form.admin"
+        v-model="form.adminToken"
+        type="password"
+        required
+        placeholder="Admin Token"
+        class="mt-1"
+      ></b-form-input>
     </b-form-group>
     <b-button
       type="submit"
       class="modal-button mb-4 w-100"
-      :disabled="!validform"
+      :disabled="!validForm"
       variant="info"
       >Go</b-button
     >
@@ -73,7 +83,7 @@ export default {
   },
   computed: {
     ...mapGetters({ authError: "auth/authError", user: "auth/user" }),
-    validform() {
+    validForm() {
       return (
         this.passwordsMatch &&
         this.validPasswordLength &&
@@ -121,6 +131,8 @@ export default {
         email: "",
         password: "",
         passwordConfirm: "",
+        admin: false,
+        adminToken: "",
       },
     };
   },
