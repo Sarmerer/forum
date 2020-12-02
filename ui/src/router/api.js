@@ -10,7 +10,7 @@ api.interceptors.response.use(
     return res;
   },
   function(error) {
-    return error;
+    return Promise.reject(error.response);
   }
 );
 

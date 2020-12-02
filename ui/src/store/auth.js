@@ -4,6 +4,7 @@ export default {
   namespaced: true,
   state: {
     user: null,
+    authError: null,
   },
   getters: {
     authenticated(state) {
@@ -12,10 +13,16 @@ export default {
     user(state) {
       return state.user;
     },
+    authError(state) {
+      return state.authError;
+    },
   },
   mutations: {
     setUser(state, user) {
       state.user = user;
+    },
+    setAuthError(state, error) {
+      state.authError = error;
     },
   },
   actions: {
@@ -23,25 +30,22 @@ export default {
       await api
         .post(`auth/signup`, credentials)
         .then((response) => {
-          response?.data?.data
-            ? commit("setUser", response.data.data)
-            : dispatch("attempt");
+          let user = response?.data?.data;
+          user ? commit("setUser", user) : dispatch("attempt");
         })
-        .catch((error) => console.log(error));
+        .catch((error) => commit("setAuthError", error));
     },
     async signIn({ dispatch, commit }, credentials) {
       await api
         .post(`auth/signin`, credentials)
         .then((response) => {
-          console.log(response.data.data);
-          response?.data?.data
-            ? commit("setUser", response.data.data)
-            : dispatch("attempt");
+          let user = response?.data?.data;
+          user ? commit("setUser", user) : dispatch("attempt");
         })
-        .catch((error) => console.log(error));
+        .catch((error) => commit("setAuthError", error));
     },
     async signOut({ commit }) {
-      return api.post("auth/signout").finally(() => {
+      await api.post("auth/signout").finally(() => {
         commit("setUser", null);
       });
     },

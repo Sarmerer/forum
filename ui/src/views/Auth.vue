@@ -11,31 +11,7 @@
     <div class="center">
       <div v-if="!signUpForm" class="auth">
         <h4>SIGN IN</h4>
-        <b-form @submit.prevent="submitSignIn">
-          <b-input-group>
-            <b-input
-              v-model="form.login"
-              type="text"
-              required
-              placeholder="Login"
-              class="mb-2 mt-4"
-            ></b-input>
-            <b-form-invalid-feedback id="input-login-live-feedback"
-              >Login is required.</b-form-invalid-feedback
-            >
-          </b-input-group>
-
-          <b-input-group>
-            <b-input
-              v-model="form.password"
-              type="password"
-              required
-              placeholder="Password"
-              class="mb-2"
-            ></b-input>
-          </b-input-group>
-          <b-button type="submit" class="modal-button mb-4">Go</b-button>
-        </b-form>
+        <SignInForm />
         <small
           ><p>
             Don't have an account yet?
@@ -45,49 +21,7 @@
       </div>
       <div v-else class="auth">
         <h4>SIGN UP</h4>
-
-        <b-form @submit.prevent="submitSignUp">
-          <b-input-group>
-            <b-input
-              v-model="form.login"
-              type="text"
-              required
-              placeholder="Login"
-              class="mb-2 mt-4"
-            ></b-input>
-          </b-input-group>
-
-          <b-input-group>
-            <b-input
-              v-model="form.email"
-              type="text"
-              required
-              placeholder="Email"
-              class="mb-2"
-            ></b-input>
-          </b-input-group>
-
-          <b-input-group>
-            <b-input
-              v-model="form.password"
-              type="password"
-              required
-              placeholder="Password"
-              class="mb-2"
-            ></b-input>
-          </b-input-group>
-
-          <b-input-group>
-            <b-input
-              v-model="form.repeatPassword"
-              type="password"
-              required
-              placeholder="Re-enter Password"
-              class="mb-2"
-            ></b-input>
-          </b-input-group>
-          <b-button type="submit" class="modal-button mb-4">Go</b-button>
-        </b-form>
+        <SignUpForm />
         <small
           ><p>
             Already have an account?
@@ -100,35 +34,17 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import SignInForm from "@/components/SignInForm";
+import SignUpForm from "@/components/SignUpForm";
 
 export default {
   props: {
     signUpForm: { type: Boolean, default: false },
     prevRoute: { type: String },
   },
-  data() {
-    return {
-      form: {
-        login: "",
-        password: "",
-      },
-      response: "",
-    };
-  },
-  methods: {
-    ...mapActions({
-      signIn: "auth/signIn",
-      signUp: "auth/signUp",
-    }),
-    submitSignIn() {
-      this.signIn(this.form);
-      this.$router.push(this.prevRoute || "/");
-    },
-    submitSignUp() {
-      this.signUp(this.form);
-      this.$router.push(this.prevRoute || "/");
-    },
+  components: {
+    SignUpForm,
+    SignInForm,
   },
 };
 </script>
