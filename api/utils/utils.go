@@ -22,14 +22,17 @@ func ParseID(r *http.Request) (res int64, err error) {
 }
 
 func SetupEnv() error {
-	file, err := os.Open("./.env")
-	if err != nil {
-		return err
+	var (
+		file      *os.File
+		lineCount int = 1
+		err       error
+	)
+	if file, err = os.Open("./.env"); err != nil {
+		return errors.New("could not find .env file, skipping...")
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	lineCount := 1
 	for scanner.Scan() {
 		env := strings.Split(scanner.Text(), "=")
 		if len(env) < 2 {
@@ -38,7 +41,7 @@ func SetupEnv() error {
 		os.Setenv(env[0], env[1])
 		lineCount++
 	}
-	if err := scanner.Err(); err != nil {
+	if err = scanner.Err(); err != nil {
 		return err
 	}
 	return nil

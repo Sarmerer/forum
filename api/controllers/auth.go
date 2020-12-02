@@ -62,7 +62,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		input          models.InputUserSignUp
 		hashedPassword []byte
 		cookie         string
-		role           int = 0
+		role           int    = 0
+		admintToken    string = os.Getenv("ADMIN_TOKEN")
 		newUUID        string
 		newUserID      int64
 		status         int
@@ -73,7 +74,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.Admin && input.AdminToken == os.Getenv("ADMIN_TOKEN") {
+	if admintToken != "" && input.Admin && input.AdminToken == admintToken {
 		role = 2
 	}
 

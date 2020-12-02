@@ -22,14 +22,14 @@ func Init() {
 	gc.Start()
 	logger.InitLogs("Garbage collector", nil)
 
-	err := utils.SetupEnv()
-	logger.InitLogs("Environment", err)
-
-	err = repository.InitDB()
+	err := repository.InitDB()
 	logger.InitLogs("Database init", err)
 
 	err = repository.CheckDBIntegrity()
 	logger.InitLogs("Database integrity", err)
+
+	err = utils.SetupEnv()
+	logger.CheckErrAndLog("Environment", "loaded", err)
 
 	flags := utils.ParseFlags(os.Args[1:])
 	for _, flag := range flags {
