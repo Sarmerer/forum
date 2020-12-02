@@ -17,9 +17,9 @@
                 :to="'/post/' + post.id"
                 v-for="post in posts"
                 :key="post.id"
-                :class="
-                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
-                "
+                :class="`user-card text-break ${
+                  isMobile() ? 'card-m' : 'card'
+                }`"
                 tag="div"
               >
                 <h5>
@@ -60,9 +60,9 @@
             >
               <router-link
                 :to="'/post/' + comment.post"
-                :class="
-                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
-                "
+                :class="`user-card text-break ${
+                  isMobile() ? 'card-m' : 'card'
+                }`"
                 v-for="comment in comments"
                 :key="comment.id"
                 tag="div"
@@ -94,7 +94,7 @@
             v-if="posts.length === 0 && comments.length === 0 && madeRequest"
             align="center"
           >
-            <b-img-lazy fluid src="@/assets/img/masterpiece.png"> </b-img-lazy>
+            <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
             <p>It's so empty here...</p>
           </b-container>
         </div>
@@ -112,7 +112,7 @@ import UserCard from "@/components/UserCard";
 
 export default {
   watch: {
-    "$route.params.id": function() {
+    "$route.params.id": function () {
       this.user = {};
       this.posts = [];
       this.comments = [];
