@@ -4,9 +4,10 @@
       <div class="main-col">
         <div v-if="postsLength > 0">
           <b-skeleton
-            variant="dark"
+            variant="info"
             class="mt-2 ml-2"
             type="button"
+            animation="none"
           ></b-skeleton>
           <div v-for="index in postsLength" v-bind:key="index">
             <div :class="`${isMobile() ? 'card-m' : 'card'}`">

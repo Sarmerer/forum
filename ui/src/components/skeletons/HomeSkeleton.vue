@@ -7,6 +7,7 @@
             type="button"
             variant="dark"
             style="display: block; margin: 15px 0 0 auto"
+            animation="none"
             width="200px"
           ></b-skeleton>
           <div v-for="index in postsLength" v-bind:key="index">
