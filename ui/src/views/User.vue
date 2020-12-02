@@ -17,9 +17,9 @@
                 :to="'/post/' + post.id"
                 v-for="post in posts"
                 :key="post.id"
-                :class="`user-card text-break ${
-                  isMobile() ? 'card-m' : 'card'
-                }`"
+                :class="
+                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                "
                 tag="div"
               >
                 <h5>
@@ -60,9 +60,9 @@
             >
               <router-link
                 :to="'/post/' + comment.post"
-                :class="`user-card text-break ${
-                  isMobile() ? 'card-m' : 'card'
-                }`"
+                :class="
+                  `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                "
                 v-for="comment in comments"
                 :key="comment.id"
                 tag="div"
@@ -112,7 +112,7 @@ import UserCard from "@/components/UserCard";
 
 export default {
   watch: {
-    "$route.params.id": function () {
+    "$route.params.id": function() {
       this.user = {};
       this.posts = [];
       this.comments = [];
@@ -158,7 +158,7 @@ export default {
           document.title = this.user.display_name;
         })
         .catch((error) => {
-          console.log(error);
+          if (error.status === 404) this.$router.push("/not-found");
         });
     },
     async getPosts() {
