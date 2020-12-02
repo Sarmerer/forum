@@ -9,6 +9,26 @@ import (
 	"github.com/sarmerer/forum/api/repository"
 )
 
+func (UserRepoCRUD) GetPassword(userID int64) (string, int, error) {
+	var (
+		password string
+		err      error
+	)
+	if err = repository.DB.QueryRow(
+		`SELECT password
+		FROM users
+		WHERE id = ?`, userID,
+	).Scan(
+		&password,
+	); err != nil {
+		if err != sql.ErrNoRows {
+			return "", http.StatusInternalServerError, err
+		}
+		return "", http.StatusNotFound, errors.New("user not found")
+	}
+	return password, http.StatusOK, nil
+}
+
 func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, status int, err error) {
 	if err = repository.DB.QueryRow(
 		`SELECT id,

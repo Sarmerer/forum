@@ -10,8 +10,9 @@ type UserRepo interface {
 	Create(newUser *models.User) (newUserID int64, status int, err error)
 	Update(user *models.User) (status int, err error)
 	Delete(userID int64) (status int, err error)
-	FindByNameOrEmail(login string) (user *models.User, status int, err error)
+	FindByLogin(login string) (user *models.User, status int, err error)
 
+	GetPassword(userID int64) (password string, status int, err error)
 	UpdateSession(userID int64, newSessionID string) error
 	ValidateSession(sessionID string) (userCtx models.UserCtx, status int, err error)
 

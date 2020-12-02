@@ -19,24 +19,28 @@ export default {
     },
   },
   actions: {
-    async signUp({ dispatch }, credentials) {
+    async signUp({ dispatch, commit }, credentials) {
       await api
         .post(`auth/signup`, credentials)
-        .then(() => {
-          dispatch("attempt");
+        .then((response) => {
+          response?.data?.data
+            ? commit("setUser", response.data.data)
+            : dispatch("attempt");
         })
         .catch((error) => console.log(error));
     },
-    async signIn({ dispatch }, credentials) {
+    async signIn({ dispatch, commit }, credentials) {
       await api
         .post(`auth/signin`, credentials)
-        .then(() => {
-          dispatch("attempt");
+        .then((response) => {
+          console.log(response.data.data);
+          response?.data?.data
+            ? commit("setUser", response.data.data)
+            : dispatch("attempt");
         })
         .catch((error) => console.log(error));
     },
     async signOut({ commit }) {
-      //FIXME fix case when you log in from a new place, and then try to log out from the first session
       return api.post("auth/signout").finally(() => {
         commit("setUser", null);
       });

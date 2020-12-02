@@ -245,18 +245,24 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 }
 
 //FindByNameOrEmail finds a user by name or email in the database
-func (UserRepoCRUD) FindByNameOrEmail(login string) (*models.User, int, error) {
+func (UserRepoCRUD) FindByLogin(login string) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT *
+		`SELECT id,
+				login,
+	   			email,
+	   			avatar,
+	   			display_name,
+	   			last_online,
+	   			role
 		FROM users
-		WHERE login = ?
-			OR email = ?`, login, login,
+		WHERE login = $1
+			OR email = $1`, login,
 	).Scan(
-		&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.SessionID, &u.Role,
+		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.LastActive, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err

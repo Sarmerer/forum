@@ -17,23 +17,30 @@ import (
 //LogIn signs the user in if exists
 func LogIn(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo    repository.UserRepo = crud.NewUserRepoCRUD()
-		input   models.InputUserSignIn
-		user    *models.User
-		cookie  string
-		newUUID string
-		status  int
-		err     error
+		repo         repository.UserRepo = crud.NewUserRepoCRUD()
+		input        models.InputUserSignIn
+		user         *models.User
+		userPassword string
+		cookie       string
+		newUUID      string
+		status       int
+		err          error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if user, status, err = repo.FindByNameOrEmail(input.Login); err != nil {
+	if user, status, err = repo.FindByLogin(input.Login); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if err = verifyPassword(user.Password, input.Password); err != nil {
+
+	if userPassword, status, err = repo.GetPassword(user.ID); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+
+	if err = verifyPassword(userPassword, input.Password); err != nil {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
@@ -44,7 +51,7 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, fmt.Sprint("user is logged in"), nil)
+	response.Success(w, fmt.Sprint("user is logged in"), user)
 }
 
 //SignUp authorizes new user
