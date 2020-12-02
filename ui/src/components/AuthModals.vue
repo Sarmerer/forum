@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-modal
-      id="auth-modal"
+      id="signin-modal"
       modal-class="auth-modal"
       hide-footer
       hide-header
@@ -11,14 +11,13 @@
     >
       <h4>SIGN IN</h4>
       <SignInForm />
-      <small
-        ><p>
+      <small>
+        <p>
           Don't have an account yet?
           <span class="secondary" v-b-modal.signup-modal>Sign up</span>
         </p></small
       >
     </b-modal>
-
     <b-modal
       id="signup-modal"
       title="Sign Up"
@@ -34,7 +33,7 @@
       <small>
         <p>
           Already have an account?
-          <span class="secondary" v-b-modal.auth-modal>Sign in</span>
+          <span class="secondary" v-b-modal.signin-modal>Sign in</span>
         </p>
       </small>
     </b-modal>

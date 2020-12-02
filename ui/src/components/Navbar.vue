@@ -15,7 +15,7 @@
     <b-navbar-nav v-if="!authenticated">
       <b-nav-item>
         <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed> </a>
-        <Login />
+        <AuthModals />
       </b-nav-item>
     </b-navbar-nav>
     <b-navbar-nav v-if="authenticated">
@@ -46,7 +46,7 @@
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
-import Login from "./Login";
+import AuthModals from "@/components/AuthModals";
 
 export default {
   computed: {
@@ -61,7 +61,7 @@ export default {
     }),
   },
   components: {
-    Login,
+    AuthModals,
   },
 };
 </script>

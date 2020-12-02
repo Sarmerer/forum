@@ -58,7 +58,7 @@
             :tag="isMobile() ? 'div' : 'span'"
             :class="`p-0 m-0 ${isMobile() ? 'mt-2' : ''}`"
           >
-            <b-button v-b-modal.auth-modal variant="outline-info" size="sm"
+            <b-button v-b-modal.signin-modal variant="outline-info" size="sm"
               >Sign In
             </b-button>
           </b-container>

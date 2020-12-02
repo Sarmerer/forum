@@ -13,7 +13,7 @@
       title="Sign in"
     >
       <a v-b-modal.auth-modal><b-icon-door-closed></b-icon-door-closed></a>
-      <Login />
+      <AuthModals />
     </div>
     <div v-if="authenticated">
       <router-link
@@ -52,7 +52,7 @@
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
-import Login from "@/components/Login";
+import AuthModals from "@/components/AuthModals";
 
 export default {
   computed: {
@@ -67,11 +67,11 @@ export default {
     }),
   },
   components: {
-    Login,
+    AuthModals,
   },
 };
 </script>
-<style >
+<style>
 .tooltip-sidenav {
   margin-top: 22px;
 }
