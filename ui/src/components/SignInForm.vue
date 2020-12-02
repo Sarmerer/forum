@@ -31,6 +31,9 @@
 import { mapActions, mapGetters } from "vuex";
 
 export default {
+  props: {
+    prevRoute: { type: String },
+  },
   computed: {
     ...mapGetters({ authError: "auth/authError" }),
     validform() {
@@ -58,6 +61,13 @@ export default {
             solid: true,
           });
           this.$store.commit("auth/setAuthError", null);
+        } else {
+          this.$bvToast.toast("You are logged in", {
+            title: "Sucess!",
+            variant: "success",
+            solid: true,
+          });
+          if (this.prevRoute) this.$router.push(this.prevRoute);
         }
       });
     },

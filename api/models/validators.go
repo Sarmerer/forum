@@ -30,7 +30,7 @@ func (i *InputAllPosts) Validate() {
 
 func (i InputUserSignUp) Validate() error {
 	var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if len(i.Login) < 2 {
+	if len(i.Login) < 1 || len(i.Login) > 21 {
 		return errors.New("login is too short")
 	}
 	if len(i.Password) < 5 {

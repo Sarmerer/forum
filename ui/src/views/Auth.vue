@@ -9,23 +9,23 @@
       </div>
     </div>
     <div class="center">
-      <div v-if="!signUpForm" class="auth">
-        <h4>SIGN IN</h4>
-        <SignInForm />
+      <div v-if="!signUpPageLocal" class="auth">
+        <h4 align="center">SIGN IN</h4>
+        <SignInForm :prevRoute="prevRoute" />
         <small
           ><p>
             Don't have an account yet?
-            <a class="secondary" v-on:click="signUp = true">Sign up</a>
+            <a class="secondary" @click="signUpPageLocal = true">Sign up</a>
           </p></small
         >
       </div>
       <div v-else class="auth">
-        <h4>SIGN UP</h4>
-        <SignUpForm />
+        <h4 align="center">SIGN UP</h4>
+        <SignUpForm :prevRoute="prevRoute" />
         <small
           ><p>
             Already have an account?
-            <a class="secondary" v-on:click="signUp = false">Sign in</a>
+            <a class="secondary" @click="signUpPageLocal = false">Sign in</a>
           </p></small
         >
       </div>
@@ -39,12 +39,20 @@ import SignUpForm from "@/components/SignUpForm";
 
 export default {
   props: {
-    signUpForm: { type: Boolean, default: false },
     prevRoute: { type: String },
+    signUpPage: { type: Boolean, default: false },
   },
   components: {
     SignUpForm,
     SignInForm,
+  },
+  created() {
+    if (this.signUpPage) this.signUpPageLocal = true;
+  },
+  data() {
+    return {
+      signUpPageLocal: false,
+    };
   },
 };
 </script>
@@ -56,7 +64,6 @@ export default {
 }
 
 .center .auth {
-  text-align: center;
   margin: 0;
   position: absolute;
   top: 50%;

@@ -12,8 +12,9 @@
       v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
       title="Sign in"
     >
-      <a v-b-modal.signin-modal><b-icon-door-closed></b-icon-door-closed></a>
-      <AuthModals />
+      <router-link :to="{ name: 'Auth', params: { prevRoute: '/' } }">
+        <b-icon-door-closed> </b-icon-door-closed>
+      </router-link>
     </div>
     <div v-if="authenticated">
       <router-link
@@ -52,7 +53,6 @@
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
-import AuthModals from "@/components/AuthModals";
 
 export default {
   computed: {
@@ -65,9 +65,6 @@ export default {
     ...mapActions({
       signOut: "auth/signOut",
     }),
-  },
-  components: {
-    AuthModals,
   },
 };
 </script>

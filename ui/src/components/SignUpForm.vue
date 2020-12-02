@@ -3,13 +3,21 @@
     <b-form-group>
       <b-form-input
         autocomplete="off"
+        id="login"
         v-model="form.login"
         type="text"
         required
         placeholder="Login"
         class="mb-2 mt-4"
+        :state="loginState"
       ></b-form-input>
-
+      <b-form-invalid-feedback
+        class="mt-n2 mb-2"
+        id="login-feedback"
+        v-if="loginState !== null"
+      >
+        Login is too long
+      </b-form-invalid-feedback>
       <b-form-input
         autocomplete="off"
         v-model="form.email"
@@ -17,7 +25,9 @@
         required
         placeholder="Email"
         class="mb-2"
+        :state="!form.email.length ? null : true"
       ></b-form-input>
+
       <b-form-input
         autocomplete="off"
         v-model="form.password"
@@ -25,8 +35,9 @@
         required
         placeholder="Password"
         class="mb-2"
-        :state="passwordsMatch && passwordLength"
+        :state="passwordsState"
       ></b-form-input>
+
       <b-form-input
         v-model="form.passwordConfirm"
         id="password"
@@ -34,10 +45,13 @@
         required
         placeholder="Confirm Password"
         class="mb-2"
-        invalid-feedback="Passwords don't match"
-        :state="passwordsMatch && passwordLength"
+        :state="passwordsState"
       ></b-form-input>
-      <b-form-invalid-feedback id="password-feedback">
+      <b-form-invalid-feedback
+        class="mt-n2 mb-2"
+        id="password-feedback"
+        v-if="passwordsState !== null"
+      >
         {{ passwordsMatchFeedback }}
       </b-form-invalid-feedback>
     </b-form-group>
@@ -54,31 +68,54 @@
 import { mapActions, mapGetters } from "vuex";
 
 export default {
+  props: {
+    prevRoute: { type: String },
+  },
   computed: {
-    ...mapGetters({ authError: "auth/authError" }),
+    ...mapGetters({ authError: "auth/authError", user: "auth/user" }),
     validform() {
       return (
-        this.passwordsMatch && this.form.login.length && this.form.email.length
+        this.passwordsMatch &&
+        this.validPasswordLength &&
+        this.form.email.length &&
+        this.validLoginLength
       );
+    },
+    validLoginLength() {
+      return (
+        this.form.login.length >= this.minLoginLength &&
+        this.form.login.length <= this.maxLoginLength
+      );
+    },
+    loginState() {
+      return this.form.login.length === 0 ? null : this.validLoginLength;
     },
     passwordsMatch() {
       return this.form.password === this.form.passwordConfirm;
     },
-    passwordLength() {
-      return (
-        this.form.password.length > 0 && this.form.passwordConfirm.length > 0
-      );
+    validPasswordLength() {
+      return this.form.password.length >= this.minPasswordLength;
+    },
+    passwordsState() {
+      return !this.form.password.length && !this.form.passwordConfirm.length
+        ? null
+        : this.passwordsMatch && this.validPasswordLength;
     },
     passwordsMatchFeedback() {
-      return !this.passwordLength
-        ? "Enter passwords"
+      return !this.form.password.length || !this.form.passwordConfirm.length
+        ? "Enter both passwords"
         : !this.passwordsMatch
         ? "Passwords don't match"
+        : !this.validPasswordLength
+        ? "Password is too short"
         : "";
     },
   },
   data() {
     return {
+      minLoginLength: 1,
+      maxLoginLength: 20,
+      minPasswordLength: 5,
       form: {
         login: "",
         email: "",
@@ -89,10 +126,9 @@ export default {
   },
   methods: {
     ...mapActions({
-      signIn: "auth/signIn",
+      signUp: "auth/signUp",
     }),
     submitSignUp() {
-      console.log(this.form);
       this.signUp(this.form).then(() => {
         if (this.authError?.data?.message) {
           this.$bvToast.toast(this.authError.data.message, {
@@ -101,6 +137,18 @@ export default {
             solid: true,
           });
           this.$store.commit("auth/setAuthError", null);
+        } else {
+          this.$bvToast.toast(
+            `Welcome to our forum ${
+              this.user?.display_name ? ", " + this.user.display_name : ""
+            }!`,
+            {
+              title: "Success!",
+              variant: "success",
+              solid: true,
+            }
+          );
+          if (this.prevRoute) this.$router.push(this.prevRoute);
         }
       });
     },

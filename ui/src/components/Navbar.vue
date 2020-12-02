@@ -14,8 +14,9 @@
     </b-navbar-nav>
     <b-navbar-nav v-if="!authenticated">
       <b-nav-item>
-        <a v-b-modal.signin-modal><b-icon-door-closed></b-icon-door-closed> </a>
-        <AuthModals />
+        <router-link :to="{ name: 'Auth', params: { prevRoute: '/' } }">
+          <b-icon-door-closed> </b-icon-door-closed>
+        </router-link>
       </b-nav-item>
     </b-navbar-nav>
     <b-navbar-nav v-if="authenticated">
@@ -46,7 +47,6 @@
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
-import AuthModals from "@/components/AuthModals";
 
 export default {
   computed: {
@@ -59,9 +59,6 @@ export default {
     ...mapActions({
       signOut: "auth/signOut",
     }),
-  },
-  components: {
-    AuthModals,
   },
 };
 </script>

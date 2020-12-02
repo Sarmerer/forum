@@ -47,7 +47,15 @@
         <b-col cols="end" class="mr-3">
           <b-container :tag="isMobile() ? 'div' : 'span'" class="p-0 m-0">
             <b-button
-              v-b-modal.signup-modal
+              @click="
+                $router.push({
+                  name: 'Auth',
+                  params: {
+                    prevRoute: $router.currentRoute.path,
+                    signUpPage: true,
+                  },
+                })
+              "
               variant="success"
               size="sm"
               :class="!isMobile() ? 'mr-2' : ''"
@@ -58,7 +66,15 @@
             :tag="isMobile() ? 'div' : 'span'"
             :class="`p-0 m-0 ${isMobile() ? 'mt-2' : ''}`"
           >
-            <b-button v-b-modal.signin-modal variant="outline-info" size="sm"
+            <b-button
+              @click="
+                $router.push({
+                  name: 'Auth',
+                  params: { prevRoute: $router.currentRoute.path },
+                })
+              "
+              variant="outline-info"
+              size="sm"
               >Sign In
             </b-button>
           </b-container>
