@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -17,6 +19,29 @@ func ParseID(r *http.Request) (res int64, err error) {
 		return 0, errors.New("invalid id")
 	}
 	return res, nil
+}
+
+func SetupEnv() error {
+	file, err := os.Open("./.env")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lineCount := 1
+	for scanner.Scan() {
+		env := strings.Split(scanner.Text(), "=")
+		if len(env) < 2 {
+			return fmt.Errorf("invalid env variable on line %d", lineCount)
+		}
+		os.Setenv(env[0], env[1])
+		lineCount++
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetUserFromCtx(r *http.Request) models.UserCtx {

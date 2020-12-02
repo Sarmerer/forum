@@ -3,4 +3,4 @@
 .VSCodeCounter
 /node_modules
 /ssl
-config.go
+.env

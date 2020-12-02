@@ -22,7 +22,10 @@ func Init() {
 	gc.Start()
 	logger.InitLogs("Garbage collector", nil)
 
-	err := repository.InitDB()
+	err := utils.SetupEnv()
+	logger.InitLogs("Environment", err)
+
+	err = repository.InitDB()
 	logger.InitLogs("Database init", err)
 
 	err = repository.CheckDBIntegrity()

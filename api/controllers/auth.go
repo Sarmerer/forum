@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
@@ -72,7 +73,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.Admin && input.AdminToken == config.AdminToken {
+	if input.Admin && input.AdminToken == os.Getenv("ADMIN_TOKEN") {
 		role = 2
 	}
 

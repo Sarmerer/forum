@@ -18,8 +18,6 @@ var (
 
 // API config
 const (
-	AdminPassword = ""
-
 	APIPort       = "4433"
 	apiURLTest    = "http://localhost:" + APIPort
 	apiURLProd    = "https://forum-api-sarmerer.herokuapp.com"
