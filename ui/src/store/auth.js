@@ -28,7 +28,13 @@ export default {
   actions: {
     async signUp({ dispatch, commit }, credentials) {
       await api
-        .post(`auth/signup`, credentials)
+        .post(`auth/signup`, {
+          login: credentials.login,
+          email: credentials.email,
+          password: credentials.password,
+          admin: credentials.admin || false,
+          admin_token: credentials.adminToken || "",
+        })
         .then((response) => {
           let user = response?.data?.data;
           user ? commit("setUser", user) : dispatch("attempt");

@@ -35,11 +35,12 @@ const routes = [
   {
     path: "/new-post",
     name: "New Post",
+    props: true,
     component: () =>
       import(/* webpackChunkName: "New Post" */ "@/views/NewPost.vue"),
     beforeEnter(to, from, next) {
       if (!store.getters["auth/authenticated"]) {
-        next("/auth");
+        next({ name: "Auth", params: { prevRoute: "/new-post" } });
       } else {
         next();
       }

@@ -42,6 +42,7 @@
         <b-icon-door-open></b-icon-door-open>
       </a>
       <router-link
+        v-if="user.role === 2"
         to="/dashboard/admin"
         v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
         title="Dashboard"

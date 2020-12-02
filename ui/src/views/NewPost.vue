@@ -9,6 +9,7 @@
         id="new-post"
       >
         <b-form @submit="onSubmit">
+          <h3 align="center">Create new post</h3>
           <b-form-group label-for="title">
             <small>* - required</small>
             <b-form-textarea

@@ -38,7 +38,7 @@
     </b-navbar-nav>
     <b-navbar-nav v-if="authenticated && user.role > 0">
       <b-nav-item>
-        <router-link to="/dashboard/admin">
+        <router-link v-if="user.role === 2" to="/dashboard/admin">
           <b-icon-wrench></b-icon-wrench>
         </router-link>
       </b-nav-item>
