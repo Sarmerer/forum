@@ -1,114 +1,120 @@
 <template>
-  <div class="grid">
-    <div class="columns">
-      <div class="info-col" v-if="user && isMobile()">
-        <UserCard :userData="user" />
-      </div>
-      <div class="main-col">
-        <div class="user-info">
-          <b-tabs card v-if="user.posts || user.comments">
-            <b-tab
-              v-if="user.posts > 0"
-              title="Posts"
-              :active="user.posts > 0"
-              @click="getPosts()"
-            >
-              <router-link
-                :to="'/post/' + post.id"
-                v-for="post in posts"
-                :key="post.id"
-                :class="`user-card text-break ${
-                  isMobile() ? 'card-m' : 'card'
-                }`"
-                tag="div"
+  <b-skeleton-wrapper :loading="loading">
+    <template #loading>
+      <UserSkeleton v-bind:postsLength="posts.length" />
+    </template>
+    <div class="grid">
+      <div class="columns">
+        <div class="info-col" v-if="user && isMobile()">
+          <UserCard :userData="user" />
+        </div>
+        <div class="main-col">
+          <div class="user-info">
+            <b-tabs card v-if="user.posts || user.comments">
+              <b-tab
+                v-if="user.posts > 0"
+                title="Posts"
+                :active="user.posts > 0"
+                @click="getPosts()"
               >
-                <h5>
-                  <strong>{{ post.title }}</strong>
-                </h5>
-                <pre>{{ post.content }}</pre>
-                <small>
-                  <span v-b-tooltip.hover title="Rating">
-                    <b-icon
-                      :icon="reactionIcon(post.your_reaction)"
-                      :color="reactionColor(post.your_reaction)"
+                <router-link
+                  :to="'/post/' + post.id"
+                  v-for="post in posts"
+                  :key="post.id"
+                  :class="`user-card text-break ${
+                    isMobile() ? 'card-m' : 'card'
+                  }`"
+                  tag="div"
+                >
+                  <h5>
+                    <strong>{{ post.title }}</strong>
+                  </h5>
+                  <pre>{{ post.content }}</pre>
+                  <small>
+                    <span v-b-tooltip.hover title="Rating">
+                      <b-icon
+                        :icon="reactionIcon(post.your_reaction)"
+                        :color="reactionColor(post.your_reaction)"
+                      >
+                      </b-icon
+                      >{{ post.rating }}
+                    </span>
+                    <span v-b-tooltip.hover title="Comments">
+                      <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                    </span>
+                    <span v-b-tooltip.hover title="Participants">
+                      <b-icon-people></b-icon-people>
+                      {{ post.participants_count }}
+                    </span>
+                    <time-ago
+                      v-b-tooltip.hover
+                      :title="post.created"
+                      :datetime="post.created"
+                      :long="!isMobile()"
                     >
-                    </b-icon
-                    >{{ post.rating }}
-                  </span>
-                  <span v-b-tooltip.hover title="Comments">
-                    <b-icon-chat></b-icon-chat> {{ post.comments_count }}
-                  </span>
-                  <span v-b-tooltip.hover title="Participants">
-                    <b-icon-people></b-icon-people>
-                    {{ post.participants_count }}
-                  </span>
-                  <time-ago
-                    v-b-tooltip.hover
-                    :title="post.created"
-                    :datetime="post.created"
-                    :long="!isMobile()"
-                  >
-                  </time-ago>
-                </small>
-              </router-link>
-            </b-tab>
-            <b-tab
-              v-if="user.comments"
-              title="Comments"
-              :active="!user.posts"
-              @click="getComments()"
-            >
-              <router-link
-                :to="'/post/' + comment.post"
-                :class="`user-card text-break ${
-                  isMobile() ? 'card-m' : 'card'
-                }`"
-                v-for="comment in comments"
-                :key="comment.id"
-                tag="div"
+                    </time-ago>
+                  </small>
+                </router-link>
+              </b-tab>
+              <b-tab
+                v-if="user.comments"
+                title="Comments"
+                :active="!user.posts"
+                @click="getComments()"
               >
-                <h5>
-                  {{ comment.content }}
-                </h5>
-                <small>
-                  <span v-b-tooltip.hover title="Rating">
-                    <b-icon
-                      :icon="reactionIcon(comment.your_reaction)"
-                      :color="reactionColor(comment.your_reaction)"
+                <router-link
+                  :to="'/post/' + comment.post"
+                  :class="`user-card text-break ${
+                    isMobile() ? 'card-m' : 'card'
+                  }`"
+                  v-for="comment in comments"
+                  :key="comment.id"
+                  tag="div"
+                >
+                  <h5>
+                    {{ comment.content }}
+                  </h5>
+                  <small>
+                    <span v-b-tooltip.hover title="Rating">
+                      <b-icon
+                        :icon="reactionIcon(comment.your_reaction)"
+                        :color="reactionColor(comment.your_reaction)"
+                      >
+                      </b-icon
+                      >{{ comment.rating }}
+                    </span>
+                    <time-ago
+                      v-b-tooltip.hover
+                      :title="comment.created"
+                      :datetime="comment.created"
+                      :long="!isMobile()"
                     >
-                    </b-icon
-                    >{{ comment.rating }}
-                  </span>
-                  <time-ago
-                    v-b-tooltip.hover
-                    :title="comment.created"
-                    :datetime="comment.created"
-                    :long="!isMobile()"
-                  >
-                  </time-ago>
-                </small>
-              </router-link>
-            </b-tab>
-          </b-tabs>
-          <b-container
-            v-if="posts.length === 0 && comments.length === 0 && madeRequest"
-            align="center"
-          >
-            <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
-            <p>It's so empty here...</p>
-          </b-container>
+                    </time-ago>
+                  </small>
+                </router-link>
+              </b-tab>
+            </b-tabs>
+            <b-container
+              v-if="posts.length === 0 && comments.length === 0 && madeRequest"
+              align="center"
+            >
+              <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
+              <p>It's so empty here...</p>
+            </b-container>
+          </div>
+        </div>
+        <div class="info-col" v-if="user && !isMobile()">
+          <UserCard :userData="user" />
         </div>
       </div>
-      <div class="info-col" v-if="user && !isMobile()">
-        <UserCard :userData="user" />
-      </div>
     </div>
-  </div>
+  </b-skeleton-wrapper>
 </template>
 <script>
 import api from "@/router/api";
 import TimeAgo from "vue2-timeago";
 import UserCard from "@/components/UserCard";
+import UserSkeleton from "@/components/skeletons/UserSkeleton";
 
 export default {
   watch: {
@@ -122,9 +128,30 @@ export default {
         this.user.posts > 0 ? this.getPosts() : this.getComments();
       });
     },
+    loading(newVal, oldValue) {
+      if (newVal !== oldValue) {
+        this.clearLoadingTimeInterval();
+
+        if (newVal) {
+          this.$_loadingTimeInterval = setInterval(() => {
+            this.loadingTime++;
+          }, 1000);
+        }
+      }
+    },
+    loadingTime(newVal, oldValue) {
+      if (newVal !== oldValue) {
+        if (newVal === this.maxLoadingTime) {
+          this.loading = false;
+        }
+      }
+    },
   },
   data() {
     return {
+      loading: false,
+      loadingTime: 0,
+      maxLoadingTime: 1,
       user: {},
       posts: [],
       comments: [],
@@ -132,16 +159,29 @@ export default {
       madeRequest: false,
     };
   },
+  mounted() {
+    this.startLoading();
+  },
   created() {
     this.getUser().then(() => {
       this.user.posts > 0 ? this.getPosts() : this.getComments();
+      this.$_loadingTimeInterval = null;
     });
   },
   components: {
     TimeAgo,
     UserCard,
+    UserSkeleton,
   },
   methods: {
+    clearLoadingTimeInterval() {
+      clearInterval(this.$_loadingTimeInterval);
+      this.$_loadingTimeInterval = null;
+    },
+    startLoading() {
+      this.loading = true;
+      this.loadingTime = 0;
+    },
     reactionColor(yourReaction) {
       return yourReaction === 1 ? "green" : yourReaction === -1 ? "red" : "";
     },

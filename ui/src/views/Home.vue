@@ -258,7 +258,7 @@ import Error from "@/components/Error";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
 import PostFilters from "@/components/PostFilters";
-import HomeSkeleton from "@/components/HomeSkeleton";
+import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
 
 export default {
   name: "Home",
