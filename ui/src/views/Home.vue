@@ -357,7 +357,6 @@ export default {
           categories: this.selectedCategories,
         })
         .then((response) => {
-          console.log(response.data.data);
           this.posts = response.data.data || [];
         })
         .catch((error) => {
