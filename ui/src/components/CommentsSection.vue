@@ -40,21 +40,30 @@
     </b-form>
     <!-- Not authenticated-start -->
     <div v-if="!authenticated" class="border border-dark rounded p-2">
-      <span>Want to leave a comment?</span>
-      <b-button
-        v-b-modal.signup-modal
-        class="float - right"
-        variant="success"
-        size="sm"
-        >Sign Up
-      </b-button>
-      <b-button
-        v-b-modal.auth-modal
-        class="float-right mr-1"
-        variant="outline-info"
-        size="sm"
-        >Sign In
-      </b-button>
+      <b-row>
+        <b-col>
+          <span>Want to leave a comment?</span>
+        </b-col>
+        <b-col cols="end" class="mr-3">
+          <b-container :tag="isMobile() ? 'div' : 'span'" class="p-0 m-0">
+            <b-button
+              v-b-modal.signup-modal
+              variant="success"
+              size="sm"
+              :class="!isMobile() ? 'mr-2' : ''"
+              >Sign Up
+            </b-button>
+          </b-container>
+          <b-container
+            :tag="isMobile() ? 'div' : 'span'"
+            :class="`p-0 m-0 ${isMobile() ? 'mt-2' : ''}`"
+          >
+            <b-button v-b-modal.auth-modal variant="outline-info" size="sm"
+              >Sign In
+            </b-button>
+          </b-container>
+        </b-col>
+      </b-row>
     </div>
     <!-- Not authenticated-end -->
     <!-- Comment form-end -->
