@@ -267,7 +267,7 @@ func (UserRepoCRUD) FindByLogin(login string) (*models.User, int, error) {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
-		return nil, http.StatusBadRequest, errors.New("wrong login or password")
+		return nil, http.StatusNotFound, errors.New("user not found")
 	}
 	return &u, http.StatusOK, nil
 }

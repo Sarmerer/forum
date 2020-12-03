@@ -38,8 +38,11 @@ func SetupEnv() error {
 		if len(env) < 2 {
 			return fmt.Errorf("invalid env variable on line %d", lineCount)
 		}
-		os.Setenv(env[0], env[1])
 		lineCount++
+		if os.Getenv(env[0]) != "" {
+			break
+		}
+		os.Setenv(env[0], env[1])
 	}
 	if err = scanner.Err(); err != nil {
 		return err
