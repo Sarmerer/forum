@@ -1,6 +1,33 @@
 <template>
   <div class="grid">
     <div class="columns">
+      <div class="info-col" v-if="isMobile()">
+        <div class="card-m">
+          <b-row align-v="end" class="mb-3">
+            <b-col cols="3">
+              <b-skeleton
+                variant="dark"
+                type="avatar"
+                width="55px"
+                height="55px"
+              ></b-skeleton
+            ></b-col>
+            <b-col>
+              <b-skeleton
+                variant="dark"
+                animation="wave"
+                width="50%"
+              ></b-skeleton>
+              <b-skeleton
+                variant="dark"
+                animation="wave"
+                width="45%"
+              ></b-skeleton></b-col
+          ></b-row>
+          <b-skeleton variant="dark" animation="wave" width="90%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="90%"></b-skeleton>
+        </div>
+      </div>
       <div class="main-col">
         <div>
           <b-skeleton
@@ -35,8 +62,8 @@
           <b-skeleton-img></b-skeleton-img>
         </div> -->
       </div>
-      <div class="info-col">
-        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+      <div class="info-col" v-if="!isMobile()">
+        <div class="card">
           <b-skeleton
             variant="dark"
             type="avatar"
