@@ -222,8 +222,8 @@ export default {
       this.activeTab = "comments";
       return await api
         .post("comments/find", {
-          by: "user_id",
-          id: Number.parseInt(this.$route.params.id),
+          by: "author",
+          author: Number.parseInt(this.$route.params.id),
         })
         .then((response) => {
           this.comments = response.data.data || [];
