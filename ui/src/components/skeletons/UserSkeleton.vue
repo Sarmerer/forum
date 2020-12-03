@@ -24,8 +24,8 @@
                 width="45%"
               ></b-skeleton></b-col
           ></b-row>
-          <b-skeleton variant="dark" animation="wave" width="90%"></b-skeleton>
-          <b-skeleton variant="dark" animation="wave" width="90%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="100%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="100%"></b-skeleton>
         </div>
       </div>
       <div class="main-col">
@@ -34,7 +34,7 @@
             variant="dark"
             class="mt-2 ml-2"
             type="button"
-            width="300px"
+            :width="isMobile() ? '200px' : '300px'"
             height="45px"
             animation="none"
           ></b-skeleton>
