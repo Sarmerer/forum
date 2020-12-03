@@ -40,6 +40,7 @@ type InputAllPosts struct {
 type InputFind struct {
 	By         string   `json:"by"`
 	ID         int64    `json:"id"`
+	Login      string   `json:"login"`
 	AuthorID   int64    `json:"author"`
 	Categories []string `json:"categories"`
 }

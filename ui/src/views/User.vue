@@ -190,8 +190,9 @@ export default {
     },
     async getUser() {
       return await api
-        .get("user", {
-          params: { id: this.$route.params.id },
+        .post("user/find", {
+          by: "id",
+          id: Number.parseInt(this.$route.params.id),
         })
         .then((response) => {
           this.user = response.data.data;

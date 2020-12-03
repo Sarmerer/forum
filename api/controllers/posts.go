@@ -61,8 +61,8 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 		response.Success(w, nil, post)
 		return
 	case "author":
-		if posts, err = repo.FindByAuthor(input.AuthorID); err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
+		if posts, status, err = repo.FindByAuthor(input.AuthorID, userCtx.ID); err != nil {
+			response.Error(w, status, err)
 			return
 		}
 	case "categories":

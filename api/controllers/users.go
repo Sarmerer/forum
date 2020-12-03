@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/sarmerer/forum/api/models"
@@ -26,21 +27,27 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, users)
 }
 
-//GetUser gets a specified user from the database
-func GetUser(w http.ResponseWriter, r *http.Request) {
+//FindUser gets a specified user from the database
+func FindUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64
+		input  models.InputFind
 		user   *models.User
 		status int
 		err    error
 	)
-	if uid, err = utils.ParseID(r); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if user, status, err = repo.FindByID(uid); err != nil {
-		response.Error(w, status, err)
+	switch input.By {
+	case "id":
+		if user, status, err = repo.FindByID(input.ID); err != nil {
+			response.Error(w, status, err)
+			return
+		}
+	default:
+		response.Error(w, http.StatusBadRequest, errors.New("unknown search type"))
 		return
 	}
 

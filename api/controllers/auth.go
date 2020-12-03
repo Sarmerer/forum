@@ -31,7 +31,7 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if user, status, err = repo.FindByLogin(input.Login); err != nil {
+	if user, status, err = repo.FindByLoginOrEmail(input.Login); err != nil {
 		response.Error(w, status, err)
 		return
 	}

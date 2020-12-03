@@ -31,7 +31,17 @@
       <b-row>
         <b-col>
           <p class="m-0 px-2">
-            Last active:
+            Joined:
+            <time-ago
+              v-if="userData.created"
+              v-b-tooltip.hover
+              :title="userData.created"
+              :datetime="userData.created"
+              :long="!isMobile()"
+            >
+            </time-ago>
+            <br />
+            Active:
             <time-ago
               v-if="userData.last_active"
               v-b-tooltip.hover
@@ -90,7 +100,7 @@
         </b-col>
         <b-col>
           <p class="m-0">
-            Last active:
+            Active:
             <time-ago
               v-b-tooltip.hover
               :title="userData.last_active"

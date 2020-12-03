@@ -53,7 +53,7 @@ func FindComments(w http.ResponseWriter, r *http.Request) {
 	}
 	switch input.By {
 	case "author":
-		if comments, status, err = repo.FindByUserID(input.AuthorID, userCtx.ID); err != nil {
+		if comments, status, err = repo.FindByAuthor(input.AuthorID, userCtx.ID); err != nil {
 			response.Error(w, status, err)
 			return
 		}

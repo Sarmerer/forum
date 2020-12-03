@@ -10,7 +10,7 @@ type UserRepo interface {
 	Create(newUser *models.User) (newUserID int64, status int, err error)
 	Update(user *models.User) (status int, err error)
 	Delete(userID int64) (status int, err error)
-	FindByLogin(login string) (user *models.User, status int, err error)
+	FindByLoginOrEmail(login string) (user *models.User, status int, err error)
 
 	GetPassword(userID int64) (password string, status int, err error)
 	UpdateSession(userID int64, newSessionID string) error
@@ -29,8 +29,8 @@ type PostRepo interface {
 	// current page and offset for pagination
 	FindAll(requestorID int64, input models.InputAllPosts) (*models.Posts, error)
 	// FindByID takes in post id and user id, for the same reasaon, as in FindAll()
-	FindByID(postID, requestorID int64) (*models.Post, int, error)
-	FindByAuthor(userID int64) ([]models.Post, error)
+	FindByID(postID, requestorID int64) (post *models.Post, status int, err error)
+	FindByAuthor(userID, requestorID int64) (posts []models.Post, status int, err error)
 	FindByCategories(categories []string) ([]models.Post, error)
 
 	Create(post *models.Post, categories []string) (newPost *models.Post, status int, err error)
@@ -54,7 +54,7 @@ type CategoryRepo interface {
 type CommentRepo interface {
 	FindByID(commentID int64) (*models.Comment, int, error)
 	FindByPostID(postID, requestorID int64) ([]models.Comment, error)
-	FindByUserID(userID, requestorID int64) (comments []models.Comment, status int, err error)
+	FindByAuthor(userID, requestorID int64) (comments []models.Comment, status int, err error)
 	Create(comment *models.Comment) (*models.Comment, error)
 	Update(comment *models.Comment) (*models.Comment, error)
 	Delete(commentID int64) error

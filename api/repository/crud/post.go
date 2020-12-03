@@ -194,13 +194,15 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 	return &p, http.StatusOK, nil
 }
 
-func (PostRepoCRUD) FindByAuthor(userID int64) ([]models.Post, error) {
+func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
 		err   error
 	)
 	if rows, err = repository.DB.Query(
+		// FIXME fix yout_reaction subquery
+		// it should take in requestorID instead of userID
 		`SELECT *,
 		(
 			SELECT TOTAL(reaction)
@@ -231,19 +233,22 @@ func (PostRepoCRUD) FindByAuthor(userID int64) ([]models.Post, error) {
 		) AS total_participants
 		FROM posts p
 		WHERE p.author_id_fkey = $1`,
-		userID,
+		userID, requestorID,
 	); err != nil {
-		return nil, err
+		if err != sql.ErrNoRows {
+			return nil, http.StatusInternalServerError, err
+		}
+		return nil, http.StatusNotFound, errors.New("user not found")
 	}
 	for rows.Next() {
 		var p models.Post
 		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
 		if err = fetchAuthorAndCategories(&p); err != nil {
-			return nil, err
+			return nil, http.StatusInternalServerError, err
 		}
 		posts = append(posts, p)
 	}
-	return posts, nil
+	return posts, http.StatusOK, nil
 }
 
 func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {

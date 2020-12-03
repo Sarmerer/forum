@@ -28,7 +28,7 @@ func NewUserRepoCRUD() UserRepoCRUD {
 	return UserRepoCRUD{}
 }
 
-func fetchUserStats(user *models.User) error {
+func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 	var (
 		err error
 	)
@@ -70,7 +70,6 @@ func fetchUserStats(user *models.User) error {
 }
 
 //FindAll returns all users in the database
-//FIXME don't scan for sensetive data, like password and session id
 func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	var (
 		rows  *sql.Rows
@@ -103,19 +102,20 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 				email,
 				avatar,
 				display_name,
+				created,
 				last_online,
 				role
 		FROM users
 		WHERE id = ?`, userID,
 	).Scan(
-		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.LastActive, &u.Role,
+		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
 		return nil, http.StatusNotFound, errors.New("user not found")
 	}
-	if err = fetchUserStats(&u); err != nil {
+	if err = NewUserRepoCRUD().fetchUserStats(&u); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	return &u, http.StatusOK, nil
@@ -245,7 +245,7 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 }
 
 //FindByNameOrEmail finds a user by name or email in the database
-func (UserRepoCRUD) FindByLogin(login string) (*models.User, int, error) {
+func (UserRepoCRUD) FindByLoginOrEmail(login string) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
@@ -255,14 +255,15 @@ func (UserRepoCRUD) FindByLogin(login string) (*models.User, int, error) {
 				login,
 	   			email,
 	   			avatar,
-	   			display_name,
+				   display_name,
+				   created,
 	   			last_online,
 	   			role
 		FROM users
 		WHERE login = $1
 			OR email = $1`, login,
 	).Scan(
-		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.LastActive, &u.Role,
+		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err

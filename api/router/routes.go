@@ -89,9 +89,9 @@ var apiRoutes = []route{
 		NeedAuth: true,
 	},
 	{
-		URI:      "/api/user",
-		Handler:  controllers.GetUser,
-		Method:   http.MethodGet,
+		URI:      "/api/user/find",
+		Handler:  controllers.FindUser,
+		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,
 	},

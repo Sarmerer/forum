@@ -76,7 +76,7 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 	return comments, nil
 }
 
-func (CommentRepoCRUD) FindByUserID(userID, requestorID int64) ([]models.Comment, int, error) {
+func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment, int, error) {
 	var (
 		rows     *sql.Rows
 		comments []models.Comment
