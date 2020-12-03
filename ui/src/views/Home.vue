@@ -171,7 +171,6 @@
                   v-for="(post, index) in recent"
                   :key="index"
                   tag="div"
-                  class="ml-2"
                   style="cursor: pointer"
                 >
                   <small>
@@ -197,7 +196,9 @@
             <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
               <h3 class="primary">
                 CATEGORIES<b-button id="popover-filter-button">
-                  <b-icon-three-dots-vertical></b-icon-three-dots-vertical>
+                  <b-icon-filter
+                    v-if="selectedCategories.length"
+                  ></b-icon-filter>
                 </b-button>
               </h3>
               <!-- Start of categories -->
@@ -205,7 +206,7 @@
                 >None...
                 <router-link to="/new-post" class="secondary">yet</router-link>
               </span>
-              <b-container v-else>
+              <b-container v-else class="ml-0 pl-0">
                 <div class="categories">
                   <b-form-checkbox-group
                     v-for="c in categories"
@@ -415,9 +416,18 @@ export default {
 
 .category-name {
   margin: 2px;
+  font-size: 0.65rem !important;
+  // padding: 0.1rem 0.4rem !important;
 }
+.categories .btn-secondary {
+  background-color: #343a40;
+  border-color: #343a40;
+  color: rgba(255, 255, 255, 0.87);
+}
+
 .categories .btn-secondary.disabled.category-count {
   background-color: #278ea5;
+  opacity: 1;
 }
 
 .categories .btn-secondary.disabled {
@@ -425,8 +435,13 @@ export default {
   border: none;
 }
 
+.categories .btn-secondary.active {
+  background-color: #262a2e;
+  border-color: #262a2e;
+  color: rgba(255, 255, 255, 0.692);
+}
+
 .btn-dark {
-  // color: #fff;
   background-color: rgba(255, 255, 255, 0.05);
   border: none;
 }
