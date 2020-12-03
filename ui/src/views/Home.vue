@@ -195,12 +195,28 @@
             </div>
             <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
               <h3 class="primary">
-                CATEGORIES<b-button id="popover-filter-button">
-                  <b-icon-filter
-                    v-if="selectedCategories.length"
-                  ></b-icon-filter>
-                </b-button>
+                CATEGORIES
               </h3>
+              <b-button-group
+                v-if="sorter.categories.length || sorter.filtered"
+                class="mb-2 w-25"
+                size="sm"
+              >
+                <b-button
+                  @click="sortByCategories()"
+                  :disabled="!sorter.categories"
+                  variant="dark"
+                >
+                  <b-icon-filter> </b-icon-filter>
+                </b-button>
+                <b-button
+                  v-if="sorter.filtered"
+                  @click="resetCategories()"
+                  variant="dark"
+                >
+                  <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
+                </b-button>
+              </b-button-group>
               <!-- Start of categories -->
               <span v-if="categories.length == 0"
                 >None...
@@ -214,7 +230,7 @@
                     :id="c.ID"
                     class="category-name"
                     size="sm"
-                    v-model="selectedCategories"
+                    v-model="sorter.categories"
                     buttons
                     ><b-form-checkbox :value="c.name">{{
                       c.name
@@ -227,24 +243,6 @@
               </b-container>
               <!-- End of categories -->
             </div>
-            <b-popover
-              target="popover-filter-button"
-              triggers="focus"
-              variant="dark"
-            >
-              <b-button
-                v-on:click="sortByCategories()"
-                class="mb-1"
-                style="width: 135px"
-              >
-                <b-icon-filter> </b-icon-filter> filter</b-button
-              >
-              <br />
-              <b-button v-on:click="resetCategories()" style="width: 135px">
-                <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
-                reset</b-button
-              >
-            </b-popover>
           </div>
         </div>
       </div>
@@ -280,8 +278,13 @@ export default {
       posts: [],
       recent: [],
       categories: [],
-      selectedCategories: [],
-      sorter: { orderBy: "rating", asc: true, throttled: false },
+      sorter: {
+        orderBy: "rating",
+        asc: true,
+        throttled: false,
+        categories: [],
+        filtered: false,
+      },
       pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
       error: {
         show: false,
@@ -375,20 +378,23 @@ export default {
         });
     },
     async sortByCategories() {
+      if (this.sorter.categories === this.sorter.prevCategories) return;
       await api
         .post("post/find", {
           by: "categories",
-          categories: this.selectedCategories,
+          categories: this.sorter.categories,
         })
         .then((response) => {
           this.posts = response.data.data || [];
+          this.sorter.filtered = true;
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async resetCategories() {
-      this.selectedCategories = [];
+      this.sorter.categories = [];
+      this.sorter.filtered = false;
       this.getPosts(0);
     },
   },
