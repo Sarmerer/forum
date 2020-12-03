@@ -2,14 +2,16 @@
   <div class="grid">
     <div class="columns">
       <div class="main-col">
-        <div v-if="postsLength > 0">
+        <div>
           <b-skeleton
-            variant="info"
+            variant="dark"
             class="mt-2 ml-2"
             type="button"
+            width="300px"
+            height="45px"
             animation="none"
           ></b-skeleton>
-          <div v-for="index in postsLength" v-bind:key="index">
+          <div v-for="index in 5" v-bind:key="index">
             <div :class="`${isMobile() ? 'card-m' : 'card'}`">
               <b-skeleton
                 variant="dark"

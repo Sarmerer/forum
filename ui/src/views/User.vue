@@ -21,9 +21,9 @@
                   :to="'/post/' + post.id"
                   v-for="post in posts"
                   :key="post.id"
-                  :class="`user-card text-break ${
-                    isMobile() ? 'card-m' : 'card'
-                  }`"
+                  :class="
+                    `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                  "
                   tag="div"
                 >
                   <h5>
@@ -57,16 +57,16 @@
                 </router-link>
               </b-tab>
               <b-tab
-                v-if="user.comments"
+                v-if="user.comments > 0"
                 title="Comments"
                 :active="!user.posts"
                 @click="getComments()"
               >
                 <router-link
                   :to="'/post/' + comment.post"
-                  :class="`user-card text-break ${
-                    isMobile() ? 'card-m' : 'card'
-                  }`"
+                  :class="
+                    `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                  "
                   v-for="comment in comments"
                   :key="comment.id"
                   tag="div"
@@ -118,7 +118,7 @@ import UserSkeleton from "@/components/skeletons/UserSkeleton";
 
 export default {
   watch: {
-    "$route.params.id": function () {
+    "$route.params.id": function() {
       this.user = {};
       this.posts = [];
       this.comments = [];

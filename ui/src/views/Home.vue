@@ -312,17 +312,17 @@ export default {
         })
         .then((response) => {
           this.error.show = false;
-          this.posts = response.data.data.hot || [];
-          this.recent = response.data.data.recent || [];
-          this.pagination.totalPages = response.data.data.total_rows || 5;
+          this.posts = response.data?.data?.hot || [];
+          this.recent = response.data?.data?.recent || [];
+          this.pagination.totalPages = response.data?.data?.total_rows || 5;
         })
         .catch((error) => {
           this.posts = [];
           this.recent = [];
           this.categories = [];
           this.error.show = true;
-          this.error.status = error.response.status;
-          this.error.message = error.response.statusText;
+          this.error.status = error.response?.status;
+          this.error.message = error.response?.statusText;
           this.error.callback = this.getPosts;
         });
     },
