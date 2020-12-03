@@ -30,7 +30,7 @@ func NewUserRepoCRUD() UserRepoCRUD {
 
 func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 	var (
-		err error
+		err            error
 	)
 	if err = repository.DB.QueryRow(
 		`SELECT COUNT(id) as posts_count,
@@ -39,7 +39,7 @@ func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 			FROM comments
 			WHERE author_id_fkey = $1
 		) AS comments_count,
-		SUM(
+		(
 			(
 				SELECT TOTAL(reaction)
 				FROM posts_reactions
