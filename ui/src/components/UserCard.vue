@@ -14,7 +14,11 @@
           :badge-right="userData.role > 0"
           badge-variant="info"
         >
-          <template #badge><b-icon-code-slash></b-icon-code-slash></template>
+          <template #badge>
+            <div v-b-tooltip.left :title="userData.role == 2 ? 'Admin' : ''">
+              <b-icon-code-slash></b-icon-code-slash>
+            </div>
+          </template>
         </b-avatar>
       </b-col>
       <b-col>
@@ -30,47 +34,50 @@
           Active:
           <time-ago
             v-if="userData.last_active"
-            v-b-tooltip.hover
-            :title="userData.last_active"
             :datetime="userData.last_active"
             :long="!isMobile()"
+            tooltip="right"
           >
           </time-ago>
         </small>
       </b-col>
     </b-row>
-    <b-row class="ml-2 mt-2">
-      <b-col>
-        <div v-b-tooltip.hover.left title="Joined">
-          <b-icon-calendar-event></b-icon-calendar-event>
-        </div>
+    <b-row class="mt-2" align-h="around">
+      <div v-b-tooltip.hover.left title="Joined">
+        <b-icon-calendar-event v-if="isMobile()"></b-icon-calendar-event>
+        <small v-else>Joined</small>
+        <br />
         <time-ago
           v-if="userData.created"
-          v-b-tooltip.hover.bottom
-          :title="userData.created"
+          tooltip="left"
           :datetime="userData.created"
         >
         </time-ago>
-      </b-col>
-      <b-col>
-        <div v-b-tooltip.hover.bottom title="Rating">
-          <b-icon :icon="userData.rating >= 0 ? 'arrow-up' : 'arrow-down'">
-          </b-icon>
-        </div>
-        {{ userData.rating }}
-      </b-col>
-      <b-col>
-        <div v-b-tooltip.hover.bottom title="Posts">
-          <b-icon-newspaper></b-icon-newspaper>
-        </div>
-        {{ userData.posts }}
-      </b-col>
-      <b-col>
-        <div v-b-tooltip.hover.right title="Comments">
-          <b-icon-chat></b-icon-chat>
-        </div>
-        {{ userData.comments }}
-      </b-col>
+      </div>
+      <div v-b-tooltip.hover.bottom title="Rating">
+        <b-icon
+          v-if="isMobile()"
+          :icon="userData.rating >= 0 ? 'arrow-up' : 'arrow-down'"
+        >
+        </b-icon>
+        <small v-else>Rating</small>
+        <br />
+        <span>{{ userData.rating }}</span>
+      </div>
+
+      <div v-b-tooltip.hover.bottom title="Posts">
+        <b-icon-newspaper v-if="isMobile()"></b-icon-newspaper>
+        <small v-else>Posts</small>
+        <br />
+        <span>{{ userData.posts }}</span>
+      </div>
+
+      <div v-b-tooltip.hover.right title="Comments">
+        <b-icon-chat v-if="isMobile()"></b-icon-chat>
+        <small v-else>Comments</small>
+        <br />
+        <span>{{ userData.comments }}</span>
+      </div>
     </b-row>
   </div>
 </template>
