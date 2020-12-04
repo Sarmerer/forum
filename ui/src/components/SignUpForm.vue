@@ -160,7 +160,8 @@ export default {
               solid: true,
             }
           );
-          if (this.prevRoute) this.$router.push(this.prevRoute);
+          // if (this.prevRoute) this.$router.push(this.prevRoute);
+          this.$router.go(-1);
         }
       });
     },
