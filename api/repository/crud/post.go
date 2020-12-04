@@ -251,27 +251,55 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 	return posts, http.StatusOK, nil
 }
 
-func (PostRepoCRUD) FindByCategories(categories []string) ([]models.Post, error) {
+func (PostRepoCRUD) FindByCategories(categories []string, requestorID int64) ([]models.Post, error) {
 	var (
 		rows  *sql.Rows
 		posts []models.Post
 		err   error
 	)
 	if rows, err = repository.DB.Query(
-		fmt.Sprintf(`SELECT p.*
-	FROM posts_categories_bridge AS pcb
+		fmt.Sprintf(`SELECT p.*,
+		(
+			SELECT TOTAL(reaction)
+			FROM posts_reactions
+			WHERE post_id_fkey = p.id
+		) AS rating,
+		IFNULL (
+			(
+				SELECT reaction
+				FROM posts_reactions
+				WHERE user_id_fkey = $1
+					AND post_id_fkey = p.id
+			),
+			0
+		) AS your_reaction,
+		(
+			SELECT count(id)
+			FROM comments
+			WHERE post_id_fkey = p.id
+		) AS comments_count,
+		IFNULL (
+			(
+				SELECT COUNT(DISTINCT author_id_fkey)
+				FROM comments
+				WHERE post_id_fkey = p.id
+			),
+			0
+		) AS total_participants
+		FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p ON p.id = pcb.post_id_fkey
 		INNER JOIN categories AS c ON c.id = pcb.category_id_fkey
-	WHERE c.name IN (%s)
-	GROUP BY p.id
-	HAVING COUNT(DISTINCT c.id) = ?`, fmt.Sprintf("\"%s\"", strings.Join(categories, "\", \""))),
-		len(categories),
+		WHERE c.name IN (%s)
+		GROUP BY p.id
+		HAVING COUNT(DISTINCT c.id) = $2`, fmt.Sprintf("\"%s\"", strings.Join(categories, "\", \""))),
+		requestorID, len(categories),
 	); err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created,
+			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
 		if err = fetchAuthorAndCategories(&p); err != nil {
 			return nil, err
 		}

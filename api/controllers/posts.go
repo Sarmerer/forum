@@ -66,7 +66,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case "categories":
-		if posts, err = repo.FindByCategories(input.Categories); err != nil {
+		if posts, err = repo.FindByCategories(input.Categories, userCtx.ID); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}

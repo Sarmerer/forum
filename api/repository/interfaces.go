@@ -31,7 +31,7 @@ type PostRepo interface {
 	// FindByID takes in post id and user id, for the same reasaon, as in FindAll()
 	FindByID(postID, requestorID int64) (post *models.Post, status int, err error)
 	FindByAuthor(userID, requestorID int64) (posts []models.Post, status int, err error)
-	FindByCategories(categories []string) ([]models.Post, error)
+	FindByCategories(categories []string, requestorID int64) ([]models.Post, error)
 
 	Create(post *models.Post, categories []string) (newPost *models.Post, status int, err error)
 	Update(*models.Post, models.UserCtx) (updatedPost *models.Post, status int, err error)
