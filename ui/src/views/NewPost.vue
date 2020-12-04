@@ -8,7 +8,7 @@
         :class="`main-col p-3 ${isMobile() ? 'card-m' : 'card'}`"
         id="new-post"
       >
-        <b-form @submit="onSubmit">
+        <b-form @submit.prevent="onSubmit">
           <h3 align="center">Create new post</h3>
           <b-form-group label-for="title">
             <small>* - required</small>
@@ -69,7 +69,7 @@
         </b-form>
       </div>
       <div v-if="!isMobile()" class="info-col">
-        <UserCard :userData="user" link />
+        <UserCard v-if="user" :userData="user" link />
       </div>
     </div>
   </div>
@@ -80,15 +80,6 @@ import UserCard from "@/components/UserCard";
 import { mapGetters } from "vuex";
 
 export default {
-  watch: {
-    "$route.params": {
-      handler(newID) {
-        const { id } = newID;
-        this.postID = Number.parseInt(id);
-      },
-      immediate: true,
-    },
-  },
   computed: {
     ...mapGetters({
       user: "auth/user",
@@ -114,9 +105,10 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     if (
-      this.form.title.length ||
-      this.form.content.length ||
-      this.form.categories.length
+      (this.form.title.length ||
+        this.form.content.length ||
+        this.form.categories.length) &&
+      this.user
     ) {
       if (window.confirm("Are tou sure?")) next();
     } else {
@@ -147,8 +139,7 @@ export default {
     };
   },
   methods: {
-    onSubmit(e) {
-      e.preventDefault();
+    onSubmit() {
       api
         .post("post/create", {
           title: this.form.title,
@@ -162,8 +153,8 @@ export default {
             params: { id: response.data.data.id, postData: response.data.data },
           });
         })
-        .catch((error) => {
-          alert(error.response.data.code + " " + error.response.data.message);
+        .catch(() => {
+          this.$router.push("/");
         });
     },
     onTagState(_valid, invalid, duplicate) {
