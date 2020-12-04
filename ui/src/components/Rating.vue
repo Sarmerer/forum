@@ -59,7 +59,7 @@ export default {
 }
 
 .rating-opacity {
-  opacity: 87%;
+  opacity: 0.87;
 }
 </style>
 q
