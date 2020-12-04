@@ -22,7 +22,7 @@ const (
 	apiURLTest    = "http://localhost:" + APIPort
 	apiURLProd    = "https://forum-api-sarmerer.herokuapp.com"
 	clientURLTest = "http://localhost:8080"
-	clientURLProd = "https://forum-sarmerer.netlify.app"
+	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 
 	DatabaseDriver   = "sqlite3"
 	DatabasePath     = "./database"
