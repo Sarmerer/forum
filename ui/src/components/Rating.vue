@@ -49,7 +49,6 @@ export default {
   },
 };
 </script>
-
 <style lang="scss">
 .rating-col {
   display: flex;
@@ -62,4 +61,3 @@ export default {
   opacity: 0.87;
 }
 </style>
-q
