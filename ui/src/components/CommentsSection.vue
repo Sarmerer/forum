@@ -99,10 +99,17 @@
         <div v-if="index != editor.editing">
           <b-row>
             <b-col cols="start">
-              <b-img :src="comment.author.avatar" width="15px"></b-img>
               <router-link :to="`/user/${comment.author.id}`" class="secondary">
-                {{ comment.author.display_name }}
+                <user-avatar :userData="comment.author" :userID="index">
+                </user-avatar>
               </router-link>
+              <span
+                v-if="comment.author.id === postAuthorID"
+                v-b-tooltip.hover.right
+                title="Post author"
+              >
+                <b-icon-pencil width="13px"></b-icon-pencil>
+              </span>
             </b-col>
             <b-col>
               <small>
@@ -195,6 +202,7 @@
 </template>
 <script>
 import ControlButtons from "@/components/ControlButtons";
+import UserAvatar from "@/components/UserAvatar";
 import ControlModal from "./ControlModal";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
@@ -204,6 +212,7 @@ import api from "@/router/api";
 export default {
   props: {
     postID: { type: Number, required: true },
+    postAuthorID: Number,
   },
   computed: {
     ...mapGetters({
@@ -228,6 +237,7 @@ export default {
   components: {
     ControlButtons,
     ControlModal,
+    UserAvatar,
     TimeAgo,
     Rating,
   },

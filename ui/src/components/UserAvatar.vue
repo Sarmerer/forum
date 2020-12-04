@@ -1,0 +1,53 @@
+<template>
+  <span :id="`user-info-popover${userID}`">
+    <b-avatar :src="userData.avatar" variant="dark" size="15px"></b-avatar>
+    <b-popover
+      :target="`user-info-popover${userID}`"
+      triggers="hover"
+      placement="left"
+    >
+      <span>
+        <b-icon-calendar-event></b-icon-calendar-event>
+        <small> Joined: </small>
+        <time-ago :datetime="userData.created"> </time-ago>
+        <br />
+        <b-icon-clock></b-icon-clock>
+        <small> Active: </small>
+        <time-ago :datetime="userData.last_active"> </time-ago>
+        <br />
+        <b-icon :icon="userData.rating >= 0 ? 'arrow-up' : 'arrow-down'">
+        </b-icon>
+        <small> Rating:</small> {{ userData.rating }}<br />
+        <b-icon-newspaper></b-icon-newspaper>
+        <small> Posts:</small> {{ userData.posts }}<br />
+        <b-icon-chat></b-icon-chat>
+        <small> Comments: </small>{{ userData.comments }}
+      </span>
+    </b-popover>
+    {{ userData.display_name }}
+  </span>
+</template>
+<script>
+import TimeAgo from "vue2-timeago";
+export default {
+  name: "user-avatar",
+  props: {
+    userData: { type: Object, required: true },
+    userID: Number,
+  },
+  components: {
+    TimeAgo,
+  },
+};
+</script>
+<style lang="scss" scoped>
+.popover {
+  background-color: #282828;
+  opacity: 0.87;
+}
+
+.popover span {
+  color: white;
+  opacity: 0.87;
+}
+</style>

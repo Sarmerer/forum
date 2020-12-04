@@ -90,7 +90,11 @@
             </b-form-row>
           </b-form>
         </div>
-        <CommentsSection :postID="postID" />
+        <CommentsSection
+          v-if="post.author"
+          :postID="postID"
+          :postAuthorID="post.author.id"
+        />
       </div>
       <div v-if="!isMobile()" class="info-col">
         <UserCard v-if="post.author" link :userData="post.author" />
