@@ -8,7 +8,7 @@
           variant="light"
           title="Edit"
           :disabled="disabled"
-          @click="call(editCallback)"
+          @click="$emit('edit-event')"
         >
           <b-icon-pencil-square color="white"></b-icon-pencil-square>
         </b-button>
@@ -28,7 +28,7 @@
           size="sm"
           variant="outline-success"
           class="confirm"
-          @click="call(deleteCallback).then((confirm = false))"
+          @click="$emit('delete-event'), (confirm = false)"
           title="Confirm"
           :disabled="disabled"
         >
@@ -60,8 +60,6 @@ import { mapGetters } from "vuex";
 export default {
   props: {
     hasPermission: { type: Boolean, required: true },
-    deleteCallback: { type: Object, required: true },
-    editCallback: { type: Object, required: true },
     disabled: { type: Boolean, required: true },
     compact: { type: Boolean },
     modalID: { type: String },
@@ -75,11 +73,6 @@ export default {
     return {
       confirm: false,
     };
-  },
-  methods: {
-    call(prop) {
-      return prop.args ? prop.callback(...prop.args) : prop.callback();
-    },
   },
 };
 </script>

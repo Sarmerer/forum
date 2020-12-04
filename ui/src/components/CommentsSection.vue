@@ -91,8 +91,8 @@
       class="ml-3 mr-3 mt-2"
     >
       <ControlModal
-        :editCallback="{ callback: edit, args: [index, comment.content] }"
-        :deleteCallback="{ callback: deleteComment, args: [comment.id, index] }"
+        v-on:edit-event="edit(index, comment.content)"
+        v-on:delete-event="deleteComment(comment.id, index)"
         :modalID="'modal-menu' + index"
       />
       <div>
@@ -125,14 +125,8 @@
             <b-col cols="end" class="mr-n2">
               <ControlButtons
                 :hasPermission="hasPermission(comment)"
-                :deleteCallback="{
-                  callback: deleteComment,
-                  args: [comment.id, index],
-                }"
-                :editCallback="{
-                  callback: edit,
-                  args: [index, comment.content],
-                }"
+                v-on:delete-event="deleteComment(comment.id, index)"
+                v-on:edit-event="edit(index, comment.content)"
                 :disabled="deleting"
                 :compact="isMobile()"
                 :modalID="'modal-menu' + index"

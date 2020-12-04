@@ -1,8 +1,8 @@
 <template>
   <div class="grid">
     <ControlModal
-      :editCallback="{ callback: edit }"
-      :deleteCallback="{ callback: deletePost }"
+      v-on:edit-event="edit()"
+      v-on:delete-event="deletePost()"
       modalID="modal-menu"
     />
     <div class="columns">
@@ -23,8 +23,8 @@
                 <b-col cols="end" class="mr-2">
                   <ControlButtons
                     :hasPermission="hasPermission"
-                    :deleteCallback="{ callback: deletePost }"
-                    :editCallback="{ callback: edit }"
+                    v-on:delete-event="deletePost()"
+                    v-on:edit-event="edit()"
                     :disabled="requesting"
                     :compact="isMobile()"
                     modalID="modal-menu"

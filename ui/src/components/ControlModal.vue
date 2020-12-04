@@ -10,7 +10,7 @@
       no-fade
     >
       <b-row class="mb-1" @click="$bvModal.hide(modalID)">
-        <b-col @click="call(editCallback)"><span>Edit</span></b-col>
+        <b-col @click="$emit('edit-event')"><span>Edit</span></b-col>
         <b-col cols="end">
           <b-icon-x class="h4 mr-3"> </b-icon-x>
         </b-col>
@@ -35,9 +35,9 @@
         <b-col cols="end" class="mr-3">
           <b-button
             size="sm"
-             class="mr-2"
+            class="mr-2"
             variant="danger"
-            @click="call(deleteCallback), $bvModal.hide(modalID + 'confirm')"
+            @click="$emit('delete-event'), $bvModal.hide(modalID + 'confirm')"
           >
             Yes
           </b-button>
@@ -57,14 +57,7 @@
 export default {
   name: "control-modal",
   props: {
-    deleteCallback: { type: Object, required: true },
-    editCallback: { type: Object, required: true },
     modalID: { type: String, required: true },
-  },
-  methods: {
-    call(prop) {
-      return prop.args ? prop.callback(...prop.args) : prop.callback();
-    },
   },
 };
 </script>
