@@ -193,28 +193,13 @@
           </div>
           <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
             <h3 class="primary">
-              CATEGORIES
+              CATEGORIES<b-button id="popover-filter-button"
+                ><b-icon-three-dots-vertical
+                  v-if="sorter.categories.length"
+                ></b-icon-three-dots-vertical
+              ></b-button>
             </h3>
-            <b-button-group
-              v-if="sorter.categories.length || sorter.filtered"
-              class="mb-2 w-25"
-              size="sm"
-            >
-              <b-button
-                @click="sortByCategories()"
-                :disabled="!sorter.categories"
-                variant="dark"
-              >
-                <b-icon-filter> </b-icon-filter>
-              </b-button>
-              <b-button
-                v-if="sorter.filtered"
-                @click="resetCategories()"
-                variant="dark"
-              >
-                <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
-              </b-button>
-            </b-button-group>
+
             <!-- Start of categories -->
             <span v-if="!categories.length"
               >None...
@@ -240,6 +225,31 @@
               </div>
             </b-container>
             <!-- End of categories -->
+            <b-popover
+              target="popover-filter-button"
+              triggers="focus"
+              variant="dark"
+            >
+              <b-button-group
+                v-if="sorter.categories.length || sorter.filtered"
+                size="sm"
+              >
+                <b-button
+                  @click="sortByCategories()"
+                  :disabled="!sorter.categories"
+                  variant="info"
+                >
+                  <b-icon-filter> </b-icon-filter>
+                </b-button>
+                <b-button
+                  v-if="sorter.filtered"
+                  @click="resetCategories()"
+                  variant="info"
+                >
+                  <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
+                </b-button>
+              </b-button-group>
+            </b-popover>
           </div>
         </div>
       </div>
