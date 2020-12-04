@@ -100,7 +100,10 @@
           <b-row>
             <b-col cols="start">
               <router-link :to="`/user/${comment.author.id}`" class="secondary">
-                <user-avatar :userData="comment.author" :popoverID="index">
+                <user-avatar
+                  :userData="comment.author"
+                  :popoverID="'c' + index"
+                >
                 </user-avatar>
               </router-link>
               <span

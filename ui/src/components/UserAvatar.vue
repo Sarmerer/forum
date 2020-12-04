@@ -38,7 +38,7 @@ export default {
   name: "user-avatar",
   props: {
     userData: { type: Object, required: true },
-    popoverID: Number,
+    popoverID: String,
     popoverDirection: String,
     noAvatar: Boolean,
   },
