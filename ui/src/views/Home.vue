@@ -20,11 +20,11 @@
               <Error v-if="error.show" :errorData="error" />
             </div>
             <div>
-              <b-row class="mx-3 mt-3" v-if="posts.length > 0 && !isMobile()">
-                <b-col
-                  align=" start"
-                  v-if="posts.total_rows > pagination.perPage"
-                >
+              <b-row
+                class="mx-3 mt-3"
+                v-if="pagination.totalPages > pagination.perPage && !isMobile()"
+              >
+                <b-col v-if="pagination.totalPages > pagination.perPage">
                   <b-pagination
                     v-model="pagination.currentPage"
                     :total-rows="pagination.totalPages"
@@ -36,7 +36,7 @@
                   >
                   </b-pagination>
                 </b-col>
-                <b-col v-if="posts.length > 1" align="end">
+                <b-col v-if="pagination.totalPages > 1" cols="end">
                   <PostFilters
                     :orderCallback="order"
                     :sortCallback="sort"
@@ -44,9 +44,11 @@
                   />
                 </b-col>
               </b-row>
-              <b-container v-if="posts.length > 0 && isMobile()">
+              <b-container
+                v-if="pagination.totalPages > pagination.perPage && isMobile()"
+              >
                 <b-row
-                  v-if="posts.total_rows > pagination.perPage"
+                  v-if="pagination.totalPages > pagination.perPage"
                   align-h="center"
                   class="mb-2"
                 >
@@ -61,7 +63,7 @@
                   >
                   </b-pagination>
                 </b-row>
-                <b-row v-if="posts.length > 1" align-h="center">
+                <b-row v-if="pagination.totalPages > 1" align-h="center">
                   <PostFilters
                     :orderCallback="order"
                     :sortCallback="sort"
