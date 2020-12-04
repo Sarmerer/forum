@@ -47,10 +47,9 @@
                       {{ post.participants_count }}
                     </span>
                     <time-ago
-                      v-b-tooltip.hover
-                      :title="post.created"
                       :datetime="post.created"
                       :long="!isMobile()"
+                      tooltip="right"
                     >
                     </time-ago>
                   </small>
@@ -84,10 +83,9 @@
                       >{{ comment.rating }}
                     </span>
                     <time-ago
-                      v-b-tooltip.hover
-                      :title="comment.created"
                       :datetime="comment.created"
                       :long="!isMobile()"
+                      tooltip="right"
                     >
                     </time-ago>
                   </small>

@@ -1,10 +1,15 @@
 <template>
-  <span :id="`user-info-popover${userID}`">
-    <b-avatar :src="userData.avatar" variant="dark" size="15px"></b-avatar>
+  <span :id="`user-info-popover${popoverID}`">
+    <b-avatar
+      v-if="!noAvatar"
+      :src="userData.avatar"
+      variant="dark"
+      size="15px"
+    ></b-avatar>
     <b-popover
-      :target="`user-info-popover${userID}`"
+      :target="`user-info-popover${popoverID}`"
       triggers="hover"
-      placement="left"
+      :placement="popoverDirection || 'left'"
     >
       <span>
         <b-icon-calendar-event></b-icon-calendar-event>
@@ -33,7 +38,9 @@ export default {
   name: "user-avatar",
   props: {
     userData: { type: Object, required: true },
-    userID: Number,
+    popoverID: Number,
+    popoverDirection: String,
+    noAvatar: Boolean,
   },
   components: {
     TimeAgo,

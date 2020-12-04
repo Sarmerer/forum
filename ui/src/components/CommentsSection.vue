@@ -100,7 +100,7 @@
           <b-row>
             <b-col cols="start">
               <router-link :to="`/user/${comment.author.id}`" class="secondary">
-                <user-avatar :userData="comment.author" :userID="index">
+                <user-avatar :userData="comment.author" :popoverID="index">
                 </user-avatar>
               </router-link>
               <span
@@ -114,10 +114,9 @@
             <b-col>
               <small>
                 <time-ago
-                  v-b-tooltip.hover
-                  :title="comment.created"
                   :datetime="comment.created"
                   :long="!isMobile()"
+                  tooltip="right"
                 ></time-ago>
                 <small
                   v-b-tooltip.hover
@@ -140,7 +139,7 @@
               />
             </b-col>
           </b-row>
-          <b-row>
+          <b-row class="mt-n2">
             <span>
               {{ comment.content }}
             </span>

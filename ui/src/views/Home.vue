@@ -1,255 +1,250 @@
 <template>
-  <div>
-    <div class="hero-image">
-      <div class="hero-text">
-        <h1>
-          WELCOME<br />
-          TO <span class="primary">FORUM</span>
-        </h1>
-      </div>
-    </div>
-
-    <b-skeleton-wrapper :loading="showSkeleton">
-      <template #loading>
-        <HomeSkeleton />
-      </template>
-      <div class="grid">
-        <div class="columns">
-          <div class="main-col">
-            <div>
-              <Error v-if="error.show" :errorData="error" />
-            </div>
-            <div>
-              <b-row
-                class="mx-3 mt-3"
-                v-if="pagination.totalPages > pagination.perPage && !isMobile()"
-              >
-                <b-col v-if="pagination.totalPages > pagination.perPage">
-                  <b-pagination
-                    v-model="pagination.currentPage"
-                    :total-rows="pagination.totalPages"
-                    :per-page="pagination.perPage"
-                    aria-controls="my-table"
-                    @change="handlePageChange"
-                    first-number
-                    last-number
-                  >
-                  </b-pagination>
-                </b-col>
-                <b-col v-if="pagination.totalPages > 1" cols="end">
-                  <PostFilters
-                    :orderCallback="order"
-                    :sortCallback="sort"
-                    :sorter="sorter"
-                  />
-                </b-col>
-              </b-row>
-              <b-container
-                v-if="pagination.totalPages > pagination.perPage && isMobile()"
-              >
-                <b-row
-                  v-if="pagination.totalPages > pagination.perPage"
-                  align-h="center"
-                  class="mb-2"
-                >
-                  <b-pagination
-                    v-model="pagination.currentPage"
-                    :total-rows="pagination.totalPages"
-                    :per-page="pagination.perPage"
-                    aria-controls="my-table"
-                    @change="handlePageChange"
-                    first-number
-                    last-number
-                  >
-                  </b-pagination>
-                </b-row>
-                <b-row v-if="pagination.totalPages > 1" align-h="center">
-                  <PostFilters
-                    :orderCallback="order"
-                    :sortCallback="sort"
-                    :sorter="sorter"
-                  />
-                </b-row>
-              </b-container>
-              <!-- Start of posts -->
-              <router-link
-                :to="'/post/' + post.id"
-                v-for="post in posts"
-                :key="post.id"
-                :class="`text-break ${isMobile() ? 'card-m' : 'card'}`"
-                tag="div"
-                style="cursor: pointer"
-              >
-                <b-row>
-                  <b-col v-if="!isMobile()" cols="start">
-                    <Rating :callback="rate" :entity="post" class="ml-n4" />
-                  </b-col>
-                  <b-col class="ml-2">
-                    <small v-if="isMobile()">
-                      <b-img :src="post.author.avatar" width="15px"></b-img>
-                      <router-link
-                        :to="'/user/' + post.author.id"
-                        class="secondary"
-                      >
-                        {{ post.author.display_name }}
-                      </router-link>
-                      <time-ago tooltip :datetime="post.created"></time-ago>
-                    </small>
-                    <h5>
-                      {{ post.title }}
-                    </h5>
-                    <pre>{{ post.content }}</pre>
-                    <b-form-tag
-                      v-for="(category, index) in post.categories"
-                      disabled
-                      :key="index"
-                      :title="category.name"
-                      variant="dark"
-                      class="mr-1 mb-1"
-                    >
-                      {{ category.name }}
-                    </b-form-tag>
-                  </b-col>
-                </b-row>
-                <b-row class="ml-1">
-                  <b-col>
-                    <small>
-                      <span v-b-tooltip.hover title="Comments">
-                        <b-icon-chat></b-icon-chat> {{ post.comments_count }}
-                      </span>
-                      <span v-b-tooltip.hover title="Participants">
-                        <b-icon-people></b-icon-people>
-                        {{ post.participants_count }}
-                      </span>
-                    </small>
-                  </b-col>
-                  <b-col cols="end" class="mr-4">
-                    <small v-if="!isMobile()"
-                      >by
-                      <b-img :src="post.author.avatar" width="15px"></b-img>
-                      <router-link
-                        :to="'/user/' + post.author.id"
-                        class="secondary"
-                      >
-                        {{ post.author.display_name }}
-                      </router-link>
-                      <time-ago
-                        tooltip
-                        :datetime="post.created"
-                        long
-                      ></time-ago>
-                    </small>
-                  </b-col>
-                  <b-col v-if="isMobile()" cols="end" class="mr-4">
-                    <small>
-                      <Rating
-                        class="mr-2"
-                        compact
-                        :callback="rate"
-                        :entity="post"
-                      />
-                    </small>
-                  </b-col>
-                </b-row>
-              </router-link>
-              <!-- End of posts -->
-            </div>
-            <b-container v-if="posts.length === 0" align="center">
-              <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
-              <p>It's so empty here...</p>
-            </b-container>
+  <b-skeleton-wrapper :loading="showSkeleton">
+    <template #loading>
+      <HomeSkeleton />
+    </template>
+    <div class="grid">
+      <div class="columns">
+        <div class="main-col">
+          <div>
+            <Error v-if="error.show" :errorData="error" />
           </div>
-
-          <div class="info-col">
-            <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
-              <h3 class="primary">RECENT</h3>
-              <span v-if="recent.length == 0"
-                >None...
-                <router-link to="/new-post" class="secondary">yet</router-link>
-              </span>
-              <span v-else>
-                <router-link
-                  :to="'/post/' + post.id"
-                  v-for="(post, index) in recent"
-                  :key="index"
-                  tag="div"
-                  style="cursor: pointer"
+          <div>
+            <b-row
+              class="mx-3 mt-3"
+              v-if="pagination.totalPages > pagination.perPage && !isMobile()"
+            >
+              <b-col v-if="pagination.totalPages > pagination.perPage">
+                <b-pagination
+                  v-model="pagination.currentPage"
+                  :total-rows="pagination.totalPages"
+                  :per-page="pagination.perPage"
+                  aria-controls="my-table"
+                  @change="handlePageChange"
+                  first-number
+                  last-number
                 >
-                  <small>
+                </b-pagination>
+              </b-col>
+              <b-col v-if="pagination.totalPages > 1" cols="end">
+                <PostFilters
+                  :orderCallback="order"
+                  :sortCallback="sort"
+                  :sorter="sorter"
+                />
+              </b-col>
+            </b-row>
+            <b-container
+              v-if="pagination.totalPages > pagination.perPage && isMobile()"
+            >
+              <b-row
+                v-if="pagination.totalPages > pagination.perPage"
+                align-h="center"
+                class="mb-2"
+              >
+                <b-pagination
+                  v-model="pagination.currentPage"
+                  :total-rows="pagination.totalPages"
+                  :per-page="pagination.perPage"
+                  aria-controls="my-table"
+                  @change="handlePageChange"
+                  first-number
+                  last-number
+                >
+                </b-pagination>
+              </b-row>
+              <b-row v-if="pagination.totalPages > 1" align-h="center">
+                <PostFilters
+                  :orderCallback="order"
+                  :sortCallback="sort"
+                  :sorter="sorter"
+                />
+              </b-row>
+            </b-container>
+            <!-- Start of posts -->
+            <router-link
+              :to="'/post/' + post.id"
+              v-for="(post, index) in posts"
+              :key="post.id"
+              :class="`text-break ${isMobile() ? 'card-m' : 'card'}`"
+              tag="div"
+              style="cursor: pointer"
+            >
+              <b-row>
+                <b-col v-if="!isMobile()" cols="start">
+                  <Rating :callback="rate" :entity="post" class="ml-n4" />
+                </b-col>
+                <b-col class="ml-2">
+                  <small v-if="isMobile()">
                     <router-link
                       :to="'/user/' + post.author.id"
                       class="secondary"
                     >
+                      <b-img :src="post.author.avatar" width="15px"></b-img>
                       {{ post.author.display_name }}
                     </router-link>
-                    <time-ago
-                      tooltip
-                      :datetime="post.created"
-                      :long="!isMobile()"
-                    >
-                    </time-ago>
+                    <time-ago :datetime="post.created"></time-ago>
                   </small>
-                  <p>
+                  <h5>
                     {{ post.title }}
-                  </p>
-                </router-link>
-              </span>
-            </div>
-            <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
-              <h3 class="primary">
-                CATEGORIES
-              </h3>
-              <b-button-group
-                v-if="sorter.categories.length || sorter.filtered"
-                class="mb-2 w-25"
-                size="sm"
-              >
-                <b-button
-                  @click="sortByCategories()"
-                  :disabled="!sorter.categories"
-                  variant="dark"
-                >
-                  <b-icon-filter> </b-icon-filter>
-                </b-button>
-                <b-button
-                  v-if="sorter.filtered"
-                  @click="resetCategories()"
-                  variant="dark"
-                >
-                  <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
-                </b-button>
-              </b-button-group>
-              <!-- Start of categories -->
-              <span v-if="categories.length == 0"
-                >None...
-                <router-link to="/new-post" class="secondary">yet</router-link>
-              </span>
-              <b-container v-else class="ml-0 pl-0">
-                <div class="categories">
-                  <b-form-checkbox-group
-                    v-for="c in categories"
-                    :key="c.ID"
-                    :id="c.ID"
-                    class="category-name"
-                    size="sm"
-                    v-model="sorter.categories"
-                    buttons
-                    ><b-form-checkbox :value="c.name">{{
-                      c.name
-                    }}</b-form-checkbox>
-                    <b-form-checkbox disabled class="category-count">
-                      {{ c.use_count }}
-                    </b-form-checkbox></b-form-checkbox-group
+                  </h5>
+                  <pre>{{ post.content }}</pre>
+                  <b-form-tag
+                    v-for="(category, index) in post.categories"
+                    disabled
+                    :key="index"
+                    :title="category.name"
+                    variant="dark"
+                    class="mr-1 mb-1"
                   >
-                </div>
-              </b-container>
-              <!-- End of categories -->
-            </div>
+                    {{ category.name }}
+                  </b-form-tag>
+                </b-col>
+              </b-row>
+              <b-row class="ml-1">
+                <b-col>
+                  <small>
+                    <span v-b-tooltip.hover title="Comments">
+                      <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                    </span>
+                    <span v-b-tooltip.hover title="Participants">
+                      <b-icon-people></b-icon-people>
+                      {{ post.participants_count }}
+                    </span>
+                  </small>
+                </b-col>
+                <b-col cols="end" class="mr-4">
+                  <small v-if="!isMobile()"
+                    >by
+                    <router-link
+                      :to="'/user/' + post.author.id"
+                      class="secondary"
+                    >
+                      <user-avatar :userData="post.author" :popoverID="index">
+                      </user-avatar>
+                    </router-link>
+                    <time-ago
+                      :datetime="post.created"
+                      tooltip="bottom"
+                      long
+                    ></time-ago>
+                  </small>
+                </b-col>
+                <b-col v-if="isMobile()" cols="end" class="mr-4">
+                  <small>
+                    <Rating
+                      class="mr-2"
+                      compact
+                      :callback="rate"
+                      :entity="post"
+                    />
+                  </small>
+                </b-col>
+              </b-row>
+            </router-link>
+            <!-- End of posts -->
+          </div>
+          <b-container v-if="posts.length === 0" align="center">
+            <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
+            <p>It's so empty here...</p>
+          </b-container>
+        </div>
+
+        <div class="info-col">
+          <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
+            <h3 class="primary">RECENT</h3>
+            <span v-if="!recent.length"
+              >None...
+              <router-link to="/new-post" class="secondary">yet</router-link>
+            </span>
+            <span v-else>
+              <router-link
+                :to="'/post/' + post.id"
+                v-for="(post, index) in recent"
+                :key="index"
+                tag="div"
+                style="cursor: pointer"
+              >
+                <small>
+                  <router-link
+                    :to="'/user/' + post.author.id"
+                    class="secondary"
+                  >
+                    <user-avatar
+                      :userData="post.author"
+                      :popoverID="'r' + index"
+                      popoverDirection="right"
+                      noAvatar
+                    >
+                    </user-avatar>
+                  </router-link>
+                  <time-ago
+                    :datetime="post.created"
+                    :long="!isMobile()"
+                    tooltip="right"
+                  >
+                  </time-ago>
+                </small>
+                <p>
+                  {{ post.title }}
+                </p>
+              </router-link>
+            </span>
+          </div>
+          <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
+            <h3 class="primary">
+              CATEGORIES
+            </h3>
+            <b-button-group
+              v-if="sorter.categories.length || sorter.filtered"
+              class="mb-2 w-25"
+              size="sm"
+            >
+              <b-button
+                @click="sortByCategories()"
+                :disabled="!sorter.categories"
+                variant="dark"
+              >
+                <b-icon-filter> </b-icon-filter>
+              </b-button>
+              <b-button
+                v-if="sorter.filtered"
+                @click="resetCategories()"
+                variant="dark"
+              >
+                <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
+              </b-button>
+            </b-button-group>
+            <!-- Start of categories -->
+            <span v-if="!categories.length"
+              >None...
+              <router-link to="/new-post" class="secondary">yet</router-link>
+            </span>
+            <b-container v-else class="ml-0 pl-0">
+              <div class="categories">
+                <b-form-checkbox-group
+                  v-for="c in categories"
+                  :key="c.ID"
+                  :id="c.ID"
+                  class="category-name"
+                  size="sm"
+                  v-model="sorter.categories"
+                  buttons
+                  ><b-form-checkbox :value="c.name">{{
+                    c.name
+                  }}</b-form-checkbox>
+                  <b-form-checkbox disabled class="category-count">
+                    {{ c.use_count }}
+                  </b-form-checkbox></b-form-checkbox-group
+                >
+              </div>
+            </b-container>
+            <!-- End of categories -->
           </div>
         </div>
       </div>
-    </b-skeleton-wrapper>
-  </div>
+    </div>
+  </b-skeleton-wrapper>
 </template>
 <script>
 import api from "@/router/api";
@@ -259,6 +254,7 @@ import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
 import PostFilters from "@/components/PostFilters";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import UserAvatar from "@/components/UserAvatar";
 
 export default {
   name: "Home",
@@ -270,6 +266,7 @@ export default {
   components: {
     HomeSkeleton,
     PostFilters,
+    UserAvatar,
     TimeAgo,
     Rating,
     Error,
