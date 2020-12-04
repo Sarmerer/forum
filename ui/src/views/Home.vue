@@ -23,9 +23,40 @@
               <Error v-if="error.show" :errorData="error" />
             </div>
             <div>
+              <div v-if="sorter.filtered" class="card">
+                <b-row>
+                  <b-col>
+                    Posts with categories:
+                    <b-form-tag
+                      v-for="(category, index) in sorter.prevCategories"
+                      disabled
+                      :key="index"
+                      :title="category"
+                      variant="dark"
+                      class="mr-1 mb-1"
+                    >
+                      {{ category }}
+                    </b-form-tag>
+                  </b-col>
+                  <b-col cols="end">
+                    <b-button
+                      class="mr-3"
+                      @click="resetCategories()"
+                      variant="outline-light"
+                      size="sm"
+                    >
+                      <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
+                    </b-button>
+                  </b-col>
+                </b-row>
+              </div>
               <b-row
                 class="mx-3 mt-3"
-                v-if="pagination.totalPages > pagination.perPage && !isMobile()"
+                v-if="
+                  pagination.totalPages > pagination.perPage &&
+                    !sorter.filtered &&
+                    !isMobile()
+                "
               >
                 <b-col v-if="pagination.totalPages > pagination.perPage">
                   <b-pagination
@@ -48,7 +79,11 @@
                 </b-col>
               </b-row>
               <b-container
-                v-if="pagination.totalPages > pagination.perPage && isMobile()"
+                v-if="
+                  pagination.totalPages > pagination.perPage &&
+                    !sorter.filtered &&
+                    isMobile()
+                "
               >
                 <b-row
                   v-if="pagination.totalPages > pagination.perPage"
@@ -311,6 +346,7 @@ export default {
         asc: true,
         throttled: false,
         categories: [],
+        prevCategories: [],
         filtered: false,
       },
       pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
@@ -383,7 +419,7 @@ export default {
       this.getPosts().then(
         setTimeout(() => {
           this.sorter.throttled = false;
-        }, 1000)
+        }, 500)
       );
     },
     async rate(reaction, post) {
@@ -414,6 +450,7 @@ export default {
         })
         .then((response) => {
           this.posts = response.data.data || [];
+          this.sorter.prevCategories = this.sorter.categories;
           this.sorter.filtered = true;
         })
         .catch((error) => {
@@ -422,6 +459,7 @@ export default {
     },
     async resetCategories() {
       this.sorter.categories = [];
+      this.sorter.prevCategories = [];
       this.sorter.filtered = false;
       this.getPosts(0);
     },
@@ -471,8 +509,8 @@ export default {
 
 .categories .btn-secondary.active {
   background-color: #262a2e;
-  border-color: #262a2e;
-  color: rgba(255, 255, 255, 0.692);
+  border-color: #278ea5;
+  color: #278ea5;
 }
 
 .btn-dark {
