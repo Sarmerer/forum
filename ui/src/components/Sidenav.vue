@@ -26,12 +26,13 @@
       </router-link>
 
       <router-link :to="'/user/' + user.id">
-        <b-img
-          width="30px"
+        <b-avatar
+          size="25px"
+          variant="dark"
           v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
           :title="user.display_name"
           :src="user.avatar"
-        ></b-img>
+        ></b-avatar>
       </router-link>
 
       <a

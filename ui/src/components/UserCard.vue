@@ -19,7 +19,7 @@
           <h3 v-else class="primary mb-0">
             {{ userData.display_name }}
           </h3>
-          <span class="text-muted">active</span>
+          <span class="text-muted">active </span>
           <time-ago :datetime="userData.last_active" tooltip="right" long>
           </time-ago>
         </b-col>
@@ -72,15 +72,15 @@
         </b-col>
         <b-col>
           <router-link v-if="link" :to="`/user/${userData.id}`">
-            <h3 class="primary">
+            <h3 class="primary text-break">
               {{ userData.display_name }}
             </h3>
           </router-link>
-          <h3 v-else class="primary mb-0">
+          <h3 v-else class="primary mb-0 text-break">
             {{ userData.display_name }}
           </h3>
-          <small>
-            Active:
+          <small class="text-muted">
+            active
             <time-ago :datetime="userData.last_active"> </time-ago>
           </small>
         </b-col>
