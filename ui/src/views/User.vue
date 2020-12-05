@@ -1,7 +1,7 @@
 <template>
   <b-skeleton-wrapper :loading="loading">
     <template #loading>
-      <UserSkeleton v-bind:postsLength="posts.length" />
+      <UserSkeleton />
     </template>
     <div class="grid">
       <div class="columns">
@@ -126,39 +126,16 @@ export default {
         this.user.posts > 0 ? this.getPosts() : this.getComments();
       });
     },
-    loading(newVal, oldValue) {
-      if (newVal !== oldValue) {
-        this.clearLoadingTimeInterval();
-
-        if (newVal) {
-          this.$_loadingTimeInterval = setInterval(() => {
-            this.loadingTime++;
-          }, 500);
-        }
-      }
-    },
-    loadingTime(newVal, oldValue) {
-      if (newVal !== oldValue) {
-        if (newVal === this.maxLoadingTime) {
-          this.loading = false;
-        }
-      }
-    },
   },
   data() {
     return {
       loading: false,
-      loadingTime: 0,
-      maxLoadingTime: 1,
       user: {},
       posts: [],
       comments: [],
       activeTab: "",
       madeRequest: false,
     };
-  },
-  mounted() {
-    this.startLoading();
   },
   created() {
     this.getUser().then(() => {
@@ -172,14 +149,6 @@ export default {
     UserSkeleton,
   },
   methods: {
-    clearLoadingTimeInterval() {
-      clearInterval(this.$_loadingTimeInterval);
-      this.$_loadingTimeInterval = null;
-    },
-    startLoading() {
-      this.loading = true;
-      this.loadingTime = 0;
-    },
     reactionColor(yourReaction) {
       return yourReaction === 1 ? "green" : yourReaction === -1 ? "red" : "";
     },
