@@ -10,7 +10,7 @@
         <UserCard v-if="post.author" link :userData="post.author" />
       </div>
       <div class="main-col">
-        <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
+        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
           <b-row v-if="!editor.editing">
             <b-col cols="start">
               <Rating :callback="rate" :entity="post" class="ml-n4" />
@@ -18,7 +18,7 @@
             <b-col class="ml-2">
               <b-row>
                 <b-col>
-                  <h3 class="primary">{{ post.title }}</h3>
+                  <h3 class="primary text-break">{{ post.title }}</h3>
                 </b-col>
                 <b-col cols="end" class="mr-2">
                   <ControlButtons
@@ -31,7 +31,7 @@
                   />
                 </b-col>
               </b-row>
-              <pre color="white">{{ post.content }}</pre>
+              <pre color="white" class="text-break">{{ post.content }}</pre>
               <div>
                 <b-form-tag
                   v-for="category in post.categories"
@@ -48,42 +48,48 @@
           <b-row v-if="isMobile() && !editor.editing" class="ml-2">
             <Rating :callback="rate" :entity="post" compact />
           </b-row>
-          <b-form v-if="editor.editing">
+          <b-form v-if="editor.editing" @submit.prevent="updatePost()">
             <b-form-row>
               <b-col>
-                <b-form-group label-for="title">
-                  <b-form-input
-                    id="title"
-                    class="mb-3"
-                    v-model="editor.title"
-                    autocomplete="off"
-                    placeholder="Enter title"
-                  ></b-form-input>
-                  <b-form-textarea
-                    id="textarea-auto-height"
-                    v-model="editor.content"
-                    rows="1"
-                    max-rows="10"
-                  >
-                  </b-form-textarea>
-                </b-form-group>
-                <b-form-tags
-                  input-id="tags-basic"
-                  remove-on-delete
-                  v-model="editor.categories"
-                  tag-variant="dark"
-                ></b-form-tags>
+                <PostForm
+                  :form="editor"
+                  v-on:valid-form="editor.valid = $event"
+                />
               </b-col>
-              <b-col cols="end">
-                <b-button-group size="sm" vertical>
-                  <b-button variant="outline-success" @click="updatePost()">
-                    Save
-                  </b-button>
+            </b-form-row>
+            <b-form-row class="mt-2">
+              <b-col align="end">
+                <b-button-group size="sm" v-if="!editor.confirmCancel">
                   <b-button
                     variant="outline-danger"
-                    @click="editor.editing = false"
+                    @click="editor.confirmCancel = true"
                   >
                     Cancel
+                  </b-button>
+                  <b-button
+                    variant="outline-success"
+                    :disabled="!editor.valid"
+                    type="submit"
+                    class="px-3"
+                  >
+                    Save
+                  </b-button>
+                </b-button-group>
+              </b-col>
+              <b-col align="end" v-if="editor.confirmCancel">
+                <p class="m-0">Cancel editor?</p>
+                <b-button-group size="sm">
+                  <b-button
+                    variant="outline-danger"
+                    @click="editor.confirmCancel = false"
+                  >
+                    <b-icon-x></b-icon-x> No
+                  </b-button>
+                  <b-button
+                    variant="outline-success"
+                    @click="editor.editing = false"
+                  >
+                    <b-icon-check2></b-icon-check2> Yes
                   </b-button>
                 </b-button-group>
               </b-col>
@@ -104,8 +110,9 @@
 </template>
 <script>
 import CommentsSection from "@/components/CommentsSection";
-import ControlModal from "@/components/ControlModal";
 import ControlButtons from "@/components/ControlButtons";
+import ControlModal from "@/components/ControlModal";
+import PostForm from "@/components/forms/PostForm";
 import UserCard from "@/components/UserCard";
 import Rating from "@/components/Rating";
 import { mapGetters } from "vuex";
@@ -117,8 +124,9 @@ export default {
   },
   components: {
     CommentsSection,
-    ControlModal,
     ControlButtons,
+    ControlModal,
+    PostForm,
     UserCard,
     Rating,
   },
@@ -139,6 +147,8 @@ export default {
         content: "",
         categories: [],
         editing: false,
+        valid: false,
+        confirmCancel: false,
       },
       postID: Number.parseInt(this.$route.params.id),
       requesting: false,
