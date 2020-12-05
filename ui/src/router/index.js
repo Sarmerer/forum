@@ -18,7 +18,13 @@ const routes = [
     path: "*",
     name: "Not Found",
     component: () =>
-      import(/* webpackChunkName: "Not Found" */ "@/views/NotFound.vue"),
+      import(/* webpackChunkName: "not-found" */ "@/views/NotFound.vue"),
+  },
+  {
+    path: "/servers-down",
+    name: "Oh no...",
+    component: () =>
+      import(/* webpackChunkName: "servers-down" */ "@/views/ServersDown.vue"),
   },
   {
     path: "/post/:id",
@@ -37,7 +43,7 @@ const routes = [
     name: "New Post",
     props: true,
     component: () =>
-      import(/* webpackChunkName: "New Post" */ "@/views/NewPost.vue"),
+      import(/* webpackChunkName: "new-post" */ "@/views/NewPost.vue"),
     beforeEnter(to, from, next) {
       if (!store.getters["auth/authenticated"]) {
         next({ name: "Auth", params: { prevRoute: "/new-post" } });
@@ -59,7 +65,7 @@ const routes = [
     name: "Auth",
     props: true,
     component: () =>
-      import(/* webpackChunkName: "Authorize" */ "@/views/Auth.vue"),
+      import(/* webpackChunkName: "auth" */ "@/views/Auth.vue"),
     beforeEnter(to, from, next) {
       store.getters["auth/authenticated"] ? next("/") : next();
     },
@@ -68,7 +74,7 @@ const routes = [
     path: "/dashboard/:role",
     name: "Admin Dashboard",
     component: () =>
-      import(/* webpackChunkName: "user" */ "@/views/Dashboard.vue"),
+      import(/* webpackChunkName: "dashboard" */ "@/views/Dashboard.vue"),
     beforeEnter: (to, from, next) => {
       let user = store.getters["auth/user"];
       !store.getters["auth/authenticated"] || !user || user.role < ROLES.ADMIN
