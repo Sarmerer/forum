@@ -129,7 +129,7 @@ export default {
   },
   data() {
     return {
-      loading: false,
+      loading: true,
       user: {},
       posts: [],
       comments: [],
@@ -138,10 +138,15 @@ export default {
     };
   },
   created() {
-    this.getUser().then(() => {
+    let p = this.getUser();
+    let p1 = p.then(() => {
       this.user.posts > 0 ? this.getPosts() : this.getComments();
-      this.$_loadingTimeInterval = null;
     });
+    Promise.all([p, p1]).then(() =>
+      setTimeout(() => {
+        this.loading = false;
+      }, 500)
+    );
   },
   components: {
     TimeAgo,

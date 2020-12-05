@@ -180,13 +180,11 @@ export default {
           id: this.postID,
         })
         .then((response) => {
-          //TODO create error page for post response.data.data;
-          let result = response.data.data;
+          let result = response?.data?.data;
           document.title = result.title;
           this.post = result;
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           this.$router.push("/");
         });
     },

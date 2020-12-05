@@ -297,11 +297,14 @@ export default {
         })
         .catch((error) => {
           if (error.status === 403)
-            this.$bvToast.toast("You need to be logged in, to leave comments!", {
-              title: "Oops!",
-              variant: "danger",
-              solid: true,
-            });
+            this.$bvToast.toast(
+              "You need to be logged in, to leave comments!",
+              {
+                title: "Oops!",
+                variant: "danger",
+                solid: true,
+              }
+            );
         });
     },
     async updateComment(actualID, oldCommentContent) {

@@ -30,38 +30,72 @@
         </div>
       </div>
       <div class="main-col">
-        <div>
-          <b-skeleton
-            variant="dark"
-            class="mt-2 ml-2"
-            type="button"
-            :width="isMobile() ? '200px' : '300px'"
-            height="45px"
-            animation="none"
-          ></b-skeleton>
-          <div v-for="index in 5" v-bind:key="index">
-            <div :class="`${isMobile() ? 'card-m' : 'card'}`">
-              <b-skeleton
-                variant="dark"
-                animation="wave"
-                width="85%"
-              ></b-skeleton>
-              <b-skeleton
-                variant="dark"
-                animation="wave"
-                width="55%"
-              ></b-skeleton>
-              <b-skeleton
-                variant="dark"
-                animation="wave"
-                width="70%"
-              ></b-skeleton>
-            </div>
-          </div>
+        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+          <b-skeleton variant="dark" animation="wave" width="75%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="55%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="65%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="0%"></b-skeleton>
         </div>
-        <!-- <div v-else>
-          <b-skeleton-img></b-skeleton-img>
-        </div> -->
+        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+          <b-skeleton
+            type="input"
+            variant="dark"
+            animation="wave"
+            width="100%"
+            height="50px"
+          ></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="0%"></b-skeleton>
+          <b-row class="ml-1">
+            <b-skeleton
+              type="avatar"
+              variant="dark"
+              animation="wave"
+              width="15px"
+              height="15px"
+              class="mr-1"
+            ></b-skeleton>
+            <b-skeleton
+              variant="dark"
+              animation="wave"
+              width="15%"
+            ></b-skeleton>
+          </b-row>
+          <b-skeleton variant="dark" animation="wave" width="25%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="0%"></b-skeleton>
+          <b-row class="ml-1">
+            <b-skeleton
+              type="avatar"
+              variant="dark"
+              animation="wave"
+              width="15px"
+              height="15px"
+              class="mr-1"
+            ></b-skeleton>
+            <b-skeleton
+              variant="dark"
+              animation="wave"
+              width="25%"
+            ></b-skeleton>
+          </b-row>
+          <b-skeleton variant="dark" animation="wave" width="20%"></b-skeleton>
+          <b-skeleton variant="dark" animation="wave" width="0%"></b-skeleton>
+          <b-row class="ml-1">
+            <b-skeleton
+              type="avatar"
+              variant="dark"
+              animation="wave"
+              width="15px"
+              height="15px"
+              class="mr-1"
+            ></b-skeleton>
+            <b-skeleton
+              variant="dark"
+              animation="wave"
+              width="10%"
+            ></b-skeleton>
+          </b-row>
+          <b-skeleton variant="dark" animation="wave" width="30%"></b-skeleton>
+        </div>
       </div>
       <div class="info-col" v-if="!isMobile()">
         <div class="card">
