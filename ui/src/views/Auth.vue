@@ -30,12 +30,14 @@
         >
       </div>
     </div>
-    <div align="center" v-else>
+    <div align="center" class="welcome-message" v-else>
       <h3>
         Welcome{{ oldUser ? " back, " : ", " }}
         <span class="secondary">sarmerer</span>!
       </h3>
       <h6>You will be redirected back in {{ timeLeft }}</h6>
+      <br />
+      <b-button variant="outline-light" @click="redirect">Go back</b-button>
     </div>
   </div>
 </template>
@@ -65,22 +67,28 @@ export default {
       showWelcomeMessage: false,
       oldUser: false,
       timeLeft: 5,
+      interval: null,
     };
   },
   methods: {
     successfulAuth(event) {
       if (event === "signin") this.oldUser = true;
       this.showWelcomeMessage = true;
-      let i = setInterval(() => {
+      this.interval = setInterval(() => {
         this.timeLeft--;
         if (this.timeLeft === 0) {
-          clearInterval(i);
+          clearInterval(this.interval);
           this.timeLeft = 5;
           this.prevRoute
             ? this.$router.push(this.prevRoute)
             : this.$router.back();
         }
       }, 1000);
+    },
+    redirect() {
+      if (this.interval) clearInterval(this.interval);
+      this.timeLeft = 5;
+      this.prevRoute ? this.$router.push(this.prevRoute) : this.$router.back();
     },
   },
 };
@@ -114,5 +122,9 @@ export default {
   .center .auth {
     width: 80%;
   }
+}
+
+.welcome-message {
+  opacity: 0.87;
 }
 </style>

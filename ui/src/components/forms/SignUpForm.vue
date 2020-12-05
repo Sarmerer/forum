@@ -121,7 +121,7 @@ export default {
   data() {
     return {
       minLoginLength: 1,
-      maxLoginLength: 20,
+      maxLoginLength: 15,
       minPasswordLength: 5,
       form: {
         login: "",
