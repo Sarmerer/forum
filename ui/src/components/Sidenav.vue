@@ -12,7 +12,7 @@
       v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
       title="Sign in"
     >
-      <router-link :to="{ name: 'Auth', params: { prevRoute: '/' } }">
+      <router-link to="/auth">
         <b-icon-door-closed> </b-icon-door-closed>
       </router-link>
     </div>

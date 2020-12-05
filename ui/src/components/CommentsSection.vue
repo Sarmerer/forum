@@ -51,7 +51,6 @@
                 $router.push({
                   name: 'Auth',
                   params: {
-                    prevRoute: $router.currentRoute.path,
                     signUpPage: true,
                   },
                 })
@@ -67,12 +66,7 @@
             :class="`p-0 m-0 ${isMobile() ? 'mt-2' : ''}`"
           >
             <b-button
-              @click="
-                $router.push({
-                  name: 'Auth',
-                  params: { prevRoute: $router.currentRoute.path },
-                })
-              "
+              @click="$router.push('/auth')"
               variant="outline-info"
               size="sm"
               >Sign In

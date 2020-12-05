@@ -14,7 +14,7 @@
     </b-navbar-nav>
     <b-navbar-nav v-if="!authenticated">
       <b-nav-item>
-        <router-link :to="{ name: 'Auth', params: { prevRoute: '/' } }">
+        <router-link to="/auth">
           <b-icon-door-closed> </b-icon-door-closed>
         </router-link>
       </b-nav-item>

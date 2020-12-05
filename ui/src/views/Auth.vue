@@ -8,12 +8,12 @@
         </h1>
       </div>
     </div>
-    <div class="center">
-      <div v-if="!signUpPageLocal" class="auth">
+    <div class="center" v-if="!showWelcomeMessage">
+      <div v-if="!signUpPage && !signUpPageLocal" class="auth">
         <h4 align="center">SIGN IN</h4>
-        <SignInForm :prevRoute="prevRoute" />
-        <small
-          ><p>
+        <SignInForm v-on:success="successfulAuth" />
+        <small>
+          <p>
             Don't have an account yet?
             <a class="secondary" @click="signUpPageLocal = true">Sign up</a>
           </p></small
@@ -21,38 +21,67 @@
       </div>
       <div v-else class="auth">
         <h4 align="center">SIGN UP</h4>
-        <SignUpForm :prevRoute="prevRoute" />
-        <small
-          ><p>
+        <SignUpForm v-on:success="successfulAuth" />
+        <small>
+          <p>
             Already have an account?
             <a class="secondary" @click="signUpPageLocal = false">Sign in</a>
           </p></small
         >
       </div>
     </div>
+    <div align="center" v-else>
+      <h3>
+        Welcome{{ oldUser ? " back, " : ", " }}
+        <span class="secondary">sarmerer</span>!
+      </h3>
+      <h6>You will be redirected back in {{ timeLeft }}</h6>
+    </div>
   </div>
 </template>
 
 <script>
-import SignInForm from "@/components/SignInForm";
-import SignUpForm from "@/components/SignUpForm";
+import SignInForm from "@/components/forms/SignInForm";
+import SignUpForm from "@/components/forms/SignUpForm";
+import { mapGetters } from "vuex";
 
 export default {
   props: {
-    prevRoute: { type: String },
+    prevRoute: String,
     signUpPage: { type: Boolean, default: false },
   },
   components: {
     SignUpForm,
     SignInForm,
   },
-  created() {
-    if (this.signUpPage) this.signUpPageLocal = true;
+  computed: {
+    ...mapGetters({
+      user: "auth/user",
+    }),
   },
   data() {
     return {
       signUpPageLocal: false,
+      showWelcomeMessage: false,
+      oldUser: false,
+      timeLeft: 5,
     };
+  },
+  methods: {
+    successfulAuth(event) {
+      if (event === "signin") this.oldUser = true;
+      this.showWelcomeMessage = true;
+      let i = setInterval(() => {
+        this.timeLeft--;
+        if (this.timeLeft === 0) {
+          clearInterval(i);
+          this.timeLeft = 5;
+          this.prevRoute
+            ? this.$router.push(this.prevRoute)
+            : this.$router.back();
+        }
+      }, 1000);
+    },
   },
 };
 </script>

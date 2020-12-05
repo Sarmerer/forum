@@ -78,9 +78,6 @@
 import { mapActions, mapGetters } from "vuex";
 
 export default {
-  props: {
-    prevRoute: { type: String },
-  },
   computed: {
     ...mapGetters({ authError: "auth/authError", user: "auth/user" }),
     validForm() {
@@ -144,24 +141,13 @@ export default {
       this.signUp(this.form).then(() => {
         if (this.authError?.data?.message) {
           this.$bvToast.toast(this.authError.data.message, {
-            title: "Oopsie!",
+            title: "Oops!",
             variant: "danger",
             solid: true,
           });
           this.$store.commit("auth/setAuthError", null);
         } else {
-          this.$bvToast.toast(
-            `Welcome to our forum ${
-              this.user?.display_name ? ", " + this.user.display_name : ""
-            }!`,
-            {
-              title: "Success!",
-              variant: "success",
-              solid: true,
-            }
-          );
-          // if (this.prevRoute) this.$router.push(this.prevRoute);
-          this.$router.go(-1);
+          this.$emit("success", "signup");
         }
       });
     },
