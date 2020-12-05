@@ -9,16 +9,7 @@
             alt="avatar"
             size="6rem"
             variant="dark"
-            badge-offset="-0.2em"
-            :badge="userData.role > 0"
-            :badge-right="userData.role > 0"
-            badge-variant="info"
           >
-            <template #badge>
-              <div v-b-tooltip.left :title="userData.role == 2 ? 'Admin' : ''">
-                <b-icon-code-slash></b-icon-code-slash>
-              </div>
-            </template>
           </b-avatar>
           <router-link v-if="link" :to="`/user/${userData.id}`">
             <h3 class="primary mb-0">
@@ -36,6 +27,11 @@
       <b-row class="mt-2">
         <b-col>
           <p class="m-0 px-2">
+            <span v-if="userData.role === 2">
+              <b-icon-code-slash></b-icon-code-slash>
+              Admin
+              <br />
+            </span>
             <b-icon-calendar-event></b-icon-calendar-event>
             <small> Joined:</small>
             <time-ago :datetime="userData.created" tooltip="right" long>
