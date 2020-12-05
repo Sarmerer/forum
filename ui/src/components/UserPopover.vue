@@ -12,6 +12,11 @@
       :placement="popoverDirection || 'left'"
     >
       <span>
+        <span v-if="userData.role === 2">
+          <b-icon-code-slash></b-icon-code-slash>
+          Admin
+          <br />
+        </span>
         <b-icon-calendar-event></b-icon-calendar-event>
         <small> Joined: </small>
         <time-ago :datetime="userData.created"> </time-ago>
@@ -35,7 +40,7 @@
 <script>
 import TimeAgo from "vue2-timeago";
 export default {
-  name: "user-avatar",
+  name: "user-popover",
   props: {
     userData: { type: Object, required: true },
     popoverID: String,

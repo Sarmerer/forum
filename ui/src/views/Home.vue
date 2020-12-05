@@ -168,11 +168,11 @@
                         :to="'/user/' + post.author.id"
                         class="secondary"
                       >
-                        <user-avatar
+                        <user-popover
                           :userData="post.author"
                           :popoverID="'p' + index"
                         >
-                        </user-avatar>
+                        </user-popover>
                       </router-link>
                       <time-ago
                         :datetime="post.created"
@@ -221,13 +221,13 @@
                       :to="'/user/' + post.author.id"
                       class="secondary"
                     >
-                      <user-avatar
+                      <user-popover
                         :userData="post.author"
                         :popoverID="'r' + index"
                         popoverDirection="right"
                         noAvatar
                       >
-                      </user-avatar>
+                      </user-popover>
                     </router-link>
                     <time-ago
                       :datetime="post.created"
@@ -318,7 +318,7 @@ import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
 import PostFilters from "@/components/PostFilters";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
-import UserAvatar from "@/components/UserAvatar";
+import UserPopover from "@/components/UserPopover";
 
 export default {
   name: "Home",
@@ -330,7 +330,7 @@ export default {
   components: {
     HomeSkeleton,
     PostFilters,
-    UserAvatar,
+    UserPopover,
     TimeAgo,
     Rating,
     Error,

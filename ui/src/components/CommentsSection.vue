@@ -100,11 +100,11 @@
           <b-row>
             <b-col cols="start">
               <router-link :to="`/user/${comment.author.id}`" class="secondary">
-                <user-avatar
+                <user-popover
                   :userData="comment.author"
                   :popoverID="'c' + index"
                 >
-                </user-avatar>
+                </user-popover>
               </router-link>
               <span
                 v-if="comment.author.id === postAuthorID"
@@ -204,7 +204,7 @@
 </template>
 <script>
 import ControlButtons from "@/components/ControlButtons";
-import UserAvatar from "@/components/UserAvatar";
+import UserPopover from "@/components/UserPopover";
 import ControlModal from "./ControlModal";
 import Rating from "@/components/Rating";
 import TimeAgo from "vue2-timeago";
@@ -239,7 +239,7 @@ export default {
   components: {
     ControlButtons,
     ControlModal,
-    UserAvatar,
+    UserPopover,
     TimeAgo,
     Rating,
   },
