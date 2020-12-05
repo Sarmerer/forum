@@ -196,7 +196,8 @@
               <!-- End of posts -->
             </div>
             <b-container v-if="posts.length === 0" align="center">
-              <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
+              <b-img-lazy fluid src="@/assets/img/empty.png" class="w-100">
+              </b-img-lazy>
               <p>It's so empty here...</p>
             </b-container>
           </div>
@@ -363,7 +364,7 @@ export default {
     Promise.all([this.getPosts(0), this.getCategories()]).then(() => {
       setTimeout(() => {
         this.showSkeleton = false;
-      }, 700);
+      }, 500);
     });
   },
   methods: {
@@ -395,14 +396,9 @@ export default {
         });
     },
     async getCategories() {
-      return await api
-        .get("categories")
-        .then((response) => {
-          this.categories = response.data.data || [];
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      return await api.get("categories").then((response) => {
+        this.categories = response.data.data || [];
+      });
     },
     sort() {
       this.sorter.asc = !this.sorter.asc;
