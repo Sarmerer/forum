@@ -8,65 +8,89 @@
         :class="`main-col p-3 ${isMobile() ? 'card-m' : 'card'}`"
         id="new-post"
       >
-        <b-form @submit.prevent="onSubmit">
-          <h3 align="center">Create new post</h3>
-          <b-form-group label-for="title">
-            <small>* - required</small>
-            <b-form-textarea
-              class="mt-1"
-              v-model="form.title"
+        <h3 align="center">Create new post</h3>
+        <b-overlay
+          :show="requesting"
+          rounded
+          opacity="0.6"
+          spinner-small
+          variant="dark"
+          spinner-variant="light"
+          class="d-inline-block"
+          @hidden="onHidden"
+        >
+          <template #overlay>
+            <div class="text-center">
+              <b-icon
+                icon="stopwatch"
+                font-scale="3"
+                animation="cylon"
+              ></b-icon>
+              <p id="cancel-label">Please wait...</p>
+            </div>
+          </template>
+          <b-form @submit.prevent="onSubmit">
+            <b-form-group label-for="title">
+              <small>* - required</small>
+              <b-form-textarea
+                class="mt-1"
+                v-model="form.title"
+                autocomplete="off"
+                rows="1"
+                :state="form.title ? properTitleLength : null"
+                max-rows="8"
+                no-resize
+                required
+                placeholder="* Catchy title..."
+              ></b-form-textarea>
+              <small
+                v-if="form.title"
+                :style="`color: ${properTitleLength ? 'green' : 'red'}`"
+                >{{ titleLength }}/{{ maxTitleLength }}
+              </small>
+            </b-form-group>
+            <b-form-group id="input-group-2" label-for="input-2" fluid>
+              <b-form-textarea
+                id="textarea-auto-height"
+                v-model="form.content"
+                placeholder="* Cool content..."
+                reqired
+                :state="form.content ? properContentLength : null"
+                rows="4"
+                max-rows="50"
+              ></b-form-textarea>
+              <small
+                v-if="form.content"
+                :style="`color: ${properContentLength ? 'green' : 'red'}`"
+                >{{ contentLength }}/{{ maxContentLength }}
+              </small>
+            </b-form-group>
+            <b-form-tags
               autocomplete="off"
-              rows="1"
-              :state="form.title ? properTitleLength : null"
-              max-rows="8"
-              no-resize
-              required
-              placeholder="* Catchy title..."
-            ></b-form-textarea>
-            <small
-              v-if="form.title"
-              :style="`color: ${properTitleLength ? 'green' : 'red'}`"
-              >{{ titleLength }}/{{ maxTitleLength }}
-            </small>
-          </b-form-group>
-          <b-form-group id="input-group-2" label-for="input-2" fluid>
-            <b-form-textarea
-              id="textarea-auto-height"
-              v-model="form.content"
-              placeholder="* Cool content..."
-              reqired
-              :state="form.content ? properContentLength : null"
-              rows="4"
-              max-rows="50"
-            ></b-form-textarea>
-            <small
-              v-if="form.content"
-              :style="`color: ${properContentLength ? 'green' : 'red'}`"
-              >{{ contentLength }}/{{ maxContentLength }}
-            </small>
-          </b-form-group>
-          <b-form-tags
-            autocomplete="off"
-            remove-on-delete
-            v-model="form.categories"
-            tag-variant="dark"
-            :placeholder="`Lowercase, ${minTagLength}-${maxTagLength} symbols`"
-            :tag-validator="tagValidator"
-            @tag-state="onTagState"
-          ></b-form-tags>
-          <b-button
-            :disabled="
-              !properTitleLength ||
-                !properContentLength ||
-                invalidTags.length > 0 ||
-                duplicateTags.length > 0
-            "
-            type="submit"
-            class="mt-3"
-            variant="info"
-            >Submit</b-button
-          >
-        </b-form>
+              remove-on-delete
+              v-model="form.categories"
+              tag-variant="dark"
+              :placeholder="
+                `Lowercase, ${minTagLength}-${maxTagLength} symbols`
+              "
+              :tag-validator="tagValidator"
+              @tag-state="onTagState"
+            ></b-form-tags>
+
+            <b-button
+              :disabled="
+                !properTitleLength ||
+                  !properContentLength ||
+                  invalidTags.length > 0 ||
+                  duplicateTags.length > 0
+              "
+              type="submit"
+              variant="info"
+              class="mt-3"
+              >Submit</b-button
+            >
+          </b-form>
+        </b-overlay>
       </div>
       <div v-if="!isMobile()" class="info-col">
         <UserCard v-if="user" :userData="user" link />
@@ -125,6 +149,8 @@ export default {
         categories: [],
       },
 
+      requesting: false,
+
       invalidTags: [],
       duplicateTags: [],
 
@@ -140,6 +166,7 @@ export default {
   },
   methods: {
     onSubmit() {
+      this.requesting = true;
       api
         .post("post/create", {
           title: this.form.title,
@@ -155,7 +182,8 @@ export default {
         })
         .catch(() => {
           this.$router.push("/");
-        });
+        })
+        .then(() => (this.requesting = false));
     },
     onTagState(_valid, invalid, duplicate) {
       this.invalidTags = invalid;
@@ -176,19 +204,3 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-// form .btn {
-//   background-color: #278ea5;
-//   border: none;
-//   // display: block;
-//   // width: 100%;
-// }
-// form .btn:hover {
-//   background-color: #278ea5;
-//   opacity: 0.8;
-// }
-
-// #new-post {
-//   margin: 20px;
-// }
-</style>
