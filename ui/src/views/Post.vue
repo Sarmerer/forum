@@ -1,114 +1,120 @@
 <template>
-  <div class="grid">
-    <ControlModal
-      v-on:edit-event="edit()"
-      v-on:delete-event="deletePost()"
-      modalID="modal-menu"
-    />
-    <div class="columns">
-      <div v-if="isMobile()" class="info-col">
-        <UserCard v-if="post.author" link :userData="post.author" />
-      </div>
-      <div class="main-col">
-        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
-          <b-row v-if="!editor.editing">
-            <b-col cols="start">
-              <Rating :callback="rate" :entity="post" class="ml-n4" />
-            </b-col>
-            <b-col class="ml-2">
-              <b-row>
+  <b-skeleton-wrapper :loading="loading">
+    <template #loading>
+      <PostSkeleton />
+    </template>
+    <div class="grid">
+      <ControlModal
+        v-on:edit-event="edit()"
+        v-on:delete-event="deletePost()"
+        modalID="modal-menu"
+      />
+      <div class="columns">
+        <div v-if="isMobile()" class="info-col">
+          <UserCard v-if="post.author" link :userData="post.author" />
+        </div>
+        <div class="main-col">
+          <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+            <b-row v-if="!editor.editing">
+              <b-col cols="start">
+                <Rating :callback="rate" :entity="post" class="ml-n4" />
+              </b-col>
+              <b-col class="ml-2">
+                <b-row>
+                  <b-col>
+                    <h3 class="primary text-break">{{ post.title }}</h3>
+                  </b-col>
+                  <b-col cols="end" class="mr-2">
+                    <ControlButtons
+                      :hasPermission="hasPermission"
+                      v-on:delete-event="deletePost()"
+                      v-on:edit-event="edit()"
+                      :disabled="requesting"
+                      :compact="isMobile()"
+                      modalID="modal-menu"
+                    />
+                  </b-col>
+                </b-row>
+                <pre color="white" class="text-break">{{ post.content }}</pre>
+                <div>
+                  <b-form-tag
+                    v-for="category in post.categories"
+                    disabled
+                    :key="category.id"
+                    :title="category.name"
+                    variant="dark"
+                    class="mr-1 mb-1"
+                    >{{ category.name }}
+                  </b-form-tag>
+                </div>
+              </b-col>
+            </b-row>
+            <b-row v-if="isMobile() && !editor.editing" class="ml-2">
+              <Rating :callback="rate" :entity="post" compact />
+            </b-row>
+            <b-form v-if="editor.editing" @submit.prevent="updatePost()">
+              <b-form-row>
                 <b-col>
-                  <h3 class="primary text-break">{{ post.title }}</h3>
-                </b-col>
-                <b-col cols="end" class="mr-2">
-                  <ControlButtons
-                    :hasPermission="hasPermission"
-                    v-on:delete-event="deletePost()"
-                    v-on:edit-event="edit()"
-                    :disabled="requesting"
-                    :compact="isMobile()"
-                    modalID="modal-menu"
+                  <PostForm
+                    :form="editor"
+                    v-on:valid-form="editor.valid = $event"
                   />
                 </b-col>
-              </b-row>
-              <pre color="white" class="text-break">{{ post.content }}</pre>
-              <div>
-                <b-form-tag
-                  v-for="category in post.categories"
-                  disabled
-                  :key="category.id"
-                  :title="category.name"
-                  variant="dark"
-                  class="mr-1 mb-1"
-                  >{{ category.name }}
-                </b-form-tag>
-              </div>
-            </b-col>
-          </b-row>
-          <b-row v-if="isMobile() && !editor.editing" class="ml-2">
-            <Rating :callback="rate" :entity="post" compact />
-          </b-row>
-          <b-form v-if="editor.editing" @submit.prevent="updatePost()">
-            <b-form-row>
-              <b-col>
-                <PostForm
-                  :form="editor"
-                  v-on:valid-form="editor.valid = $event"
-                />
-              </b-col>
-            </b-form-row>
-            <b-form-row class="mt-2">
-              <b-col align="end">
-                <b-button-group size="sm" v-if="!editor.confirmCancel">
-                  <b-button
-                    variant="outline-danger"
-                    @click="editor.confirmCancel = true"
-                  >
-                    Cancel
-                  </b-button>
-                  <b-button
-                    variant="outline-success"
-                    :disabled="!editor.valid"
-                    type="submit"
-                    class="px-3"
-                  >
-                    Save
-                  </b-button>
-                </b-button-group>
-              </b-col>
-              <b-col align="end" v-if="editor.confirmCancel">
-                <p class="m-0">Cancel editor?</p>
-                <b-button-group size="sm">
-                  <b-button
-                    variant="outline-danger"
-                    @click="editor.confirmCancel = false"
-                  >
-                    <b-icon-x></b-icon-x> No
-                  </b-button>
-                  <b-button
-                    variant="outline-success"
-                    @click="editor.editing = false"
-                  >
-                    <b-icon-check2></b-icon-check2> Yes
-                  </b-button>
-                </b-button-group>
-              </b-col>
-            </b-form-row>
-          </b-form>
+              </b-form-row>
+              <b-form-row class="mt-2">
+                <b-col align="end">
+                  <b-button-group size="sm" v-if="!editor.confirmCancel">
+                    <b-button
+                      variant="outline-danger"
+                      @click="editor.confirmCancel = true"
+                    >
+                      Cancel
+                    </b-button>
+                    <b-button
+                      variant="outline-success"
+                      :disabled="!editor.valid"
+                      type="submit"
+                      class="px-3"
+                    >
+                      Save
+                    </b-button>
+                  </b-button-group>
+                </b-col>
+                <b-col align="end" v-if="editor.confirmCancel">
+                  <p class="m-0">Cancel editor?</p>
+                  <b-button-group size="sm">
+                    <b-button
+                      variant="outline-danger"
+                      @click="editor.confirmCancel = false"
+                    >
+                      <b-icon-x></b-icon-x> No
+                    </b-button>
+                    <b-button
+                      variant="outline-success"
+                      @click="editor.editing = false"
+                    >
+                      <b-icon-check2></b-icon-check2> Yes
+                    </b-button>
+                  </b-button-group>
+                </b-col>
+              </b-form-row>
+            </b-form>
+          </div>
+          <CommentsSection
+            v-if="post.author"
+            :postID="postID"
+            :postAuthorID="post.author.id"
+          />
         </div>
-        <CommentsSection
-          v-if="post.author"
-          :postID="postID"
-          :postAuthorID="post.author.id"
-        />
-      </div>
-      <div v-if="!isMobile()" class="info-col">
-        <UserCard v-if="post.author" link :userData="post.author" />
+        <div v-if="!isMobile()" class="info-col">
+          <UserCard v-if="post.author" link :userData="post.author" />
+        </div>
       </div>
     </div>
-  </div>
+  </b-skeleton-wrapper>
 </template>
 <script>
+import PostSkeleton from "@/components/skeletons/PostSkeleton";
 import CommentsSection from "@/components/CommentsSection";
 import ControlButtons from "@/components/ControlButtons";
 import ControlModal from "@/components/ControlModal";
@@ -125,6 +131,7 @@ export default {
   components: {
     CommentsSection,
     ControlButtons,
+    PostSkeleton,
     ControlModal,
     PostForm,
     UserCard,
@@ -152,11 +159,18 @@ export default {
       },
       postID: Number.parseInt(this.$route.params.id),
       requesting: false,
+      loading: true,
     };
   },
   created() {
     if (this.postData) document.title = this.postData.title;
-    this.postData ? (this.post = this.postData) : this.getPost();
+    this.postData
+      ? (this.post = this.postData)
+      : Promise.all([this.getPost()]).then(() => {
+          setTimeout(() => {
+            this.loading = false;
+          }, 500);
+        });
   },
   methods: {
     async getPost() {
@@ -185,7 +199,6 @@ export default {
         .then(() => {
           this.$router.push("/");
         })
-        .catch(console.log)
         .finally(() => {
           this.requesting = false;
         });
@@ -202,7 +215,14 @@ export default {
         .then((response) => {
           this.post = response.data.data;
         })
-        .catch(console.log)
+        .catch((error) => {
+          if (error.status === 403)
+            this.$bvToast.toast("You need to be logged in, to update posts!", {
+              title: "Oops!",
+              variant: "danger",
+              solid: true,
+            });
+        })
         .then(() => {
           this.requesting = false;
           this.editor.editing = false;

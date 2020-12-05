@@ -40,7 +40,7 @@ export default {
       this.$bvToast.toast(
         "You need to be logged in, to rate posts and comments!",
         {
-          title: "Oopsie!",
+          title: "Oops!",
           variant: "danger",
           solid: true,
         }

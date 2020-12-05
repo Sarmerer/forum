@@ -291,12 +291,17 @@ export default {
       return await api
         .post("comment/add", { id: this.postID, content: this.form.comment })
         .then((response) => {
-          if (response.data.data)
+          if (response?.data?.data)
             this.comments = [response.data.data, ...this.comments];
           this.form.comment = "";
         })
         .catch((error) => {
-          console.log(error.response.data);
+          if (error.status === 403)
+            this.$bvToast.toast("You need to be logged in, to leave comments!", {
+              title: "Oops!",
+              variant: "danger",
+              solid: true,
+            });
         });
     },
     async updateComment(actualID, oldCommentContent) {
@@ -319,7 +324,15 @@ export default {
           this.editor.editing = -1;
         })
         .catch((error) => {
-          console.log(error);
+          if (error.status === 403)
+            this.$bvToast.toast(
+              "You need to be logged in, to update comments!",
+              {
+                title: "Oops!",
+                variant: "danger",
+                solid: true,
+              }
+            );
         })
         .then(() => {
           this.editor.requesting = false;
