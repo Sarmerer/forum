@@ -23,7 +23,10 @@
               <Error v-if="error.show" :errorData="error" />
             </div>
             <div>
-              <div v-if="sorter.filtered" class="card">
+              <div
+                v-if="sorter.filtered"
+                :class="isMobile() ? 'card-m' : 'card'"
+              >
                 <b-row>
                   <b-col>
                     Posts with categories:
@@ -203,7 +206,17 @@
           </div>
 
           <div class="info-col">
-            <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
+            <div
+              :class="
+                `text-break ${
+                  isMobile()
+                    ? sorter.filtered
+                      ? 'card-m d-none'
+                      : 'card-m d-block'
+                    : 'card'
+                }`
+              "
+            >
               <h3 class="primary">RECENT</h3>
               <span v-if="!recent.length"
                 >None...
@@ -243,18 +256,26 @@
                 </router-link>
               </span>
             </div>
+            <!-- Start of categories -->
             <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
-              <b-row class="ml-0">
-                <h3 class="primary">
-                  CATEGORIES
-                </h3>
-
-                <b-button id="popover-filter-button">
-                  <b-icon-three-dots-vertical v-if="sorter.categories.length">
-                  </b-icon-three-dots-vertical>
-                </b-button>
+              <b-row>
+                <b-col>
+                  <h3 class="primary">
+                    TAGS
+                  </h3>
+                </b-col>
+                <b-col cols="end" class="mr-3">
+                  <b-button
+                    size="sm"
+                    @click="sortByCategories()"
+                    v-if="sorter.categories.length || sorter.filtered"
+                    :disabled="!sorter.categories"
+                    variant="outline-info"
+                  >
+                    <b-icon-filter> </b-icon-filter>
+                  </b-button>
+                </b-col>
               </b-row>
-              <!-- Start of categories -->
               <span v-if="!categories.length"
                 >None...
                 <router-link to="/new-post" class="secondary">yet</router-link>
@@ -264,7 +285,6 @@
                   <b-form-checkbox-group
                     v-for="c in categories"
                     :key="c.ID"
-                    :id="c.ID"
                     class="category-name"
                     size="sm"
                     v-model="sorter.categories"
@@ -274,36 +294,11 @@
                     }}</b-form-checkbox>
                     <b-form-checkbox disabled class="category-count">
                       {{ c.use_count }}
-                    </b-form-checkbox></b-form-checkbox-group
-                  >
+                    </b-form-checkbox>
+                  </b-form-checkbox-group>
                 </div>
               </b-container>
               <!-- End of categories -->
-              <b-popover
-                target="popover-filter-button"
-                triggers="click blur"
-                variant="dark"
-              >
-                <b-button-group
-                  v-if="sorter.categories.length || sorter.filtered"
-                  size="sm"
-                >
-                  <b-button
-                    @click="sortByCategories()"
-                    :disabled="!sorter.categories"
-                    variant="info"
-                  >
-                    <b-icon-filter> </b-icon-filter>
-                  </b-button>
-                  <b-button
-                    v-if="sorter.filtered"
-                    @click="resetCategories()"
-                    variant="info"
-                  >
-                    <b-icon-arrow-clockwise></b-icon-arrow-clockwise>
-                  </b-button>
-                </b-button-group>
-              </b-popover>
             </div>
           </div>
         </div>
