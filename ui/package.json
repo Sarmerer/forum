@@ -11,6 +11,7 @@
     "axios": "^0.20.0",
     "bootstrap-vue": "^2.1.0",
     "core-js": "^3.6.5",
+    "moment": "^2.29.1",
     "moment-shortformat": "^2.1.0",
     "package.json": "^2.0.1",
     "vue": "^2.6.11",
