@@ -3,8 +3,7 @@
     <span
       v-if="tooltip"
       v-b-tooltip="{
-        title: datetime,
-
+        title: dateFormatted,
         trigger: 'hover',
         placement: tooltip || 'top',
       }"
@@ -26,15 +25,14 @@ export default {
     tooltip: String,
   },
   created() {
-    this.ago = moment
-      .unix(this.datetime)
-      //.fromNow()
-      .short(this.isMobile());
+    this.ago = moment.unix(this.datetime).short(this.isMobile());
+    this.dateFormatted = moment.unix(this.datetime).format("ddd, d MMM y, hh:mm");
   },
 
   data() {
     return {
       ago: null,
+      dateFormatted: null,
     };
   },
 };

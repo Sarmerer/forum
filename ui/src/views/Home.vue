@@ -2,14 +2,10 @@
   <div>
     <div class="hero-image" v-if="!isMobile()">
       <div class="hero-text">
-        <h1 v-if="!isMobile()">
+        <h1>
           WELCOME<br />
           TO <span class="primary">FORUM</span>
         </h1>
-        <h3 v-if="isMobile()">
-          WELCOME<br />
-          TO <span class="primary">FORUM</span>
-        </h3>
       </div>
     </div>
     <b-skeleton-wrapper :loading="showSkeleton">
@@ -53,16 +49,10 @@
                   </b-col>
                 </b-row>
               </div>
-              <b-row
-                class="mx-3 mt-3"
-                v-if="
-                  pagination.totalPages > pagination.perPage &&
-                    !sorter.filtered &&
-                    !isMobile()
-                "
-              >
-                <b-col v-if="pagination.totalPages > pagination.perPage">
+              <b-row class="mx-3 mt-3" v-if="!sorter.filtered && !isMobile()">
+                <b-col>
                   <b-pagination
+                    v-if="pagination.totalPages > pagination.perPage"
                     v-model="pagination.currentPage"
                     :total-rows="pagination.totalPages"
                     :per-page="pagination.perPage"
@@ -81,13 +71,7 @@
                   />
                 </b-col>
               </b-row>
-              <b-container
-                v-if="
-                  pagination.totalPages > pagination.perPage &&
-                    !sorter.filtered &&
-                    isMobile()
-                "
-              >
+              <b-container class="mt-2" v-if="!sorter.filtered && isMobile()">
                 <b-row
                   v-if="pagination.totalPages > pagination.perPage"
                   align-h="center"
@@ -371,7 +355,7 @@ export default {
           this.error.show = false;
           this.posts = response.data?.data?.hot || [];
           this.recent = response.data?.data?.recent || [];
-          this.pagination.totalPages = response.data?.data?.total_rows || 5;
+          this.pagination.totalPages = response?.data?.data?.total_rows || 5;
         })
         .catch((error) => {
           this.posts = [];
