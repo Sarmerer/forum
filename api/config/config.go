@@ -31,8 +31,8 @@ const (
 	TimeLayout = "2006-01-02 15:04:05" // TimeLayout defines the standartd time layout. All time variables are formatted corresponding to it
 	GCInterval = 24 * time.Hour        // GCInterval defines the interval after which garbage collector will run
 
-	SessionCookieName = "sid"               // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
-	SessionExpiration = 14 * 24 * time.Hour // SessionExpiration defines the cookie life time
+	SessionCookieName = "sid"              // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
+	SessionExpiration = 2 * 24 * time.Hour // SessionExpiration defines the cookie life time
 
 	UserCtxVarName = "userCtx" // Used when setting request context in middleware
 

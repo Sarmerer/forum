@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"time"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/utils"
 )
 
 //UserRepoCRUD helps performing CRUD operations
@@ -30,7 +29,7 @@ func NewUserRepoCRUD() UserRepoCRUD {
 
 func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 	var (
-		err            error
+		err error
 	)
 	if err = repository.DB.QueryRow(
 		`SELECT COUNT(id) as posts_count,
@@ -126,6 +125,7 @@ func (UserRepoCRUD) Create(user *models.User) (int64, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
+		now          int64 = utils.CurrentTime()
 		lastInsertID int64
 		err          error
 	)
@@ -152,7 +152,7 @@ func (UserRepoCRUD) Create(user *models.User) (int64, int, error) {
 			role
 		)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		user.Login, user.Password, user.Email, user.Avatar, user.DisplayName, time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout), user.SessionID, user.Role,
+		user.Login, user.Password, user.Email, user.Avatar, user.DisplayName, now, now, user.SessionID, user.Role,
 	); err != nil {
 		return 0, http.StatusInternalServerError, err
 	}
@@ -204,7 +204,7 @@ func (UserRepoCRUD) UpdateLastActivity(userID int64) error {
 		`UPDATE users
 		SET last_online = ?
 		WHERE id = ?`,
-		time.Now().Format(config.TimeLayout), userID,
+		utils.CurrentTime(), userID,
 	); err != nil {
 		return err
 	}

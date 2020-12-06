@@ -6,11 +6,10 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/utils"
 )
 
 //CommentRepoCRUD helps performing CRUD operations
@@ -147,7 +146,7 @@ func (CommentRepoCRUD) FindByID(commentID int64) (*models.Comment, int, error) {
 func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) {
 	var (
 		result       sql.Result
-		now          string = time.Now().Format(config.TimeLayout)
+		now          int64 = utils.CurrentTime()
 		newComment   *models.Comment
 		rowsAffected int64
 		err          error
@@ -199,7 +198,7 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 			post_id_fkey = ?,
 			edited = ?
 		WHERE id = ?`,
-		comment.AuthorID, comment.Content, comment.Created, comment.PostID, time.Now().Format(config.TimeLayout), comment.ID,
+		comment.AuthorID, comment.Content, comment.Created, comment.PostID, utils.CurrentTime(), comment.ID,
 	); err != nil {
 		return nil, err
 	}

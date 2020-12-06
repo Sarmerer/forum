@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/logger"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
@@ -95,8 +93,8 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Title:    input.Title,
 		Content:  input.Content,
 		AuthorID: userCtx.ID,
-		Created:  time.Now().Format(config.TimeLayout),
-		Updated:  time.Now().Format(config.TimeLayout),
+		Created:  utils.CurrentTime(),
+		Updated:  utils.CurrentTime(),
 		Rating:   0,
 	}
 	if newPost, status, err = repo.Create(&post, input.Categories); err != nil {

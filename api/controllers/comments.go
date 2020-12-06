@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
@@ -83,7 +81,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 	comment := &models.Comment{
 		Content:  input.Content,
-		Created:  time.Now().Format(config.TimeLayout),
+		Created:  utils.CurrentTime(),
 		PostID:   input.ID,
 		AuthorID: userCtx.ID,
 	}

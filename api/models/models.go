@@ -12,8 +12,8 @@ type User struct {
 	Email       string `json:"email"`
 	Avatar      string `json:"avatar"`
 	DisplayName string `json:"display_name"`
-	Created     string `json:"created,omitempty"`
-	LastActive  string `json:"last_active,omitempty"`
+	Created     int64  `json:"created,omitempty"`
+	LastActive  int64  `json:"last_active,omitempty"`
 	SessionID   string `json:"session_id,omitempty"`
 	Role        int    `json:"role"`
 
@@ -27,8 +27,8 @@ type Post struct {
 	AuthorID     int64      `json:"author_id"`
 	Title        string     `json:"title"`
 	Content      string     `json:"content"`
-	Created      string     `json:"created"`
-	Updated      string     `json:"updated"`
+	Created      int64      `json:"created"`
+	Updated      int64      `json:"updated"`
 	Categories   []Category `json:"categories"`
 	Rating       int        `json:"rating"`
 	YourReaction int        `json:"your_reaction"`
@@ -55,11 +55,11 @@ type Comment struct {
 	ID           int64  `json:"id"`
 	AuthorID     int64  `json:"author_id"`
 	Content      string `json:"content"`
-	Created      string `json:"created"`
+	Created      int64  `json:"created"`
 	PostID       int64  `json:"post"`
 	Rating       int    `json:"rating"`
 	YourReaction int    `json:"your_reaction"`
-	Edited       string `json:"edited"`
+	Edited       int64  `json:"edited"`
 
 	Author *User `json:"author"`
 }

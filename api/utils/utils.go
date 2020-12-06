@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sarmerer/forum/api/config"
 
@@ -55,6 +56,10 @@ func GetUserFromCtx(r *http.Request) models.UserCtx {
 		return r.Context().Value(config.UserCtxVarName).(models.UserCtx)
 	}
 	return models.UserCtx{ID: -1, Role: -1}
+}
+
+func CurrentTime() int64 {
+	return time.Now().Unix()
 }
 
 func ParseFlags(args []string) []string {

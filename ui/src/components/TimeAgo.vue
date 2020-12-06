@@ -26,7 +26,8 @@ export default {
     tooltip: String,
   },
   created() {
-    this.ago = moment(this.datetime)
+    this.ago = moment
+      .unix(this.datetime)
       //.fromNow()
       .short(this.isMobile());
   },

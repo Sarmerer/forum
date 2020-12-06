@@ -19,10 +19,9 @@ func Start() {
 
 func garbageCollector() {
 	var (
-		repo       repository.UserRepo = crud.NewUserRepoCRUD()
-		lastOnline time.Time
-		users      []models.User
-		err        error
+		repo  repository.UserRepo = crud.NewUserRepoCRUD()
+		users []models.User
+		err   error
 	)
 	for {
 		<-time.After(config.GCInterval)
@@ -33,10 +32,7 @@ func garbageCollector() {
 			return
 		}
 		for _, user := range users {
-			if lastOnline, err = time.Parse(config.TimeLayout, user.LastActive); err != nil {
-				logger.CheckErrAndLog("Garbage collector", "time parsing error", err)
-			}
-			if time.Now().After(lastOnline.Add(config.SessionExpiration)) {
+			if time.Now().After(time.Unix(user.LastActive, 0).Add(config.SessionExpiration)) {
 				if err = repo.UpdateSession(user.ID, ""); err != nil {
 					logger.CheckErrAndLog("Garbage collector", "session closing error", err)
 				}

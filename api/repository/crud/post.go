@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/utils"
 )
 
 //PostRepoCRUD helps performing CRUD operations
@@ -313,6 +312,7 @@ func (PostRepoCRUD) Create(post *models.Post, categories []string) (*models.Post
 	var (
 		result       sql.Result
 		rowsAffected int64
+		now          int64 = utils.CurrentTime()
 		newPost      *models.Post
 		status       int
 		err          error
@@ -326,8 +326,7 @@ func (PostRepoCRUD) Create(post *models.Post, categories []string) (*models.Post
 			updated
 		)
 	VALUES (?, ?, ?, ?, ?)`,
-		post.AuthorID, post.Title, post.Content,
-		time.Now().Format(config.TimeLayout), time.Now().Format(config.TimeLayout),
+		post.AuthorID, post.Title, post.Content, now, now,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -371,7 +370,7 @@ func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.P
 			created = ?,
 			updated = ?
 		WHERE id = ?`,
-		post.AuthorID, post.Title, post.Content, post.Created, time.Now().Format(config.TimeLayout), post.ID,
+		post.AuthorID, post.Title, post.Content, post.Created, utils.CurrentTime(), post.ID,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}

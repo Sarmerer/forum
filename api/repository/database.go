@@ -35,7 +35,7 @@ func CheckDBIntegrity() (err error) {
 			email TEXT,
 			avatar TEXT,
 			display_name TEXT,
-			created TEXT,
+			created INTEGER,
 			last_online TEXT,
 			session_id TEXT,
 			role INTEGER
@@ -49,8 +49,8 @@ func CheckDBIntegrity() (err error) {
 			author_id_fkey INTEGER REFERENCES users(id),
 			title TEXT,
 			content TEXT,
-			created TEXT,
-			updated TEXT
+			created INTEGER,
+			updated INTEGER
 		)`); err != nil {
 		return err
 	}
@@ -74,9 +74,9 @@ func CheckDBIntegrity() (err error) {
 			id INTEGER PRIMARY KEY,
 			author_id_fkey INTEGER REFERENCES users(id),
 			content TEXT,
-			created TEXT,
+			created INTEGER,
 			post_id_fkey INTEGER REFERENCES posts(id),
-			edited TEXT
+			edited INTEGER
 		)`); err != nil {
 		return err
 	}
