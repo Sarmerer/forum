@@ -177,11 +177,8 @@
                         >
                         </user-popover>
                       </router-link>
-                      <time-ago
-                        :datetime="post.created"
-                        tooltip="bottom"
-                        long
-                      ></time-ago>
+                      <time-ago :datetime="post.created" tooltip="bottom">
+                      </time-ago>
                     </small>
                   </b-col>
                   <b-col v-if="isMobile()" cols="end" class="mr-4">
@@ -243,11 +240,7 @@
                       >
                       </user-popover>
                     </router-link>
-                    <time-ago
-                      :datetime="post.created"
-                      :long="!isMobile()"
-                      tooltip="right"
-                    >
+                    <time-ago :datetime="post.created" tooltip="right">
                     </time-ago>
                   </small>
                   <p>
@@ -307,14 +300,14 @@
   </div>
 </template>
 <script>
-import api from "@/router/api";
-import { mapGetters } from "vuex";
-import Error from "@/components/Error";
-import Rating from "@/components/Rating";
-import TimeAgo from "vue2-timeago";
-import PostFilters from "@/components/PostFilters";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
 import UserPopover from "@/components/UserPopover";
+import PostFilters from "@/components/PostFilters";
+import TimeAgo from "@/components/TimeAgo";
+import Rating from "@/components/Rating";
+import Error from "@/components/Error";
+import { mapGetters } from "vuex";
+import api from "@/router/api";
 
 export default {
   name: "Home",

@@ -46,11 +46,7 @@
                       <b-icon-people></b-icon-people>
                       {{ post.participants_count }}
                     </span>
-                    <time-ago
-                      :datetime="post.created"
-                      :long="!isMobile()"
-                      tooltip="right"
-                    >
+                    <time-ago :datetime="post.created" tooltip="right">
                     </time-ago>
                   </small>
                 </router-link>
@@ -82,11 +78,7 @@
                       </b-icon
                       >{{ comment.rating }}
                     </span>
-                    <time-ago
-                      :datetime="comment.created"
-                      :long="!isMobile()"
-                      tooltip="right"
-                    >
+                    <time-ago :datetime="comment.created" tooltip="right">
                     </time-ago>
                   </small>
                 </router-link>
@@ -110,7 +102,7 @@
 </template>
 <script>
 import api from "@/router/api";
-import TimeAgo from "vue2-timeago";
+import TimeAgo from "@/components/TimeAgo";
 import UserCard from "@/components/UserCard";
 import UserSkeleton from "@/components/skeletons/UserSkeleton";
 

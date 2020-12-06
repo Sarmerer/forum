@@ -38,7 +38,7 @@
   </span>
 </template>
 <script>
-import TimeAgo from "vue2-timeago";
+import TimeAgo from "@/components/TimeAgo";
 export default {
   name: "user-popover",
   props: {

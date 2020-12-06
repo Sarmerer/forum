@@ -20,7 +20,11 @@
             {{ userData.display_name }}
           </h3>
           <span class="text-muted">active </span>
-          <time-ago :datetime="userData.last_active" tooltip="right" long>
+          <time-ago
+            class="text-muted"
+            :datetime="userData.last_active"
+            tooltip="right"
+          >
           </time-ago>
         </b-col>
       </b-row>
@@ -34,8 +38,7 @@
             </span>
             <b-icon-calendar-event></b-icon-calendar-event>
             <small> Joined:</small>
-            <time-ago :datetime="userData.created" tooltip="right" long>
-            </time-ago>
+            <time-ago :datetime="userData.created" tooltip="right"> </time-ago>
             <br />
             <b-icon :icon="userData.rating >= 0 ? 'arrow-up' : 'arrow-down'">
             </b-icon>
@@ -116,7 +119,7 @@
   </div>
 </template>
 <script>
-import TimeAgo from "vue2-timeago";
+import TimeAgo from "@/components/TimeAgo";
 
 export default {
   name: "user-card",
