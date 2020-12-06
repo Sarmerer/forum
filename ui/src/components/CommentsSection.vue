@@ -110,19 +110,15 @@
             </b-col>
             <b-col>
               <small>
-                <time-ago
-                  :datetime="comment.created"
-                  :long="!isMobile()"
-                  tooltip="right"
-                ></time-ago>
+                <time-ago :datetime="comment.created" tooltip="right">
+                </time-ago>
                 <small
                   v-b-tooltip.hover
                   :title="comment.edited"
                   v-if="comment.edited != comment.created"
                   class="text-muted"
-                >
-                  edited</small
-                >
+                  >edited
+                </small>
               </small>
             </b-col>
             <b-col cols="end" class="mr-n2">
@@ -201,12 +197,13 @@ import ControlButtons from "@/components/ControlButtons";
 import UserPopover from "@/components/UserPopover";
 import ControlModal from "./ControlModal";
 import Rating from "@/components/Rating";
-import TimeAgo from "vue2-timeago";
+import TimeAgo from "@/components/TimeAgo";
 import { mapGetters } from "vuex";
 import api from "@/router/api";
 
 export default {
   props: {
+    comments: Array,
     postID: { type: Number, required: true },
     postAuthorID: Number,
   },
@@ -244,30 +241,14 @@ export default {
       requesting: false,
       editor: { editing: -1, editingContent: "", requesting: false },
       deleting: false,
-      comments: [],
       form: {
         comment: "",
       },
     };
   },
-  created() {
-    this.getComments();
-  },
   methods: {
     hasPermission(comment) {
       return comment?.author?.id == this.user?.id || this.user?.role > 0;
-    },
-    async getComments() {
-      return await api
-        .get("/comments", {
-          params: { id: this.postID },
-        })
-        .then((response) => {
-          this.comments = response.data.data || [];
-        })
-        .catch((error) => {
-          console.log(error.response.data);
-        });
     },
     async deleteComment(actualID, IDInList) {
       this.editor.editing = -1;

@@ -101,7 +101,8 @@
             </b-form>
           </div>
           <CommentsSection
-            v-if="post.author"
+            v-if="post.author && comments"
+            :comments="comments"
             :postID="postID"
             :postAuthorID="post.author.id"
           />
@@ -149,6 +150,7 @@ export default {
     return {
       post: {},
       categories: [],
+      comments: [],
       editor: {
         title: "",
         content: "",
@@ -163,14 +165,23 @@ export default {
     };
   },
   created() {
-    if (this.postData) document.title = this.postData.title;
-    this.postData
-      ? (this.post = this.postData)
-      : Promise.all([this.getPost()]).then(() => {
-          setTimeout(() => {
-            this.loading = false;
-          }, 500);
-        });
+    if (this.postData) {
+      document.title = this.postData.title;
+      this.post = this.postData;
+      Promise.all([this.getComments()]).then(() => {
+        setTimeout(() => {
+          this.loading = false;
+        }, 500);
+      });
+    } else {
+      let p = this.getPost();
+      let p1 = this.getComments();
+      Promise.all([p, p1]).then(() => {
+        setTimeout(() => {
+          this.loading = false;
+        }, 500);
+      });
+    }
   },
   methods: {
     async getPost() {
@@ -186,6 +197,18 @@ export default {
         })
         .catch(() => {
           this.$router.push("/");
+        });
+    },
+    async getComments() {
+      return await api
+        .get("/comments", {
+          params: { id: this.postID },
+        })
+        .then((response) => {
+          this.comments = response.data.data || [];
+        })
+        .catch((error) => {
+          console.log(error.response.data);
         });
     },
     async deletePost() {
