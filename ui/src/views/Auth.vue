@@ -70,6 +70,10 @@ export default {
       interval: null,
     };
   },
+  beforeRouteLeave(to, from, next) {
+    clearInterval(this.interval);
+    next();
+  },
   methods: {
     successfulAuth(event) {
       if (event === "signin") this.oldUser = true;
