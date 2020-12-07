@@ -33,8 +33,9 @@ func generateCookie(cookie *http.Cookie, err error) (string, string) {
 	return newCookie.String(), newUUID
 }
 
-func hash(password string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(password), 8)
+func hash(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+	return string(hash), err
 }
 
 func verifyPassword(hash, password string) error {

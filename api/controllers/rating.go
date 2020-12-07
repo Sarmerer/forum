@@ -11,6 +11,8 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
+// RatePost adds / removes / modifies user reaction for post,
+// depending on his previous reaction to that post
 func RatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
@@ -40,17 +42,8 @@ func RatePost(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "post has been rated", result)
 }
 
-func DeleteReactionsForPost(pid int64) error {
-	var (
-		repo repository.PostRepo = crud.NewPostRepoCRUD()
-		err  error
-	)
-	if err = repo.DeleteAllReactions(pid); err != nil {
-		return err
-	}
-	return nil
-}
-
+// RateComment adds / removes / modifies user reaction for comment,
+// depending on his previous reaction to that comment
 func RateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()

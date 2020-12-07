@@ -3,6 +3,7 @@ package crud
 import (
 	"context"
 	"database/sql"
+	"net/http"
 
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
@@ -43,7 +44,7 @@ func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 }
 
 //FindByPostID returns all categories belonging to  a post
-func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
+func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, int, error) {
 	var (
 		rows       *sql.Rows
 		categories []models.Category
@@ -57,14 +58,14 @@ func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, error) {
 		WHERE c.id = ctb.category_id_fkey`,
 		postID,
 	); err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 	for rows.Next() {
 		var category models.Category
 		rows.Scan(&category.ID, &category.Name)
 		categories = append(categories, category)
 	}
-	return categories, nil
+	return categories, http.StatusOK, nil
 }
 
 //Find returns a specific category from the database

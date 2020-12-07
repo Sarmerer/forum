@@ -58,7 +58,7 @@ func GetUserFromCtx(r *http.Request) models.UserCtx {
 	return models.UserCtx{ID: -1, Role: -1}
 }
 
-func CurrentTime() int64 {
+func CurrentUnixTime() int64 {
 	return time.Now().Unix()
 }
 

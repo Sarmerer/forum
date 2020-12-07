@@ -15,7 +15,9 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
-//LogIn signs the user in if exists
+// LogIn verifies user credinentials with database.
+//
+// Returns User model on success
 func LogIn(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo         repository.UserRepo = crud.NewUserRepoCRUD()
@@ -55,16 +57,18 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, fmt.Sprint("user is logged in"), user)
 }
 
-//SignUp authorizes new user
+// SignUp creates new user record in database
+//
+// Returns User model on success
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo           repository.UserRepo = crud.NewUserRepoCRUD()
 		input          models.InputUserSignUp
-		hashedPassword []byte
+		hashedPassword string
 		cookie         string
 		role           int    = 0
 		admintToken    string = os.Getenv("ADMIN_TOKEN")
-		newUUID        string
+		newSessionID   string
 		newUser        *models.User
 		status         int
 		err            error
@@ -74,6 +78,9 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// This line compares environment variable with name ADMMIN_TOKEN,
+	// if it exisits, and adminTolken, passed from user. If they match -
+	// user gets an admin role, if not, user gets standard role
 	if admintToken != "" && input.Admin && input.AdminToken == admintToken {
 		role = 2
 	}
@@ -87,22 +94,18 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
+	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
 	user := models.User{
 		Login:       input.Login,
-		Password:    string(hashedPassword),
+		Password:    hashedPassword,
 		Email:       input.Email,
 		Avatar:      fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
 		DisplayName: input.Login,
-		SessionID:   "",
+		SessionID:   newSessionID,
 		Role:        role,
 	}
 	if newUser, status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)
-		return
-	}
-	cookie, newUUID = generateCookie(r.Cookie(config.SessionCookieName))
-	if err = repo.UpdateSession(newUser.ID, newUUID); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -111,6 +114,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// LogOut deletes user session id from database
+// and destroys session cookie in his browser
 func LogOut(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.UserRepo = crud.NewUserRepoCRUD()
@@ -134,6 +139,9 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// Me is an endpoint function, that helps to understand if user is authenticated.
+// When client makes an api/me request, middleware checks if user is authenticated,
+// if not, it returns 403 Forbidden http status
 func Me(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.UserRepo = crud.NewUserRepoCRUD()

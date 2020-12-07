@@ -12,6 +12,7 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
+// GetComments returns all comments for a single post as an array
 func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
@@ -36,6 +37,10 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, comments)
 }
 
+// FindComments allows to search comments by various parameters.
+// Currently supported:
+//
+// - author - returns all comments from single user
 func FindComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
@@ -62,6 +67,9 @@ func FindComments(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, comments)
 }
 
+// CreateComment adds new comment record to database.
+//
+// Returns Comment model on success
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo       repository.CommentRepo = crud.NewCommentRepoCRUD()
@@ -81,7 +89,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 	comment := &models.Comment{
 		Content:  input.Content,
-		Created:  utils.CurrentTime(),
+		Created:  utils.CurrentUnixTime(),
 		PostID:   input.ID,
 		AuthorID: userCtx.ID,
 	}
@@ -92,6 +100,9 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "reply has been added", newComment)
 }
 
+// UpdateComment modifies comment record in database with new data
+//
+// Returns Comment model on success
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo           repository.CommentRepo = crud.NewCommentRepoCRUD()
@@ -123,6 +134,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, "reply has been updated", updatedComment)
 }
 
+// DeleteComment removes comment and all it's reactions records from database
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.CommentRepo = crud.NewCommentRepoCRUD()
@@ -150,23 +162,4 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Success(w, "reply has been deleted", nil)
-}
-
-func DeleteCommentsGroup(pid int64) error {
-	var (
-		repo repository.CommentRepo = crud.NewCommentRepoCRUD()
-		err  error
-	)
-	if err = repo.DeleteGroup(pid); err != nil {
-		return err
-	}
-	return nil
-}
-
-func CountComments(pid int64) (comments string, err error) {
-	var repo = crud.NewCommentRepoCRUD()
-	if comments, err = repo.Count(pid); err != nil {
-		return "0", err
-	}
-	return comments, nil
 }

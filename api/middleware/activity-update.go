@@ -3,7 +3,6 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
@@ -11,23 +10,9 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
-func SetHeaders(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		//CORS headers
-		w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Origin", config.ClientURL)
-		//CORS handler
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(200)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		next(w, r)
-	}
-}
-
+// UpdateUserActivity middleware is attached to routes that
+// indicate that user is avtive, e.g. /post/new post/update...
+// This function updates last activity date of a user in database
 func UpdateUserActivity(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (

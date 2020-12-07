@@ -30,7 +30,7 @@ func (mux *Router) SetupRoutes() {
 			seq = append(seq, middleware.AuthorizedOnly)
 		}
 		if route.MinRole == config.RoleModer {
-			seq = append(seq, middleware.ModerOrAdmin)
+			seq = append(seq, middleware.ModerOrHigher)
 		}
 		if route.MinRole == config.RoleAdmin {
 			seq = append(seq, middleware.AdminOnly)

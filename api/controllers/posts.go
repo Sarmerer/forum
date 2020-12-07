@@ -14,12 +14,21 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
+// GetPosts returns struct with fields:
+//
+// - hot - several posts, sorted by their rating
+//
+// - recent - several posts sorted by date
+//
+// - total_rows - total amount of rows in posts table.
+// Used for pagination component on frontend
 func GetPosts(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
 		input   models.InputAllPosts
 		userCtx models.UserCtx = utils.GetUserFromCtx(r)
 		result  *models.Posts
+		status  int
 		err     error
 	)
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -29,13 +38,21 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	input.Validate()
 
-	if result, err = repo.FindAll(userCtx.ID, input); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
+	if result, status, err = repo.FindAll(userCtx.ID, input); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 	response.Success(w, nil, result)
 }
 
+// FindPost allows to search posts by various parameters.
+// Currently supported:
+//
+// - id - returns a post with that id
+//
+// - author - returns all posts from single user
+//
+// - categories - returns posts that have theese categories
 func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
@@ -64,8 +81,8 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case "categories":
-		if posts, err = repo.FindByCategories(input.Categories, userCtx.ID); err != nil {
-			response.Error(w, http.StatusInternalServerError, err)
+		if posts, status, err = repo.FindByCategories(input.Categories, userCtx.ID); err != nil {
+			response.Error(w, status, err)
 			return
 		}
 	default:
@@ -75,6 +92,9 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, posts)
 }
 
+// CreatePost adds new post record to database
+//
+// Returns Post model on success
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
@@ -93,8 +113,8 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Title:    input.Title,
 		Content:  input.Content,
 		AuthorID: userCtx.ID,
-		Created:  utils.CurrentTime(),
-		Updated:  utils.CurrentTime(),
+		Created:  utils.CurrentUnixTime(),
+		Updated:  utils.CurrentUnixTime(),
 		Rating:   0,
 	}
 	if newPost, status, err = repo.Create(&post, input.Categories); err != nil {
@@ -105,6 +125,9 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, fmt.Sprintf("post has been created"), newPost)
 }
 
+// UpdatePost modifies post record in database
+//
+// Returns Post model on success
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
@@ -145,19 +168,21 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, fmt.Sprint("post has been updated"), post)
 }
 
+// DeletePost removes records: post, it's reactions, it's categories,
+// comments realted to that post and reactions to these comments from database
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.PostRepo = crud.NewPostRepoCRUD()
-		pid    int64
+		postID int64
 		post   *models.Post
 		status int
 		err    error
 	)
-	if pid, err = utils.ParseID(r); err != nil {
+	if postID, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if post, status, err = repo.FindByID(pid, -1); err != nil {
+	if post, status, err = repo.FindByID(postID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -167,22 +192,22 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = DeleteCommentsGroup(pid); err != nil {
+	if err = crud.NewCommentRepoCRUD().DeleteGroup(postID); err != nil {
 		logger.CheckErrAndLog("comments deletion", "", err)
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if err = DeleteAllCategoriesForPost(pid); err != nil {
+	if err = crud.NewCategoryRepoCRUD().DeleteGroup(postID); err != nil {
 		logger.CheckErrAndLog("categories deletion", "", err)
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if err = DeleteReactionsForPost(pid); err != nil {
+	if err = crud.NewPostRepoCRUD().DeleteAllReactions(postID); err != nil {
 		logger.CheckErrAndLog("reactions deletion", "", err)
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	if status, err = repo.Delete(pid); err != nil {
+	if status, err = repo.Delete(postID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

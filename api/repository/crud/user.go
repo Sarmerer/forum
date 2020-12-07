@@ -125,7 +125,7 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
-		now          int64 = utils.CurrentTime()
+		now          int64 = utils.CurrentUnixTime()
 		lastInsertID int64
 		newUser      *models.User
 		status       int
@@ -209,7 +209,7 @@ func (UserRepoCRUD) UpdateLastActivity(userID int64) error {
 		`UPDATE users
 		SET last_online = ?
 		WHERE id = ?`,
-		utils.CurrentTime(), userID,
+		utils.CurrentUnixTime(), userID,
 	); err != nil {
 		return err
 	}

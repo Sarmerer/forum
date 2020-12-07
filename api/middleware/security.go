@@ -13,6 +13,8 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
+// SetContext middleware adds requestor's ID and role to the request,
+//which is later used to identify requestor as user
 func SetContext(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
@@ -43,6 +45,8 @@ func SetContext(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// AuthorizedOnly middleware prevents unauthorized users to get access
+// to authorized-only API routes
 func AuthorizedOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if utils.GetUserFromCtx(r).Role < config.RoleUser {
@@ -53,6 +57,8 @@ func AuthorizedOnly(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// AdminOnly middleware prevents regualr users
+// to get access to admin-only API routes
 func AdminOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if utils.GetUserFromCtx(r).Role < config.RoleAdmin {
@@ -63,7 +69,9 @@ func AdminOnly(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func ModerOrAdmin(next http.HandlerFunc) http.HandlerFunc {
+// ModerOrHigher middleware prevents users with role less
+// than moder to get access to secure API routes
+func ModerOrHigher(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if utils.GetUserFromCtx(r).Role < config.RoleModer {
 			response.Error(w, http.StatusForbidden, errors.New("permission denied"))

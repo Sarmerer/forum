@@ -19,6 +19,7 @@ func (rec *statusRecorder) WriteHeader(code int) {
 	rec.ResponseWriter.WriteHeader(code)
 }
 
+// Logger prints various stats about all requests server receives
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rec := statusRecorder{w, 200, time.Now()}

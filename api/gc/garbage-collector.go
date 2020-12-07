@@ -11,7 +11,7 @@ import (
 	"github.com/sarmerer/forum/api/repository/crud"
 )
 
-// Start starts the garbage collector service,
+// Start launches the garbage collector service,
 // it will remove expired sessions from database with the interval, specified in the config file
 func Start() {
 	go garbageCollector()
@@ -25,7 +25,7 @@ func garbageCollector() {
 	)
 	for {
 		<-time.After(config.GCInterval)
-		counter := 0
+		deauthedUsers := 0
 		start := time.Now()
 		if users, err = repo.FindAll(); err != nil {
 			logger.CheckErrAndLog("Garbage collector", "", err)
@@ -36,9 +36,9 @@ func garbageCollector() {
 				if err = repo.UpdateSession(user.ID, ""); err != nil {
 					logger.CheckErrAndLog("Garbage collector", "session closing error", err)
 				}
-				counter++
+				deauthedUsers++
 			}
 		}
-		logger.CheckErrAndLog("Garbage collector", fmt.Sprintf("closed %v sessions. Took %s", counter, time.Since(start)), nil)
+		logger.CheckErrAndLog("Garbage collector", fmt.Sprintf("closed %v sessions. Took %s", deauthedUsers, time.Since(start)), nil)
 	}
 }

@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-//GetUsers gets all users from the database
+//GetUsers returns all user records from database as an array
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo  repository.UserRepo = crud.NewUserRepoCRUD()
@@ -27,7 +27,10 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, users)
 }
 
-//FindUser gets a specified user from the database
+// FindUser allows to search user by various parameters.
+// Currently supported:
+//
+// - id - returns a user with that id
 func FindUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
@@ -54,28 +57,28 @@ func FindUser(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, nil, user)
 }
 
-//UpdateUser updates info about the user
+//UpdateUser modifies user record in database
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo        repository.UserRepo = crud.NewUserRepoCRUD()
 		name        string
-		uid         int64
+		userID      int64
 		updatedUser *models.User
 		status      int
 		err         error
 	)
 	name = r.FormValue("name")
-	if uid, err = utils.ParseID(r); err != nil {
+	if userID, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), uid) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), userID) {
 		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
 		return
 	}
 
-	if updatedUser, status, err = repo.FindByID(uid); err != nil {
+	if updatedUser, status, err = repo.FindByID(userID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -91,28 +94,29 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 //DeleteUser deletes a user from the database
+// TODO delte all reactions of deleted user
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		uid    int64
+		userID int64
 		status int
 		err    error
 	)
-	if uid, err = utils.ParseID(r); err != nil {
+	if userID, err = utils.ParseID(r); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), uid) {
+	if !requestorIsEntityOwner(utils.GetUserFromCtx(r), userID) {
 		response.Error(w, http.StatusForbidden, errors.New("this account doesn't belong to you"))
 		return
 	}
 
-	if _, status, err = repo.FindByID(uid); err != nil {
+	if _, status, err = repo.FindByID(userID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if status, err = repo.Delete(uid); err != nil {
+	if status, err = repo.Delete(userID); err != nil {
 		response.Error(w, status, err)
 		return
 	}
