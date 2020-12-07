@@ -355,7 +355,7 @@ export default {
           this.error.show = false;
           this.posts = response.data?.data?.hot || [];
           this.recent = response.data?.data?.recent || [];
-          this.pagination.totalPages = response?.data?.data?.total_rows || 5;
+          this.pagination.totalPages = response?.data?.data?.total_rows || 0;
         })
         .catch((error) => {
           this.posts = [];
