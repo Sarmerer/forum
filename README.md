@@ -17,7 +17,7 @@ make vue
 ```
 or without make:
 ```shell
-cd api && go run main.go
+cd api && bash -c  "go run main.go"
 # in separate terminal
 cd ui && npm i && npm run serve
 ```
