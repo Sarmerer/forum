@@ -85,7 +85,7 @@
               </b-tab>
             </b-tabs>
             <b-container
-              v-if="posts.length === 0 && comments.length === 0 && madeRequest"
+              v-if="!posts.length && !comments.length && madeRequest"
               align="center"
             >
               <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
@@ -132,7 +132,11 @@ export default {
   created() {
     let p = this.getUser();
     let p1 = p.then(() => {
-      this.user.posts > 0 ? this.getPosts() : this.getComments();
+      this.user.posts > 0
+        ? this.getPosts()
+        : this.user.comments > 0
+        ? this.getComments()
+        : (this.madeRequest = true);
     });
     Promise.all([p, p1]).then(() =>
       setTimeout(() => {

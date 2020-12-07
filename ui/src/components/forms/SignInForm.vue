@@ -51,8 +51,9 @@ export default {
     }),
     submitSignIn() {
       this.signIn(this.form).then(() => {
-        if (this.authError?.data?.message) {
-          this.$bvToast.toast(this.authError.data.message, {
+        let error = this.authError?.data?.message || this.authError?.data;
+        if (error) {
+          this.$bvToast.toast(error, {
             title: "Oops!",
             variant: "danger",
             solid: true,

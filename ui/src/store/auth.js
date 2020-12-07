@@ -51,7 +51,7 @@ export default {
         .catch((error) => commit("setAuthError", error));
     },
     async signOut({ commit }) {
-      await api.post("auth/signout").finally(() => {
+      await api.post("auth/signout").then(() => {
         commit("setUser", null);
       });
     },
