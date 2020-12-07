@@ -121,22 +121,24 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 }
 
 //Create adds a new user to the database
-func (UserRepoCRUD) Create(user *models.User) (int64, int, error) {
+func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
 		now          int64 = utils.CurrentTime()
 		lastInsertID int64
+		newUser      *models.User
+		status       int
 		err          error
 	)
 	name := repository.DB.QueryRow("SELECT login FROM users WHERE login = ?", user.Login).Scan(&user.Login)
 	email := repository.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&user.Email)
 	if name == nil && email != nil {
-		return 0, http.StatusConflict, errors.New("name is not unique")
+		return nil, http.StatusConflict, errors.New("name is not unique")
 	} else if email == nil && name != nil {
-		return 0, http.StatusConflict, errors.New("email is not unique")
+		return nil, http.StatusConflict, errors.New("email is not unique")
 	} else if name == nil && email == nil {
-		return 0, http.StatusConflict, errors.New("name and email are not unique")
+		return nil, http.StatusConflict, errors.New("name and email are not unique")
 	}
 
 	if result, err = repository.DB.Exec(
@@ -154,18 +156,21 @@ func (UserRepoCRUD) Create(user *models.User) (int64, int, error) {
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		user.Login, user.Password, user.Email, user.Avatar, user.DisplayName, now, now, user.SessionID, user.Role,
 	); err != nil {
-		return 0, http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, err
 	}
 	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return 0, http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, err
 	}
 	if lastInsertID, err = result.LastInsertId(); err != nil {
-		return 0, http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, err
+	}
+	if newUser, status, err = NewUserRepoCRUD().FindByID(lastInsertID); err != nil {
+		return nil, status, err
 	}
 	if rowsAffected > 0 {
-		return lastInsertID, http.StatusOK, nil
+		return newUser, http.StatusOK, nil
 	}
-	return 0, http.StatusBadRequest, errors.New("could not create the user")
+	return nil, http.StatusBadRequest, errors.New("could not create the user")
 }
 
 //Update updates existing user in the database

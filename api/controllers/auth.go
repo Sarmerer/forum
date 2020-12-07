@@ -65,7 +65,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		role           int    = 0
 		admintToken    string = os.Getenv("ADMIN_TOKEN")
 		newUUID        string
-		newUserID      int64
+		newUser        *models.User
 		status         int
 		err            error
 	)
@@ -91,23 +91,23 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Login:       input.Login,
 		Password:    string(hashedPassword),
 		Email:       input.Email,
-		Avatar:      "https://avatars.dicebear.com/api/male/" + input.Login + ".svg",
+		Avatar:      fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
 		DisplayName: input.Login,
 		SessionID:   "",
 		Role:        role,
 	}
-	if newUserID, status, err = repo.Create(&user); err != nil {
+	if newUser, status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 	cookie, newUUID = generateCookie(r.Cookie(config.SessionCookieName))
-	if err = repo.UpdateSession(newUserID, newUUID); err != nil {
+	if err = repo.UpdateSession(newUser.ID, newUUID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, "user has been created", nil)
+	response.Success(w, "user has been created", newUser)
 	return
 }
 

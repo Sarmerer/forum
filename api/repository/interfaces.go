@@ -7,7 +7,7 @@ import (
 type UserRepo interface {
 	FindAll() (users []models.User, err error)
 	FindByID(userID int64) (user *models.User, status int, err error)
-	Create(newUser *models.User) (newUserID int64, status int, err error)
+	Create(user *models.User) (newUser *models.User, status int, err error)
 	Update(user *models.User) (status int, err error)
 	Delete(userID int64) (status int, err error)
 	FindByLoginOrEmail(login string) (user *models.User, status int, err error)
@@ -27,11 +27,11 @@ type PostRepo interface {
 	// FindAll takes in user id, current page and offset,
 	// user id for server to know if that user put a like or dislike on a post,
 	// current page and offset for pagination
-	FindAll(requestorID int64, input models.InputAllPosts) (*models.Posts, error)
+	FindAll(requestorID int64, input models.InputAllPosts) (posts *models.Posts, status int, err error)
 	// FindByID takes in post id and user id, for the same reasaon, as in FindAll()
 	FindByID(postID, requestorID int64) (post *models.Post, status int, err error)
 	FindByAuthor(userID, requestorID int64) (posts []models.Post, status int, err error)
-	FindByCategories(categories []string, requestorID int64) ([]models.Post, error)
+	FindByCategories(categories []string, requestorID int64) (posts []models.Post, status int, err error)
 
 	Create(post *models.Post, categories []string) (newPost *models.Post, status int, err error)
 	Update(*models.Post, models.UserCtx) (updatedPost *models.Post, status int, err error)
@@ -45,7 +45,7 @@ type PostRepo interface {
 
 type CategoryRepo interface {
 	FindAll() ([]models.Category, error)
-	FindByPostID(postID int64) ([]models.Category, error)
+	FindByPostID(postID int64) (categories []models.Category, status int, err error)
 	Create(postID int64, categories []string) error
 	Update(postID int64, categories []string) error
 	DeleteGroup(postID int64) error
