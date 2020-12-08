@@ -20,7 +20,7 @@ var (
 const (
 	APIPort       = "4433"
 	apiURLDev     = "http://localhost:" + APIPort
-	apiURLProd    = "https://forum-api-sarmerer.herokuapp.com"
+	apiURLProd    = "http://13.53.42.178:4433"
 	clientURLDev  = "http://localhost:8080"
 	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 
