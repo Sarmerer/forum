@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -8,7 +9,7 @@ import (
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/gc"
 	"github.com/sarmerer/forum/api/logger"
-	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/repository/crud"
 	"github.com/sarmerer/forum/api/router"
 	"github.com/sarmerer/forum/api/utils"
 
@@ -21,14 +22,7 @@ func Init() {
 
 	gc.Start()
 	logger.InitLogs("Garbage collector", nil)
-
-	err := repository.InitDB()
-	logger.InitLogs("Database init", err)
-
-	err = repository.CheckDBIntegrity()
-	logger.InitLogs("Database integrity", err)
-
-	err = utils.SetupEnv()
+	err := utils.SetupEnv()
 	logger.CheckErrAndLog("Environment", "loaded", err)
 
 	flags := utils.ParseFlags(os.Args[1:])
@@ -41,6 +35,7 @@ func Init() {
 // Run sets up API routes and then starts to listen for requests
 func Run() {
 	mux := router.New()
+	fmt.Println(crud.NewUserRepoCRUD().GetPassword(0))
 	mux.SetupRoutes()
 	port := config.APIPort
 	if os.Getenv("PORT") != "" {

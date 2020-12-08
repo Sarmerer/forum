@@ -6,16 +6,16 @@ type UserCtx struct {
 }
 
 type User struct {
-	ID          int64  `json:"id"`
-	Login       string `json:"login"`
-	Password    string `json:"password,omitempty"`
-	Email       string `json:"email"`
-	Avatar      string `json:"avatar"`
-	DisplayName string `json:"display_name"`
-	Created     int64  `json:"created,omitempty"`
-	LastActive  int64  `json:"last_active,omitempty"`
-	SessionID   string `json:"session_id,omitempty"`
-	Role        int    `json:"role"`
+	ID          int64  `json:"id" bson:"id,omitempty"`
+	Login       string `json:"login" bson:"login,omitempty"`
+	Password    string `json:"password,omitempty" bson:"password,omitempty"`
+	Email       string `json:"email" bson:"email,omitempty"`
+	Avatar      string `json:"avatar" bson:"avatar,omitempty"`
+	DisplayName string `json:"display_name" bson:"display_name,omitempty"`
+	Created     int64  `json:"created,omitempty" bson:"created,omitempty"`
+	LastActive  int64  `json:"last_active,omitempty" bson:"last_active,omitempty"`
+	SessionID   string `json:"session_id,omitempty" bson:"session_id,omitempty"`
+	Role        int    `json:"role" bson:"role,omitempty"`
 
 	Rating   int `json:"rating"`
 	Posts    int `json:"posts"`

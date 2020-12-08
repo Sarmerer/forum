@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -71,6 +72,10 @@ func ParseFlags(args []string) []string {
 		}
 	}
 	return res
+}
+
+func Ctx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 30*time.Second)
 }
 
 func FormatRequest(r *http.Request) string {

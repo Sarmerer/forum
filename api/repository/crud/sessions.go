@@ -1,70 +1,40 @@
 package crud
 
 import (
-	"database/sql"
-	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/sarmerer/forum/api/database"
 	"github.com/sarmerer/forum/api/models"
-	"github.com/sarmerer/forum/api/repository"
+	"github.com/sarmerer/forum/api/utils"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (UserRepoCRUD) GetPassword(userID int64) (string, int, error) {
+func (UserRepoCRUD) GetPassword(userID int64) (password string, status int, err error) {
 	var (
-		password string
-		err      error
+		conn *database.MongoDatastore
 	)
-	if err = repository.DB.QueryRow(
-		`SELECT password
-		FROM users
-		WHERE id = ?`, userID,
-	).Scan(
-		&password,
-	); err != nil {
-		if err != sql.ErrNoRows {
-			return "", http.StatusInternalServerError, err
-		}
-		return "", http.StatusNotFound, errors.New("user not found")
+	if conn, err = database.Connect("users"); err != nil {
+		return "", http.StatusInternalServerError, err
 	}
-	return password, http.StatusOK, nil
+	type fwa struct {
+		Password string `bson:"password"`
+	}
+	fwafwa := fwa{}
+	ctx, cancel := utils.Ctx()
+	defer cancel()
+	f := conn.Collection.FindOne(ctx, bson.D{{Key: "login", Value: "banana"}}, options.FindOne().SetProjection(bson.D{{"_id", false}, {"password", true}}))
+	fmt.Println(f.Decode(&fwafwa))
+	fmt.Println(fwafwa)
+	return password, http.StatusOK, err
 }
 
 func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, status int, err error) {
-	if err = repository.DB.QueryRow(
-		`SELECT id,
-			role
-		FROM users
-		WHERE session_id = ?`, sessionID,
-	).Scan(
-		&user.ID, &user.Role,
-	); err != nil {
-		if err != sql.ErrNoRows {
-			return user, http.StatusInternalServerError, err
-		}
-		return models.UserCtx{ID: -1, Role: -1}, http.StatusUnauthorized, errors.New("user not authorized")
-	}
 	return user, http.StatusOK, nil
 }
 
 func (UserRepoCRUD) UpdateSession(id int64, newSession string) error {
-	var (
-		result       sql.Result
-		rowsAffected int64
-		err          error
-	)
-	if result, err = repository.DB.Exec(
-		`UPDATE users
-		SET session_id = ?
-		WHERE id = ?`,
-		newSession, id,
-	); err != nil {
-		return err
-	}
-	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return err
-	}
-	if rowsAffected > 0 {
-		return nil
-	}
+
 	return nil
 }
