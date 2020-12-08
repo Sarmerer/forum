@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  api:
+    container_name: api-container
+    restart: always
+    build: ./api
+    ports:
+      - "4433:4433"
+  client:
+    container_name: client-container
+    restart: always
+    build: ./ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api
