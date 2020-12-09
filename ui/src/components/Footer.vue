@@ -2,7 +2,14 @@
   <div :class="isMobile() ? 'container-m' : 'container'">
     <div class="contacts">
       <p class="made-with">
-        Made with
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://github.com/sarmerer/forum"
+        >
+          <b-img-lazy src="@/assets/img/github.png" width="20px"></b-img-lazy>
+        </a>
+        | Made with
         <a target="_blank" rel="noopener noreferrer" href="https://golang.org">
           <img src="@/assets/svg/golang.svg" alt="Go"/></a
         >,
@@ -23,11 +30,11 @@
       <p>
         2020 | by
         <a href="http://github.com/sarmerer" class="secondary">
-          Yerzhan Sarmukhanov
+          sarmerer
         </a>
         &
         <a href="http://github.com/sarmai" class="secondary">
-          Ailen Sarmukhanovava
+          sarmai
         </a>
       </p>
     </div>
