@@ -13,14 +13,16 @@ type flag struct {
 var (
 	ClientURL = clientURLDev
 	APIURL    = apiURLDev
+	APIPort   = apiPortDev
 	Flags     = map[string]*flag{"--prod": {"production mode is on", &Production}}
 )
 
 // API config
 const (
-	APIPort       = "4433"
-	apiURLDev     = "http://localhost:" + APIPort
-	apiURLProd    = "http://13.53.42.178:4433"
+	apiPortDev    = "4433"
+	apiPortProd   = "443"
+	apiURLDev     = "http://localhost:" + apiPortDev
+	apiURLProd    = "http://13.53.42.178:" + apiPortProd
 	clientURLDev  = "http://localhost:8080"
 	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 
@@ -53,5 +55,6 @@ func Init() {
 	if Production {
 		ClientURL = clientURLProd
 		APIURL = apiURLProd
+		APIPort = apiPortProd
 	}
 }

@@ -47,8 +47,11 @@ func Run() {
 		port = os.Getenv("PORT")
 	}
 	log.Printf("Listening %s\n", config.APIURL)
-	////log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.APIPort), "./ssl/cert.pem", "./ssl/key.pem", mux))
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	if config.Production {
+		log.Fatal(http.ListenAndServeTLS(":"+port, "./ssl/cert.pem", "./ssl/key.pem", mux))
+	} else {
+		log.Fatal(http.ListenAndServe(":"+port, mux))
+	}
 }
 
 func main() {
