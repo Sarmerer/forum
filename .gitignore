@@ -2,6 +2,6 @@
 /database
 .VSCodeCounter
 /node_modules
-/ssl
+ssl
 .env
 app.yaml

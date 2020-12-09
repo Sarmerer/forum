@@ -4,6 +4,8 @@ services:
     container_name: api-container
     restart: always
     build: ./api
+    volumes:
+      - ./api/database:/app/database
     ports:
       - "4433:4433"
   client:
