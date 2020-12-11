@@ -22,7 +22,7 @@ const (
 	apiPortDev    = "4433"
 	apiPortProd   = "443"
 	apiURLDev     = "http://localhost:" + apiPortDev
-	apiURLProd    = "http://13.53.42.178:" + apiPortProd
+	apiURLProd    = "https://13.53.42.178:" + apiPortProd
 	clientURLDev  = "http://localhost:8080"
 	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 

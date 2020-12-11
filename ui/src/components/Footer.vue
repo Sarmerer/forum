@@ -20,7 +20,7 @@
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLneRaqXoYlV10RUsU6uP-6cicVmwr0g2O&index=400"
+          href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         >
           <img src="@/assets/svg/heart.svg" alt="love" />
         </a>

@@ -221,4 +221,19 @@ var apiRoutes = []route{
 		NeedAuth: true,
 		Activity: true,
 	},
+	/* -------------------------------------------------------------------------- */
+	/*                                 Images server                              */
+	/* -------------------------------------------------------------------------- */
+	{
+		URI:     "/images",
+		Handler: controllers.ServeImage,
+		Method:  http.MethodPost,
+		MinRole: config.RoleUser,
+	},
+	{
+		URI:     "/image/upload",
+		Handler: controllers.UploadImage,
+		Method:  http.MethodPost,
+		MinRole: config.RoleUser,
+	},
 }
