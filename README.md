@@ -1,9 +1,12 @@
+[Live demo](https://forum-sarmerer.herokuapp.com)
+---
+- [Live demo](#live-demo)
 - [Getting started](#getting-started)
-    - [Requirements:](#requirements)
+    - [Requirements](#requirements)
 - [License](#license)
 
 ## Getting started
-#### Requirements:
+#### Requirements
 * [Go](https://golang.org) >= v1.12
 * [Node JS](https://nodejs.org/)
 * [Vue CLI](https://cli.vuejs.org/guide/installation.html)
