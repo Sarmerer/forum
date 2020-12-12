@@ -33,7 +33,8 @@
     <div align="center" class="welcome-message" v-else>
       <h3>
         Welcome{{ oldUser ? " back, " : ", " }}
-        <span class="secondary">sarmerer</span>!
+        <span class="secondary">{{ user.display_name }}</span
+        >!
       </h3>
       <h6>You will be redirected back in {{ timeLeft }}</h6>
       <br />
