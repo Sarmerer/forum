@@ -2,7 +2,9 @@
   <div id="app">
     <Navbar v-if="isMobile()" id="nav" />
     <Sidenav v-else />
-    <router-view :class="`d-${search ? 'none' : 'block'}`" />
+    <keep-alive include="Home">
+      <router-view :class="`d-${search ? 'none' : 'block'}`" />
+    </keep-alive>
     <Footer />
   </div>
 </template>

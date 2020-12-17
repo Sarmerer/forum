@@ -17,14 +17,19 @@
           <div :class="`${isMobile() ? 'card-m' : 'card'}`">
             <b-row v-if="!editor.editing">
               <b-col cols="start">
-                <Rating :callback="rate" :entity="post" class="ml-n4" />
+                <Rating
+                  v-on:rate="rate(...$event)"
+                  :entity="post"
+                  class="ml-n4"
+                  size="lg"
+                />
               </b-col>
-              <b-col class="ml-2">
+              <b-col>
                 <b-row>
                   <b-col>
                     <h3 class="primary text-break">{{ post.title }}</h3>
                   </b-col>
-                  <b-col cols="end" class="mr-2">
+                  <b-col cols="end">
                     <ControlButtons
                       :hasPermission="hasPermission"
                       v-on:delete-event="deletePost()"
@@ -35,7 +40,9 @@
                     />
                   </b-col>
                 </b-row>
-                <pre color="white" class="text-break">{{ post.content }}</pre>
+                <pre color="white" class="text-break mb-1">{{
+                  post.content
+                }}</pre>
                 <div>
                   <b-form-tag
                     v-for="category in post.categories"
@@ -49,8 +56,27 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row v-if="isMobile() && !editor.editing" class="ml-2">
-              <Rating :callback="rate" :entity="post" compact />
+            <b-row>
+              <b-col>
+                <small>
+                  <span v-b-tooltip.hover title="Comments">
+                    <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                  </span>
+                  <span v-b-tooltip.hover title="Participants">
+                    <b-icon-people></b-icon-people>
+                    {{ post.participants_count }}
+                  </span>
+                </small>
+              </b-col>
+              <b-col v-if="isMobile()" cols="end" class="mr-3">
+                <small>
+                  <Rating
+                    size="sm"
+                    v-on:rate="rate(...$event)"
+                    :entity="post"
+                  />
+                </small>
+              </b-col>
             </b-row>
             <b-form v-if="editor.editing" @submit.prevent="updatePost()">
               <b-form-row>
@@ -101,8 +127,7 @@
             </b-form>
           </div>
           <CommentsSection
-            v-if="post.author && comments"
-            :comments="comments"
+            v-if="post.author"
             :postID="postID"
             :postAuthorID="post.author.id"
           />
@@ -127,7 +152,7 @@ import api from "@/router/api";
 
 export default {
   props: {
-    postData: { type: Object },
+    postData: Object,
   },
   components: {
     CommentsSection,
@@ -150,7 +175,6 @@ export default {
     return {
       post: {},
       categories: [],
-      comments: [],
       editor: {
         title: "",
         content: "",
@@ -168,15 +192,11 @@ export default {
     if (this.postData) {
       document.title = this.postData.title;
       this.post = this.postData;
-      Promise.all([this.getComments()]).then(() => {
-        setTimeout(() => {
-          this.loading = false;
-        }, 500);
-      });
+      setTimeout(() => {
+        this.loading = false;
+      }, 500);
     } else {
-      let p = this.getPost();
-      let p1 = this.getComments();
-      Promise.all([p, p1]).then(() => {
+      Promise.all([this.getPost()]).then(() => {
         setTimeout(() => {
           this.loading = false;
         }, 500);
@@ -197,18 +217,6 @@ export default {
         })
         .catch(() => {
           this.$router.push("/");
-        });
-    },
-    async getComments() {
-      return await api
-        .get("/comments", {
-          params: { id: this.postID },
-        })
-        .then((response) => {
-          this.comments = response.data.data || [];
-        })
-        .catch((error) => {
-          console.log(error.response.data);
         });
     },
     async deletePost() {

@@ -1,15 +1,23 @@
 <template>
-  <div :class="compact ? '' : 'rating-col'">
+  <div :class="size === 'sm' ? 'rating-col-inline' : 'rating-col'">
     <b-icon-arrow-up-short
-      @click.prevent="authenticated ? callback('up', entity) : makeToast()"
-      :class="`m-0 rating-opacity ${compact ? 'h4' : 'h3'}`"
+      @click.prevent="
+        authenticated ? $emit('rate', ['up', entity]) : makeToast()
+      "
+      :class="`m-0 rating-opacity rating-item ${classUp}`"
       :style="`color: ${entity.your_reaction == 1 ? 'green' : 'white'}`"
     >
     </b-icon-arrow-up-short>
-    <span class="rating-opacity">{{ entity.rating }}</span>
+    <span
+      v-if="size === 'sm' || size === 'lg'"
+      class="rating-opacity rating-item"
+      >{{ entity.rating }}</span
+    >
     <b-icon-arrow-down-short
-      @click.prevent="authenticated ? callback('down', entity) : makeToast()"
-      :class="`m-0 rating-opacity ${compact ? 'h4' : 'h3'}`"
+      @click.prevent="
+        authenticated ? $emit('rate', ['down', entity]) : makeToast()
+      "
+      :class="`m-0 rating-opacity rating-item ${classDown}`"
       :style="`color: ${entity.your_reaction == -1 ? 'red' : 'white'}`"
     ></b-icon-arrow-down-short>
   </div>
@@ -18,22 +26,23 @@
 import { mapGetters } from "vuex";
 export default {
   props: {
-    callback: {
-      type: Function,
-      required: true,
-    },
     entity: {
       type: Object,
       required: true,
     },
-    compact: {
-      type: Boolean,
-    },
+    compact: Boolean,
+    size: { type: String, default: "md" },
   },
   computed: {
     ...mapGetters({
       authenticated: "auth/authenticated",
     }),
+    classUp() {
+      return this.size === "sm" ? "h4" : "h3 mb-n1";
+    },
+    classDown() {
+      return this.size === "sm" ? "h4" : "h3 mt-n1";
+    },
   },
   methods: {
     makeToast() {
@@ -55,6 +64,15 @@ export default {
   flex-direction: column;
   text-align: left;
   align-items: center;
+}
+
+.rating-col-inline {
+  display: flex;
+  align-items: center;
+}
+
+.rating-item {
+  vertical-align: middle;
 }
 
 .rating-opacity {

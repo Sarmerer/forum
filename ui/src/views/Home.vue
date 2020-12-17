@@ -107,23 +107,28 @@
               >
                 <b-row>
                   <b-col v-if="!isMobile()" cols="start">
-                    <Rating :callback="rate" :entity="post" class="ml-n4" />
+                    <Rating
+                      v-on:rate="rate(...$event)"
+                      :entity="post"
+                      class="ml-n5"
+                      size="lg"
+                    />
                   </b-col>
-                  <b-col class="ml-2">
+                  <b-col>
                     <small v-if="isMobile()">
                       <router-link
                         :to="'/user/' + post.author.id"
                         class="secondary"
                       >
                         <b-img :src="post.author.avatar" width="15px"></b-img>
-                        {{ post.author.display_name }}
+                        {{ post.author.alias }}
                       </router-link>
                       <time-ago :datetime="post.created"></time-ago>
                     </small>
-                    <h5>
+                    <h4 class="primary">
                       {{ post.title }}
-                    </h5>
-                    <pre>{{ post.content }}</pre>
+                    </h4>
+                    <pre class="mb-1">{{ post.content }}</pre>
                     <b-form-tag
                       v-for="(category, index) in post.categories"
                       disabled
@@ -136,7 +141,7 @@
                     </b-form-tag>
                   </b-col>
                 </b-row>
-                <b-row class="ml-1">
+                <b-row>
                   <b-col>
                     <small>
                       <span v-b-tooltip.hover title="Comments">
@@ -165,12 +170,12 @@
                       </time-ago>
                     </small>
                   </b-col>
-                  <b-col v-if="isMobile()" cols="end" class="mr-4">
+                  <b-col v-if="isMobile()" cols="end" class="mr-2">
                     <small>
                       <Rating
                         class="mr-2"
-                        compact
-                        :callback="rate"
+                        size="sm"
+                        v-on:rate="rate(...$event)"
                         :entity="post"
                       />
                     </small>
@@ -332,7 +337,8 @@ export default {
       checked: false,
     };
   },
-  created() {
+  activated() {
+    if (this.sorter.filtered) return;
     Promise.all([this.getPosts(0), this.getCategories()]).then(() => {
       setTimeout(() => {
         this.showSkeleton = false;
