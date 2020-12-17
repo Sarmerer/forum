@@ -18,7 +18,7 @@ const routes = [
     path: "*",
     name: "Not Found",
     component: () =>
-      import(/* webpackChunkName: "not-found" */ "@/views/NotFound.vue"),
+      import(/* webpackChunkName: "not-found" */ "@/components/NotFound.vue"),
   },
   {
     path: "/servers-down",
@@ -64,8 +64,7 @@ const routes = [
     path: "/auth",
     name: "Auth",
     props: true,
-    component: () =>
-      import(/* webpackChunkName: "auth" */ "@/views/Auth.vue"),
+    component: () => import(/* webpackChunkName: "auth" */ "@/views/Auth.vue"),
     beforeEnter(to, from, next) {
       store.getters["auth/authenticated"] ? next("/") : next();
     },

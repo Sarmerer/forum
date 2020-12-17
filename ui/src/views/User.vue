@@ -3,112 +3,116 @@
     <template #loading>
       <UserSkeleton />
     </template>
-    <div class="grid">
-      <div class="columns">
-        <div class="info-col" v-if="user && isMobile()">
-          <UserCard :userData="user" />
-        </div>
-        <div class="main-col">
-          <div class="user-info">
-            <b-tabs card v-if="user.posts || user.comments">
-              <b-tab
-                v-if="user.posts > 0"
-                title="Posts"
-                :active="user.posts > 0"
-                @click="getPosts()"
-              >
-                <router-link
-                  :to="'/post/' + post.id"
-                  v-for="post in posts"
-                  :key="post.id"
-                  :class="`user-card text-break ${
-                    isMobile() ? 'card-m' : 'card'
-                  }`"
-                  tag="div"
-                >
-                  <h5>
-                    <strong>{{ post.title }}</strong>
-                  </h5>
-                  <pre>{{ post.content }}</pre>
-                  <small>
-                    <span v-b-tooltip.hover title="Rating">
-                      <b-icon
-                        :icon="reactionIcon(post.your_reaction)"
-                        :color="reactionColor(post.your_reaction)"
-                      >
-                      </b-icon
-                      >{{ post.rating }}
-                    </span>
-                    <span v-b-tooltip.hover title="Comments">
-                      <b-icon-chat></b-icon-chat> {{ post.comments_count }}
-                    </span>
-                    <span v-b-tooltip.hover title="Participants">
-                      <b-icon-people></b-icon-people>
-                      {{ post.participants_count }}
-                    </span>
-                    <time-ago :datetime="post.created" tooltip="right">
-                    </time-ago>
-                  </small>
-                </router-link>
-              </b-tab>
-              <b-tab
-                v-if="user.comments > 0"
-                title="Comments"
-                :active="!user.posts"
-                @click="getComments()"
-              >
-                <router-link
-                  :to="'/post/' + comment.post"
-                  :class="`user-card text-break ${
-                    isMobile() ? 'card-m' : 'card'
-                  }`"
-                  v-for="comment in comments"
-                  :key="comment.id"
-                  tag="div"
-                >
-                  <h5>
-                    {{ comment.content }}
-                  </h5>
-                  <small>
-                    <span v-b-tooltip.hover title="Rating">
-                      <b-icon
-                        :icon="reactionIcon(comment.your_reaction)"
-                        :color="reactionColor(comment.your_reaction)"
-                      >
-                      </b-icon
-                      >{{ comment.rating }}
-                    </span>
-                    <time-ago :datetime="comment.created" tooltip="right">
-                    </time-ago>
-                  </small>
-                </router-link>
-              </b-tab>
-            </b-tabs>
-            <b-container
-              v-if="!posts.length && !comments.length && madeRequest"
-              align="center"
-            >
-              <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
-              <p>It's so empty here...</p>
-            </b-container>
+    <NotFound v-if="notFound" />
+    <div v-else>
+      <div class="grid">
+        <div class="columns">
+          <div class="info-col" v-if="user && isMobile()">
+            <UserCard :userData="user" />
           </div>
-        </div>
-        <div class="info-col" v-if="user && !isMobile()">
-          <UserCard :userData="user" />
+          <div class="main-col">
+            <div class="user-info">
+              <b-tabs card v-if="user.posts || user.comments">
+                <b-tab
+                  v-if="user.posts > 0"
+                  title="Posts"
+                  :active="user.posts > 0"
+                  @click="getPosts()"
+                >
+                  <router-link
+                    :to="'/post/' + post.id"
+                    v-for="post in posts"
+                    :key="post.id"
+                    :class="
+                      `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                    "
+                    tag="div"
+                  >
+                    <h5>
+                      <strong>{{ post.title }}</strong>
+                    </h5>
+                    <pre>{{ post.content }}</pre>
+                    <small>
+                      <span v-b-tooltip.hover title="Rating">
+                        <b-icon
+                          :icon="reactionIcon(post.your_reaction)"
+                          :color="reactionColor(post.your_reaction)"
+                        >
+                        </b-icon
+                        >{{ post.rating }}
+                      </span>
+                      <span v-b-tooltip.hover title="Comments">
+                        <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                      </span>
+                      <span v-b-tooltip.hover title="Participants">
+                        <b-icon-people></b-icon-people>
+                        {{ post.participants_count }}
+                      </span>
+                      <time-ago :datetime="post.created" tooltip="right">
+                      </time-ago>
+                    </small>
+                  </router-link>
+                </b-tab>
+                <b-tab
+                  v-if="user.comments > 0"
+                  title="Comments"
+                  :active="!user.posts"
+                  @click="getComments()"
+                >
+                  <router-link
+                    :to="'/post/' + comment.post"
+                    :class="
+                      `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                    "
+                    v-for="comment in comments"
+                    :key="comment.id"
+                    tag="div"
+                  >
+                    <h5>
+                      {{ comment.content }}
+                    </h5>
+                    <small>
+                      <span v-b-tooltip.hover title="Rating">
+                        <b-icon
+                          :icon="reactionIcon(comment.your_reaction)"
+                          :color="reactionColor(comment.your_reaction)"
+                        >
+                        </b-icon
+                        >{{ comment.rating }}
+                      </span>
+                      <time-ago :datetime="comment.created" tooltip="right">
+                      </time-ago>
+                    </small>
+                  </router-link>
+                </b-tab>
+              </b-tabs>
+              <b-container
+                v-if="!posts.length && !comments.length && madeRequest"
+                align="center"
+              >
+                <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
+                <p>It's so empty here...</p>
+              </b-container>
+            </div>
+          </div>
+          <div class="info-col" v-if="user && !isMobile()">
+            <UserCard :userData="user" />
+          </div>
         </div>
       </div>
     </div>
   </b-skeleton-wrapper>
 </template>
 <script>
-import api from "@/router/api";
-import TimeAgo from "@/components/TimeAgo";
-import UserCard from "@/components/UserCard";
 import UserSkeleton from "@/components/skeletons/UserSkeleton";
+import NotFound from "@/components/NotFound";
+import UserCard from "@/components/UserCard";
+import TimeAgo from "@/components/TimeAgo";
+import api from "@/router/api";
 
 export default {
   watch: {
-    "$route.params.id": function () {
+    "$route.params.id": function() {
       this.user = {};
       this.posts = [];
       this.comments = [];
@@ -122,6 +126,7 @@ export default {
   data() {
     return {
       loading: true,
+      notFound: false,
       user: {},
       posts: [],
       comments: [],
@@ -145,9 +150,10 @@ export default {
     );
   },
   components: {
-    TimeAgo,
-    UserCard,
     UserSkeleton,
+    UserCard,
+    NotFound,
+    TimeAgo,
   },
   methods: {
     reactionColor(yourReaction) {
@@ -164,10 +170,10 @@ export default {
         })
         .then((response) => {
           this.user = response.data.data;
-          document.title = this.user.display_name;
+          document.title = this.user.alias;
         })
         .catch((error) => {
-          if (error.status === 404) this.$router.push("/not-found");
+          if (error.status === 404) this.notFound = true;
         });
     },
     async getPosts() {
