@@ -28,10 +28,9 @@ func (CategoryRepoCRUD) FindAll() ([]models.Category, error) {
 			category_id_fkey,
 			name
 		FROM categories c
-			LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c.id
+			LEFT JOIN posts_categories_bridge ctb ON ctb.category_id_fkey = c._id
 		GROUP BY category_id_fkey
-		ORDER BY use_count DESC,name ASC
-		LIMIT 70`,
+		ORDER BY use_count DESC,name ASC`,
 	); err != nil {
 		return nil, err
 	}
@@ -55,7 +54,7 @@ func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, int, erro
 			name
 		FROM categories c
 			LEFT JOIN posts_categories_bridge ctb ON ctb.post_id_fkey = ?
-		WHERE c.id = ctb.category_id_fkey`,
+		WHERE c._id = ctb.category_id_fkey`,
 		postID,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -72,7 +71,7 @@ func (CategoryRepoCRUD) FindByPostID(postID int64) ([]models.Category, int, erro
 // ? do we even need that
 func (CategoryRepoCRUD) Find(id int) (*models.Category, error) {
 	var category models.Category
-	rows, err := repository.DB.Query("SELECT * FROM categories WHERE id = ?", id)
+	rows, err := repository.DB.Query("SELECT * FROM categories WHERE _id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +90,7 @@ func (CategoryRepoCRUD) Create(postID int64, categories []string) (err error) {
 	)
 	for _, category := range categories {
 		if err = repository.DB.QueryRow(
-			`SELECT id
+			`SELECT _id
 			FROM categories
 			WHERE name = ?`,
 			category,
@@ -151,14 +150,14 @@ func (CategoryRepoCRUD) Delete(categotyID int) error {
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM categories
-		WHERE id = $1`, categotyID)
+		WHERE _id = ?`, categotyID)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM posts_categories_bridge
-		WHERE category_id_fkey = $1`, categotyID)
+		WHERE category_id_fkey = ?`, categotyID)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -181,10 +180,10 @@ func (CategoryRepoCRUD) DeleteGroup(pid int64) error {
 	}
 	if _, err = repository.DB.Exec(
 		`DELETE FROM categories
-		WHERE id IN (
-				SELECT c.id
+		WHERE _id IN (
+				SELECT c._id
 				FROM categories c
-					LEFT JOIN posts_categories_bridge pcb ON c.id = pcb.category_id_fkey
+					LEFT JOIN posts_categories_bridge pcb ON c._id = pcb.category_id_fkey
 				WHERE pcb.category_id_fkey IS NULL
 			)`,
 	); err != nil {

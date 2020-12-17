@@ -96,13 +96,13 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
 	user := models.User{
-		Login:       input.Login,
-		Password:    hashedPassword,
-		Email:       input.Email,
-		Avatar:      fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
-		DisplayName: input.Login,
-		SessionID:   newSessionID,
-		Role:        role,
+		Username:  input.Login,
+		Password:  hashedPassword,
+		Email:     input.Email,
+		Avatar:    fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
+		Alias:     input.Login,
+		SessionID: newSessionID,
+		Role:      role,
 	}
 	if newUser, status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)

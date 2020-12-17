@@ -6,16 +6,16 @@ type UserCtx struct {
 }
 
 type User struct {
-	ID          int64  `json:"id"`
-	Login       string `json:"login"`
-	Password    string `json:"password,omitempty"`
-	Email       string `json:"email"`
-	Avatar      string `json:"avatar"`
-	DisplayName string `json:"display_name"`
-	Created     int64  `json:"created,omitempty"`
-	LastActive  int64  `json:"last_active,omitempty"`
-	SessionID   string `json:"session_id,omitempty"`
-	Role        int    `json:"role"`
+	ID         int64  `json:"id"`
+	Username   string `json:"username"`
+	Password   string `json:"password,omitempty"`
+	Email      string `json:"email"`
+	Avatar     string `json:"avatar"`
+	Alias      string `json:"alias"`
+	Created    int64  `json:"created,omitempty"`
+	LastActive int64  `json:"last_active,omitempty"`
+	SessionID  string `json:"session_id,omitempty"`
+	Role       int    `json:"role"`
 
 	Rating   int `json:"rating"`
 	Posts    int `json:"posts"`
@@ -24,11 +24,12 @@ type User struct {
 
 type Post struct {
 	ID           int64      `json:"id"`
-	AuthorID     int64      `json:"author_id"`
+	AuthorID     int64      `json:"-"`
 	Title        string     `json:"title"`
 	Content      string     `json:"content"`
 	Created      int64      `json:"created"`
-	Updated      int64      `json:"updated"`
+	Edited       int64      `json:"edited"`
+	EditReason   string     `json:"edit_reason"`
 	Categories   []Category `json:"categories"`
 	Rating       int        `json:"rating"`
 	YourReaction int        `json:"your_reaction"`
@@ -53,10 +54,11 @@ type Category struct {
 
 type Comment struct {
 	ID           int64  `json:"id"`
-	AuthorID     int64  `json:"author_id"`
+	AuthorID     int64  `json:"-"`
 	Content      string `json:"content"`
 	Created      int64  `json:"created"`
-	PostID       int64  `json:"post"`
+	PostID       int64  `json:"post_id"`
+	ParentID     int64  `json:"parent_id"`
 	Rating       int    `json:"rating"`
 	YourReaction int    `json:"your_reaction"`
 	Edited       int64  `json:"edited"`

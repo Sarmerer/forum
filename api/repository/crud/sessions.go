@@ -17,7 +17,7 @@ func (UserRepoCRUD) GetPassword(userID int64) (string, int, error) {
 	if err = repository.DB.QueryRow(
 		`SELECT password
 		FROM users
-		WHERE id = ?`, userID,
+		WHERE _id = ?`, userID,
 	).Scan(
 		&password,
 	); err != nil {
@@ -31,7 +31,7 @@ func (UserRepoCRUD) GetPassword(userID int64) (string, int, error) {
 
 func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, status int, err error) {
 	if err = repository.DB.QueryRow(
-		`SELECT id,
+		`SELECT _id,
 			role
 		FROM users
 		WHERE session_id = ?`, sessionID,
@@ -46,7 +46,7 @@ func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, stat
 	return user, http.StatusOK, nil
 }
 
-func (UserRepoCRUD) UpdateSession(id int64, newSession string) error {
+func (UserRepoCRUD) UpdateSession(userID int64, newSession string) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -55,8 +55,8 @@ func (UserRepoCRUD) UpdateSession(id int64, newSession string) error {
 	if result, err = repository.DB.Exec(
 		`UPDATE users
 		SET session_id = ?
-		WHERE id = ?`,
-		newSession, id,
+		WHERE _id = ?`,
+		newSession, userID,
 	); err != nil {
 		return err
 	}

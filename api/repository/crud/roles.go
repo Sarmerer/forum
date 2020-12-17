@@ -8,7 +8,7 @@ import (
 	"github.com/sarmerer/forum/api/repository"
 )
 
-func (UserRepoCRUD) GetRole(id int64) (int, int, error) {
+func (UserRepoCRUD) GetRole(userID int64) (int, int, error) {
 	var (
 		role int
 		err  error
@@ -16,7 +16,7 @@ func (UserRepoCRUD) GetRole(id int64) (int, int, error) {
 	if err = repository.DB.QueryRow(
 		`SELECT role
 		FROM users
-		WHERE id = ?`, id,
+		WHERE _id = ?`, userID,
 	).Scan(&role); err != nil {
 		if err != sql.ErrNoRows {
 			return 0, http.StatusInternalServerError, err
@@ -27,7 +27,7 @@ func (UserRepoCRUD) GetRole(id int64) (int, int, error) {
 }
 
 //UpdateRole updates user role in the database
-func (UserRepoCRUD) UpdateRole(uid int64, role int) error {
+func (UserRepoCRUD) UpdateRole(userID int64, role int) error {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -35,9 +35,9 @@ func (UserRepoCRUD) UpdateRole(uid int64, role int) error {
 	)
 	if result, err = repository.DB.Exec(
 		`UPDATE users
-		SET role = ?
-		WHERE id = ?`,
-		role, uid,
+		SET role = $1
+		WHERE _id = $2`,
+		role, userID,
 	); err != nil {
 		return err
 	}

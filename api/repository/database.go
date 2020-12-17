@@ -29,14 +29,14 @@ func InitDB() (err error) {
 func CheckDBIntegrity() (err error) {
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS users (
-			id INTEGER PRIMARY KEY,
-			login TEXT,
+			_id INTEGER PRIMARY KEY,
+			username TEXT,
 			password BLOB,
 			email TEXT,
 			avatar TEXT,
-			display_name TEXT,
+			alias TEXT,
 			created INTEGER,
-			last_online TEXT,
+			last_active INTEGER,
 			session_id TEXT,
 			role INTEGER
 		)`); err != nil {
@@ -45,37 +45,39 @@ func CheckDBIntegrity() (err error) {
 
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts (
-			id INTEGER PRIMARY KEY,
-			author_id_fkey INTEGER REFERENCES users(id),
+			_id INTEGER PRIMARY KEY,
+			author_id_fkey INTEGER REFERENCES users(_id),
 			title TEXT,
 			content TEXT,
 			created INTEGER,
-			updated INTEGER
+			edited INTEGER,
+			edit_reason TEXT
 		)`); err != nil {
 		return err
 	}
 
 	if _, err = DB.Exec(
-		`CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY, name TEXT)`); err != nil {
+		`CREATE TABLE IF NOT EXISTS categories (_id INTEGER PRIMARY KEY, name TEXT)`); err != nil {
 		return err
 	}
 
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts_categories_bridge (
-			id INTEGER PRIMARY KEY,
-			post_id_fkey INTEGER REFERENCES posts(id),
-			category_id_fkey INTEGER REFERENCES categories(id)
+			_id INTEGER PRIMARY KEY,
+			post_id_fkey INTEGER REFERENCES posts(_id),
+			category_id_fkey INTEGER REFERENCES categories(_id)
 		)`); err != nil {
 		return err
 	}
 
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS comments (
-			id INTEGER PRIMARY KEY,
-			author_id_fkey INTEGER REFERENCES users(id),
+			_id INTEGER PRIMARY KEY,
+			author_id_fkey INTEGER REFERENCES users(_id),
+			post_id_fkey INTEGER REFERENCES posts(_id),
+			parent_id_fkey INTEGER REFERENCES comments(_id),
 			content TEXT,
 			created INTEGER,
-			post_id_fkey INTEGER REFERENCES posts(id),
 			edited INTEGER
 		)`); err != nil {
 		return err
@@ -83,9 +85,9 @@ func CheckDBIntegrity() (err error) {
 
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS posts_reactions (
-			id			 INTEGER PRIMARY KEY,
-			post_id_fkey INTEGER REFERENCES posts(id),
-			user_id_fkey INTEGER REFERENCES users(id),
+			_id			 INTEGER PRIMARY KEY,
+			post_id_fkey INTEGER REFERENCES posts(_id),
+			user_id_fkey INTEGER REFERENCES users(_id),
 			reaction	 INTEGER
 		)`); err != nil {
 		return err
@@ -93,9 +95,9 @@ func CheckDBIntegrity() (err error) {
 
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS comments_reactions (
-			id			 INTEGER PRIMARY KEY,
-			comment_id_fkey INTEGER REFERENCES comments(id),
-			user_id_fkey INTEGER REFERENCES users(id),
+			_id			 INTEGER PRIMARY KEY,
+			comment_id_fkey INTEGER REFERENCES comments(_id),
+			user_id_fkey INTEGER REFERENCES users(_id),
 			reaction	 INTEGER
 		)`); err != nil {
 		return err

@@ -43,14 +43,14 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 		(
 			SELECT TOTAL(reaction)
 			FROM comments_reactions
-			WHERE comment_id_fkey = c.id
+			WHERE comment_id_fkey = c._id
 		) AS rating,
 		IFNULL (
 			(
 				SELECT reaction
 				FROM comments_reactions
 				WHERE user_id_fkey = $1
-					AND comment_id_fkey = c.id
+					AND comment_id_fkey = c._id
 			),
 			0
 		) AS yor_reaction
@@ -66,7 +66,7 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 	}
 	for rows.Next() {
 		var c models.Comment
-		rows.Scan(&c.ID, &c.AuthorID, &c.Content, &c.Created, &c.PostID, &c.Edited, &c.Rating, &c.YourReaction)
+		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Rating, &c.YourReaction)
 		if err = fetchAuthor(&c); err != nil {
 			return nil, err
 		}
@@ -86,14 +86,14 @@ func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment
 		(
 			SELECT TOTAL(reaction)
 			FROM comments_reactions
-			WHERE comment_id_fkey = c.id
+			WHERE comment_id_fkey = c._id
 		) AS rating,
 		IFNULL (
 			(
 				SELECT reaction
 				FROM comments_reactions
 				WHERE user_id_fkey = $1
-					AND comment_id_fkey = c.id
+					AND comment_id_fkey = c._id
 			),
 			0
 		) AS yor_reaction
@@ -109,7 +109,7 @@ func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment
 	}
 	for rows.Next() {
 		var c models.Comment
-		rows.Scan(&c.ID, &c.AuthorID, &c.Content, &c.Created, &c.PostID, &c.Edited, &c.Rating, &c.YourReaction)
+		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Rating, &c.YourReaction)
 		if err = fetchAuthor(&c); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
@@ -127,14 +127,14 @@ func (CommentRepoCRUD) FindByID(commentID int64) (*models.Comment, int, error) {
 	if err = repository.DB.QueryRow(
 		`SELECT *
 		FROM comments
-		WHERE id = ?`, commentID,
+		WHERE _id = ?`, commentID,
 	).Scan(
-		&c.ID, &c.AuthorID, &c.Content, &c.Created, &c.PostID, &c.Edited,
+		&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
 		}
-		return nil, http.StatusBadRequest, errors.New("reply not found")
+		return nil, http.StatusBadRequest, errors.New("comment not found")
 	}
 	if err = fetchAuthor(&c); err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -154,13 +154,14 @@ func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) 
 	if result, err = repository.DB.Exec(
 		`INSERT INTO comments (
 			author_id_fkey,
+			post_id_fkey,
+			parent_id_fkey,
 			content,
 			created,
-			post_id_fkey,
 			edited
 		)
-		VALUES (?, ?, ?, ?, ?)`,
-		comment.AuthorID, comment.Content, now, comment.PostID, now,
+		VALUES (?, ?, ?, ?, ?, ?)`,
+		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, now, now,
 	); err != nil {
 		return nil, err
 	}
@@ -193,12 +194,13 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 	if result, err = repository.DB.Exec(
 		`UPDATE comments
 		SET author_id_fkey = ?,
+			post_id_fkey = ?,
+			parent_id_fkey = ?,
 			content = ?,
 			created = ?,
-			post_id_fkey = ?,
 			edited = ?
-		WHERE id = ?`,
-		comment.AuthorID, comment.Content, comment.Created, comment.PostID, utils.CurrentUnixTime(), comment.ID,
+		WHERE _id = ?`,
+		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, comment.Created, utils.CurrentUnixTime(), comment.ID,
 	); err != nil {
 		return nil, err
 	}
@@ -218,7 +220,7 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 }
 
 //Delete deletes reply from the database
-func (CommentRepoCRUD) Delete(cid int64) error {
+func (CommentRepoCRUD) Delete(commentID int64) error {
 	var (
 		ctx context.Context
 		tx  *sql.Tx
@@ -231,14 +233,14 @@ func (CommentRepoCRUD) Delete(cid int64) error {
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments_reactions
-		WHERE comment_id_fkey = $1`, cid)
+		WHERE comment_id_fkey = ?`, commentID)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments
-		WHERE id = $1`, cid)
+		WHERE _id = ?`, commentID)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -250,7 +252,7 @@ func (CommentRepoCRUD) Delete(cid int64) error {
 	return nil
 }
 
-func (CommentRepoCRUD) DeleteGroup(pid int64) error {
+func (CommentRepoCRUD) DeleteGroup(postID int64) error {
 	var (
 		ctx context.Context
 		tx  *sql.Tx
@@ -264,17 +266,17 @@ func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments_reactions
 			WHERE comment_id_fkey IN (
-				SELECT id
+				SELECT _id
 				FROM comments
-				WHERE post_id_fkey = $1
-			)`, pid)
+				WHERE post_id_fkey = ?
+			)`, postID)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments
-		WHERE post_id_fkey = $1`, pid)
+		WHERE post_id_fkey = $1`, postID)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -286,11 +288,11 @@ func (CommentRepoCRUD) DeleteGroup(pid int64) error {
 	return nil
 }
 
-func (CommentRepoCRUD) Count(pid int64) (comments string, err error) {
+func (CommentRepoCRUD) Count(postID int64) (comments string, err error) {
 	if err = repository.DB.QueryRow(
-		`SELECT count(id)
+		`SELECT count(_id)
 		FROM comments
-		WHERE post_id_fkey = ?`, pid,
+		WHERE post_id_fkey = ?`, postID,
 	).Scan(
 		&comments,
 	); err != nil {

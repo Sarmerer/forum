@@ -55,27 +55,27 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 			(
 				SELECT TOTAL(reaction)
 				FROM posts_reactions
-				WHERE post_id_fkey = p.id
+				WHERE post_id_fkey = p._id
 			) AS rating,
 			IFNULL (
 				(
 					SELECT reaction
 					FROM posts_reactions
 					WHERE user_id_fkey = $1
-						AND post_id_fkey = p.id
+						AND post_id_fkey = p._id
 				),
 				0
 			) AS your_reaction,
 			(
-				SELECT count(id)
+				SELECT count(_id)
 				FROM comments
-				WHERE post_id_fkey = p.id
+				WHERE post_id_fkey = p._id
 			) AS comments_count,
 			IFNULL (
 				(
 					SELECT COUNT(DISTINCT author_id_fkey)
 					FROM comments
-					WHERE post_id_fkey = p.id
+					WHERE post_id_fkey = p._id
 				),
 				0
 			) AS total_participants
@@ -91,7 +91,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		var err error
 		var p models.Post
 		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created,
-			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
+			&p.Edited, &p.EditReason, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
 		}
@@ -104,7 +104,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 		return nil, status, err
 	}
 	if err = repository.DB.QueryRow(
-		`SELECT COUNT(id) FROM posts`,
+		`SELECT COUNT(_id) FROM posts`,
 	).Scan(&result.TotalRows); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -129,7 +129,7 @@ func (PostRepoCRUD) FindRecent(amount int) ([]models.Post, int, error) {
 	}
 	for posts.Next() {
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated)
+		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Edited, &p.EditReason)
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
 		}
@@ -148,48 +148,48 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 		status int
 		err    error
 	)
-	// ? Query looks too bad
 	if err = repository.DB.QueryRow(
-		`SELECT id,
+		`SELECT _id,
 		author_id_fkey,
 		title,
 		content,
 		created,
-		updated,
+		edited,
+		edit_reason,
 		(
 			SELECT TOTAL(reaction)
 			FROM posts_reactions
-			WHERE post_id_fkey = p.id
+			WHERE post_id_fkey = p._id
 		) AS rating,
 		IFNULL (
 			(
 				SELECT reaction
 				FROM posts_reactions
 				WHERE user_id_fkey = $1
-					AND post_id_fkey = p.id
+					AND post_id_fkey = p._id
 			),
 			0
 		) AS your_reaction,
 		(
-			SELECT COUNT(id)
+			SELECT COUNT(_id)
 			FROM comments
-			WHERE post_id_fkey = p.id
+			WHERE post_id_fkey = p._id
 		) AS comments_count,
 		IFNULL (
 			(
 				SELECT COUNT(DISTINCT author_id_fkey)
 				FROM comments
-				WHERE post_id_fkey = p.id
+				WHERE post_id_fkey = p._id
 			),
 			0
 		) AS total_participants
 		FROM posts p
-		WHERE p.id = $2`,
+		WHERE p._id = $2`,
 		userID, postID,
 	).Scan(
 		&p.ID, &p.AuthorID, &p.Title, &p.Content,
-		&p.Created, &p.Updated, &p.Rating, &p.YourReaction,
-		&p.CommentsCount, &p.ParticipantsCount,
+		&p.Created, &p.Edited, &p.EditReason, &p.Rating,
+		&p.YourReaction, &p.CommentsCount, &p.ParticipantsCount,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -220,27 +220,27 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 		(
 			SELECT TOTAL(reaction)
 			FROM posts_reactions
-			WHERE post_id_fkey = p.id
+			WHERE post_id_fkey = p._id
 		) AS rating,
 		IFNULL (
 			(
 				SELECT reaction
 				FROM posts_reactions
 				WHERE user_id_fkey = $1
-					AND post_id_fkey = p.id
+					AND post_id_fkey = p._id
 			),
 			0
 		) AS your_reaction,
 		(
-			SELECT count(id)
+			SELECT count(_id)
 			FROM comments
-			WHERE post_id_fkey = p.id
+			WHERE post_id_fkey = p._id
 		) AS comments_count,
 		IFNULL (
 			(
 				SELECT COUNT(DISTINCT author_id_fkey)
 				FROM comments
-				WHERE post_id_fkey = p.id
+				WHERE post_id_fkey = p._id
 			),
 			0
 		) AS total_participants
@@ -255,7 +255,10 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
+			&p.Created, &p.Edited, &p.EditReason, &p.Rating,
+			&p.YourReaction, &p.CommentsCount, &p.ParticipantsCount,
+		)
 		if status, err = NewPostRepoCRUD().fetchCategories(&p); err != nil {
 			return nil, status, err
 		}
@@ -276,44 +279,46 @@ func (PostRepoCRUD) FindByCategories(categories []string, requestorID int64) ([]
 		(
 			SELECT TOTAL(reaction)
 			FROM posts_reactions
-			WHERE post_id_fkey = p.id
+			WHERE post_id_fkey = p._id
 		) AS rating,
 		IFNULL (
 			(
 				SELECT reaction
 				FROM posts_reactions
 				WHERE user_id_fkey = $1
-					AND post_id_fkey = p.id
+					AND post_id_fkey = p._id
 			),
 			0
 		) AS your_reaction,
 		(
-			SELECT count(id)
+			SELECT count(_id)
 			FROM comments
-			WHERE post_id_fkey = p.id
+			WHERE post_id_fkey = p._id
 		) AS comments_count,
 		IFNULL (
 			(
 				SELECT COUNT(DISTINCT author_id_fkey)
 				FROM comments
-				WHERE post_id_fkey = p.id
+				WHERE post_id_fkey = p._id
 			),
 			0
 		) AS total_participants
 		FROM posts_categories_bridge AS pcb
-		INNER JOIN posts as p ON p.id = pcb.post_id_fkey
-		INNER JOIN categories AS c ON c.id = pcb.category_id_fkey
+		INNER JOIN posts as p ON p._id = pcb.post_id_fkey
+		INNER JOIN categories AS c ON c._id = pcb.category_id_fkey
 		WHERE c.name IN (%s)
-		GROUP BY p.id
-		HAVING COUNT(DISTINCT c.id) = $2`, fmt.Sprintf("\"%s\"", strings.Join(categories, "\", \""))),
+		GROUP BY p._id
+		HAVING COUNT(DISTINCT c._id) = $2`, fmt.Sprintf("\"%s\"", strings.Join(categories, "\", \""))),
 		requestorID, len(categories),
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	for rows.Next() {
 		var p models.Post
-		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created,
-			&p.Updated, &p.Rating, &p.YourReaction, &p.CommentsCount, &p.ParticipantsCount)
+		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
+			&p.Created, &p.Edited, &p.EditReason, &p.Rating,
+			&p.YourReaction, &p.CommentsCount, &p.ParticipantsCount,
+		)
 
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
@@ -342,10 +347,11 @@ func (PostRepoCRUD) Create(post *models.Post, categories []string) (*models.Post
 			title,
 			content,
 			created,
-			updated
+			edited,
+			edit_reason
 		)
-	VALUES (?, ?, ?, ?, ?)`,
-		post.AuthorID, post.Title, post.Content, now, now,
+	VALUES (?, ?, ?, ?,? ,?)`,
+		post.AuthorID, post.Title, post.Content, now, now, post.EditReason,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -387,9 +393,11 @@ func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.P
 			title = ?,
 			content = ?,
 			created = ?,
-			updated = ?
-		WHERE id = ?`,
-		post.AuthorID, post.Title, post.Content, post.Created, utils.CurrentUnixTime(), post.ID,
+			edited = ?,
+			edit_reason = ?
+		WHERE _id = ?`,
+		post.AuthorID, post.Title, post.Content, post.Created,
+		utils.CurrentUnixTime(), post.EditReason, post.ID,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -408,7 +416,7 @@ func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.P
 }
 
 //Delete deletes post from the database
-func (PostRepoCRUD) Delete(pid int64) (int, error) {
+func (PostRepoCRUD) Delete(postID int64) (int, error) {
 	var (
 		result       sql.Result
 		rowsAffected int64
@@ -416,7 +424,7 @@ func (PostRepoCRUD) Delete(pid int64) (int, error) {
 	)
 	if result, err = repository.DB.Exec(
 		`DELETE FROM posts
-		WHERE id = ?`, pid,
+		WHERE _id = ?`, postID,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return http.StatusInternalServerError, err

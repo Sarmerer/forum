@@ -55,10 +55,10 @@ func (CommentRepoCRUD) Rate(commentID, userID int64, reaction int) error {
 	default:
 		if result, err = repository.DB.Exec(
 			`INSERT
-			OR REPLACE INTO comments_reactions(id, comment_id_fkey, user_id_fkey, reaction)
+			OR REPLACE INTO comments_reactions(_id, comment_id_fkey, user_id_fkey, reaction)
 		VALUES (
 				(
-					SELECT id
+					SELECT _id
 					FROM comments_reactions
 					WHERE comment_id_fkey = $1
 						AND user_id_fkey = $2

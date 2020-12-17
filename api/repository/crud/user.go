@@ -14,12 +14,12 @@ import (
 type UserRepoCRUD struct{}
 
 var DeletedUser = &models.User{
-	ID:          -1,
-	Login:       "deleted",
-	Email:       "deleted",
-	Avatar:      "https://avatars.dicebear.com/api/male/deleted",
-	DisplayName: "deleted",
-	Role:        0,
+	ID:       -1,
+	Username: "deleted",
+	Email:    "deleted",
+	Avatar:   "https://avatars.dicebear.com/api/male/deleted",
+	Alias:    "deleted",
+	Role:     0,
 }
 
 //NewUserRepoCRUD creates an instance of UserModel
@@ -32,9 +32,9 @@ func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT COUNT(id) as posts_count,
+		`SELECT COUNT(_id) as posts_count,
 		(
-			SELECT COUNT(id)
+			SELECT COUNT(_id)
 			FROM comments
 			WHERE author_id_fkey = $1
 		) AS comments_count,
@@ -43,7 +43,7 @@ func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 				SELECT TOTAL(reaction)
 				FROM posts_reactions
 				WHERE post_id_fkey IN (
-						SELECT id
+						SELECT _id
 						FROM posts
 						WHERE author_id_fkey = $1
 					)
@@ -51,7 +51,7 @@ func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 				SELECT TOTAL(reaction)
 				FROM comments_reactions
 				WHERE comment_id_fkey IN (
-						SELECT id
+						SELECT _id
 						FROM comments
 						WHERE author_id_fkey = $1
 					)
@@ -83,7 +83,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	}
 	for rows.Next() {
 		var u models.User
-		rows.Scan(&u.ID, &u.Login, &u.Password, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.SessionID, &u.Role)
+		rows.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &u.Avatar, &u.Alias, &u.Created, &u.LastActive, &u.SessionID, &u.Role)
 		users = append(users, u)
 	}
 	return users, nil
@@ -96,18 +96,18 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT id,
-		 		login,
+		`SELECT _id,
+		 		username,
 				email,
 				avatar,
-				display_name,
+				alias,
 				created,
-				last_online,
+				last_active,
 				role
 		FROM users
-		WHERE id = ?`, userID,
+		WHERE _id = ?`, userID,
 	).Scan(
-		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.Role,
+		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created, &u.LastActive, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -131,7 +131,7 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 		status       int
 		err          error
 	)
-	name := repository.DB.QueryRow("SELECT login FROM users WHERE login = ?", user.Login).Scan(&user.Login)
+	name := repository.DB.QueryRow("SELECT username FROM users WHERE username = ?", user.Username).Scan(&user.Username)
 	email := repository.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&user.Email)
 	if name == nil && email != nil {
 		return nil, http.StatusConflict, errors.New("name is not unique")
@@ -143,18 +143,18 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 
 	if result, err = repository.DB.Exec(
 		`INSERT INTO users (
-			login,
+			username,
 			password,
 			email,
 			avatar,
-			display_name,
+			alias,
 			created,
-			last_online,
+			last_active,
 			session_id,
 			role
 		)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		user.Login, user.Password, user.Email, user.Avatar, user.DisplayName, now, now, user.SessionID, user.Role,
+		user.Username, user.Password, user.Email, user.Avatar, user.Alias, now, now, user.SessionID, user.Role,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -183,9 +183,9 @@ func (UserRepoCRUD) Update(user *models.User) (int, error) {
 	)
 	if result, err = repository.DB.Exec(
 		`UPDATE users
-		SET display_name = ?
-		WHERE id = ?`,
-		user.DisplayName, user.ID,
+		SET alias = ?
+		WHERE _id = ?`,
+		user.Alias, user.ID,
 	); err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -207,8 +207,8 @@ func (UserRepoCRUD) UpdateLastActivity(userID int64) error {
 	)
 	if result, err = repository.DB.Exec(
 		`UPDATE users
-		SET last_online = ?
-		WHERE id = ?`,
+		SET last_active = ?
+		WHERE _id = ?`,
 		utils.CurrentUnixTime(), userID,
 	); err != nil {
 		return err
@@ -232,7 +232,7 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 	)
 	if result, err = repository.DB.Exec(
 		`DELETE FROM users
-		WHERE id = ?`, userID,
+		WHERE _id = ?`, userID,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return http.StatusInternalServerError, err
@@ -250,25 +250,25 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 }
 
 //FindByNameOrEmail finds a user by name or email in the database
-func (UserRepoCRUD) FindByLoginOrEmail(login string) (*models.User, int, error) {
+func (UserRepoCRUD) FindByLoginOrEmail(username string) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		`SELECT id,
-				login,
+		`SELECT _id,
+				username,
 	   			email,
 	   			avatar,
-				   display_name,
-				   created,
-	   			last_online,
+				alias,
+				created,
+	   			last_active,
 	   			role
 		FROM users
-		WHERE login = $1
-			OR email = $1`, login,
+		WHERE username = $1
+			OR email = $1`, username,
 	).Scan(
-		&u.ID, &u.Login, &u.Email, &u.Avatar, &u.DisplayName, &u.Created, &u.LastActive, &u.Role,
+		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created, &u.LastActive, &u.Role,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
