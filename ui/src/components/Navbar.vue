@@ -26,7 +26,7 @@
             size="25px"
             variant="dark"
             v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
-            :title="user.display_name"
+            :title="user.alias"
             :src="user.avatar"
           ></b-avatar>
         </router-link>

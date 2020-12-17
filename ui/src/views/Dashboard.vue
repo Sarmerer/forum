@@ -37,8 +37,8 @@ export default {
       fields: [
         { key: "id", label: "ID", sortable: true },
         { key: "avatar", label: "Avatar" },
-        { key: "login", label: "Login", sortable: true },
-        { key: "display_name", label: "Name", sortable: true },
+        { key: "username", label: "username", sortable: true },
+        { key: "alias", label: "Name", sortable: true },
         { key: "email", label: "Email", sortable: true },
         { key: "role", label: "Role", sortable: true },
         { key: "created", label: "Created", sortable: true },
@@ -59,8 +59,8 @@ export default {
           this.users[0] = {
             id: u.id,
             avatar: u.avatar,
-            login: u.login,
-            display_name: u.display_name,
+            username: u.username,
+            alias: u.alias,
             email: u.email,
             role: u.role,
             created: u.created,

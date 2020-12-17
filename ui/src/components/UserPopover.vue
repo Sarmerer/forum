@@ -34,7 +34,7 @@
         <small> Comments: </small>{{ userData.comments }}
       </span>
     </b-popover>
-    {{ userData.display_name }}
+    {{ userData.alias }}
   </span>
 </template>
 <script>
