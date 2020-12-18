@@ -18,26 +18,26 @@
                 animation="wave"
                 width="50%"
               ></b-skeleton>
-              <b-skeleton
-                variant="dark"
-                animation="wave"
-                width="45%"
-              ></b-skeleton></b-col
-          ></b-row>
+              <b-skeleton variant="dark" animation="wave" width="45%">
+              </b-skeleton>
+            </b-col>
+          </b-row>
           <b-skeleton variant="dark" animation="wave" width="100%"></b-skeleton>
           <b-skeleton variant="dark" animation="wave" width="100%"></b-skeleton>
         </div>
       </div>
       <div class="main-col">
         <div>
-          <b-skeleton
-            variant="dark"
-            class="mt-2 ml-2"
-            type="button"
-            :width="isMobile() ? '200px' : '300px'"
-            height="45px"
-            animation="none"
-          ></b-skeleton>
+          <div>
+            <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+              <b-skeleton
+                variant="dark"
+                type="button"
+                animation="wave"
+                width="100%"
+              ></b-skeleton>
+            </div>
+          </div>
           <div v-for="index in 5" v-bind:key="index">
             <div :class="`${isMobile() ? 'card-m' : 'card'}`">
               <b-skeleton
@@ -58,9 +58,6 @@
             </div>
           </div>
         </div>
-        <!-- <div v-else>
-          <b-skeleton-img></b-skeleton-img>
-        </div> -->
       </div>
       <div class="info-col" v-if="!isMobile()">
         <div class="card">

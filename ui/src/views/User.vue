@@ -11,89 +11,96 @@
             <UserCard :userData="user" />
           </div>
           <div class="main-col">
-            <div class="user-info">
-              <b-tabs card v-if="user.posts || user.comments">
-                <b-tab
-                  v-if="user.posts > 0"
-                  title="Posts"
-                  :active="user.posts > 0"
-                  @click="getPosts()"
+            <div class="user-info" v-if="user.posts || user.comments">
+              <div :class="isMobile() ? 'card-m' : 'card'">
+                <b-row>
+                  <b-col>
+                    <b-button
+                      v-for="tab in tabs"
+                      :key="tab.title"
+                      :disabled="!user[tab.prop]"
+                      @click="tab.callback(), (activeTab = tab.prop)"
+                      :size="isMobile() ? 'sm' : 'md'"
+                      :variant="
+                        `outline-${activeTab === tab.prop ? 'info' : 'light'}`
+                      "
+                      class="mr-2"
+                    >
+                      {{ tab.title }}
+                    </b-button>
+                  </b-col>
+                </b-row>
+              </div>
+              <div v-if="activeTab === 'posts'">
+                <router-link
+                  :to="'/post/' + post.id"
+                  v-for="post in posts"
+                  :key="post.id"
+                  :class="
+                    `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                  "
+                  tag="div"
                 >
-                  <router-link
-                    :to="'/post/' + post.id"
-                    v-for="post in posts"
-                    :key="post.id"
-                    :class="
-                      `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
-                    "
-                    tag="div"
-                  >
-                    <h5>
-                      <strong>{{ post.title }}</strong>
-                    </h5>
-                    <pre>{{ post.content }}</pre>
-                    <small>
-                      <span v-b-tooltip.hover title="Rating">
-                        <b-icon
-                          :icon="reactionIcon(post.your_reaction)"
-                          :color="reactionColor(post.your_reaction)"
-                        >
-                        </b-icon
-                        >{{ post.rating }}
-                      </span>
-                      <span v-b-tooltip.hover title="Comments">
-                        <b-icon-chat></b-icon-chat> {{ post.comments_count }}
-                      </span>
-                      <span v-b-tooltip.hover title="Participants">
-                        <b-icon-people></b-icon-people>
-                        {{ post.participants_count }}
-                      </span>
-                      <time-ago :datetime="post.created" tooltip="right">
-                      </time-ago>
-                    </small>
-                  </router-link>
-                </b-tab>
-                <b-tab
-                  v-if="user.comments > 0"
-                  title="Comments"
-                  :active="!user.posts"
-                  @click="getComments()"
+                  <h5>
+                    <strong>{{ post.title }}</strong>
+                  </h5>
+                  <pre>{{ post.content }}</pre>
+                  <small>
+                    <span v-b-tooltip.hover title="Rating">
+                      <b-icon
+                        :icon="reactionIcon(post.your_reaction)"
+                        :color="reactionColor(post.your_reaction)"
+                      >
+                      </b-icon
+                      >{{ post.rating }}
+                    </span>
+                    <span v-b-tooltip.hover title="Comments">
+                      <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+                    </span>
+                    <span v-b-tooltip.hover title="Participants">
+                      <b-icon-people></b-icon-people>
+                      {{ post.participants_count }}
+                    </span>
+                    <time-ago :datetime="post.created" tooltip="right">
+                    </time-ago>
+                  </small>
+                </router-link>
+              </div>
+              <div v-if="activeTab === 'comments'">
+                <router-link
+                  :to="'/post/' + comment.post"
+                  :class="
+                    `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
+                  "
+                  v-for="comment in comments"
+                  :key="comment.id"
+                  tag="div"
                 >
-                  <router-link
-                    :to="'/post/' + comment.post"
-                    :class="
-                      `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
-                    "
-                    v-for="comment in comments"
-                    :key="comment.id"
-                    tag="div"
-                  >
-                    <h5>
-                      {{ comment.content }}
-                    </h5>
-                    <small>
-                      <span v-b-tooltip.hover title="Rating">
-                        <b-icon
-                          :icon="reactionIcon(comment.your_reaction)"
-                          :color="reactionColor(comment.your_reaction)"
-                        >
-                        </b-icon
-                        >{{ comment.rating }}
-                      </span>
-                      <time-ago :datetime="comment.created" tooltip="right">
-                      </time-ago>
-                    </small>
-                  </router-link>
-                </b-tab>
-              </b-tabs>
-              <b-container
-                v-if="!posts.length && !comments.length && madeRequest"
-                align="center"
-              >
-                <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
-                <p>It's so empty here...</p>
-              </b-container>
+                  <h5>
+                    {{ comment.content }}
+                  </h5>
+                  <small>
+                    <span v-b-tooltip.hover title="Rating">
+                      <b-icon
+                        :icon="reactionIcon(comment.your_reaction)"
+                        :color="reactionColor(comment.your_reaction)"
+                      >
+                      </b-icon
+                      >{{ comment.rating }}
+                    </span>
+                    <time-ago :datetime="comment.created" tooltip="right">
+                    </time-ago>
+                  </small>
+                </router-link>
+              </div>
             </div>
+            <b-container
+              v-if="!posts.length && !comments.length && madeRequest"
+              align="center"
+            >
+              <b-img-lazy fluid src="@/assets/img/empty.png"> </b-img-lazy>
+              <p>It's so empty here...</p>
+            </b-container>
           </div>
           <div class="info-col" v-if="user && !isMobile()">
             <UserCard :userData="user" />
@@ -132,15 +139,20 @@ export default {
       comments: [],
       activeTab: "",
       madeRequest: false,
+      tabs: [
+        { title: "Posts", prop: "posts", callback: this.getPosts },
+        { title: "Comments", prop: "comments", callback: this.getComments },
+        { title: "Saved", prop: "saved", callback: this.getComments },
+      ],
     };
   },
   created() {
     let p = this.getUser();
     let p1 = p.then(() => {
       this.user.posts > 0
-        ? this.getPosts()
+        ? (this.getPosts(), (this.activeTab = "posts"))
         : this.user.comments > 0
-        ? this.getComments()
+        ? (this.getComments(), (this.activeTab = "comments"))
         : (this.madeRequest = true);
     });
     Promise.all([p, p1]).then(() =>
@@ -178,7 +190,6 @@ export default {
     },
     async getPosts() {
       if (this.activeTab === "posts") return;
-      this.activeTab = "posts";
       return await api
         .post("post/find", {
           by: "author",
@@ -194,7 +205,6 @@ export default {
     },
     async getComments() {
       if (this.activeTab === "comments") return;
-      this.activeTab = "comments";
       return await api
         .post("comments/find", {
           by: "author",
@@ -211,38 +221,16 @@ export default {
   },
 };
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .user-info .user-card {
   cursor: pointer;
 }
 
 .user-info .user-card:hover {
-  opacity: 0.8;
+  border: white;
 }
 
 .user-card h3 {
   text-align: center;
-}
-
-.card-body {
-  padding: 0;
-}
-
-.nav-tabs .nav-item.show .nav-link,
-.nav-tabs .nav-link.active {
-  background-color: #278ea5;
-  border-color: #278ea5;
-  color: white;
-}
-
-.nav-link {
-  color: #278ea5;
-}
-
-.nav-tabs .nav-item.show .nav-link,
-.nav-tabs .nav-link:not(.active):hover {
-  color: #278ea5;
-  border-color: #278ea5;
-  opacity: 0.8;
 }
 </style>
