@@ -28,6 +28,7 @@ type InputPostCreateUpdate struct {
 type InputCommentCreateUpdate struct {
 	ID      int64  `json:"id"` // post ID, to which comment is added
 	Content string `json:"content"`
+	Parent  int64  `json:"parent"`
 }
 
 type InputAllPosts struct {

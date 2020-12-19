@@ -5,3 +5,14 @@ Content-Type: application/json
     "by":"user_id",
     "id":1
 }
+
+### Add comment
+
+POST {{baseURL}}/api/comment/add
+Content-Type: application/json
+
+{
+    "id":2,
+    "content":"comment with parent 10 #1",
+    "parent":10
+}

@@ -91,6 +91,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		Content:  input.Content,
 		Created:  utils.CurrentUnixTime(),
 		PostID:   input.ID,
+		ParentID: input.Parent,
 		AuthorID: userCtx.ID,
 	}
 	if newComment, err = repo.Create(comment); err != nil {

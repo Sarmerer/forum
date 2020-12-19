@@ -22,6 +22,7 @@ func NewCommentRepoCRUD() CommentRepoCRUD {
 
 func fetchAuthor(c *models.Comment) (err error) {
 	var status int
+
 	if c.Author, status, err = NewUserRepoCRUD().FindByID(c.AuthorID); err != nil {
 		if status == http.StatusInternalServerError {
 			return err
@@ -36,6 +37,7 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 	var (
 		rows     *sql.Rows
 		comments []models.Comment
+		cache    map[int64]*models.Comment = make(map[int64]*models.Comment)
 		err      error
 	)
 	if rows, err = repository.DB.Query(
@@ -56,7 +58,7 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 		) AS yor_reaction
 		FROM comments c
 		WHERE post_id_fkey = $2
-		ORDER BY created DESC`,
+		ORDER BY created ASC`,
 		userID, postID,
 	); err != nil {
 		if err != sql.ErrNoRows {
@@ -70,7 +72,13 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 		if err = fetchAuthor(&c); err != nil {
 			return nil, err
 		}
-		comments = append(comments, c)
+		if c.ParentID != 0 {
+			cache[c.ParentID].Children = append(cache[c.ParentID].Children, &c)
+			cache[c.ID] = &c
+		} else {
+			comments = append(comments, c)
+			cache[c.ID] = &comments[len(comments)-1]
+		}
 	}
 	return comments, nil
 }
