@@ -68,7 +68,7 @@
               </div>
               <div v-if="activeTab === 'comments'">
                 <router-link
-                  :to="'/post/' + comment.post"
+                  :to="'/post/' + comment.post_id"
                   :class="
                     `user-card text-break ${isMobile() ? 'card-m' : 'card'}`
                   "
