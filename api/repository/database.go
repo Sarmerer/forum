@@ -78,7 +78,8 @@ func CheckDBIntegrity() (err error) {
 			parent_id_fkey INTEGER REFERENCES comments(_id),
 			content TEXT,
 			created INTEGER,
-			edited INTEGER
+			edited INTEGER,
+			deleted INTEGER
 		)`); err != nil {
 		return err
 	}
@@ -99,6 +100,24 @@ func CheckDBIntegrity() (err error) {
 			comment_id_fkey INTEGER REFERENCES comments(_id),
 			user_id_fkey INTEGER REFERENCES users(_id),
 			reaction	 INTEGER
+		)`); err != nil {
+		return err
+	}
+
+	if _, err = DB.Exec(
+		`CREATE TABLE IF NOT EXISTS user_saved_comments (
+			_id			 INTEGER PRIMARY KEY,
+			comment_id_fkey INTEGER REFERENCES comments(_id),
+			user_id_fkey INTEGER REFERENCES users(_id)
+		)`); err != nil {
+		return err
+	}
+
+	if _, err = DB.Exec(
+		`CREATE TABLE IF NOT EXISTS user_saved_posts (
+			_id			 INTEGER PRIMARY KEY,
+			post_id_fkey INTEGER REFERENCES comments(_id),
+			user_id_fkey INTEGER REFERENCES users(_id)
 		)`); err != nil {
 		return err
 	}

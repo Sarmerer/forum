@@ -68,7 +68,7 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 	}
 	for rows.Next() {
 		var c models.Comment
-		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Rating, &c.YourReaction)
+		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
 		if err = fetchAuthor(&c); err != nil {
 			return nil, err
 		}
@@ -107,6 +107,7 @@ func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment
 		) AS yor_reaction
 		FROM comments c
 		WHERE author_id_fkey = $2
+		AND deleted = 0
 		ORDER BY created DESC`,
 		requestorID, userID,
 	); err != nil {
@@ -117,7 +118,7 @@ func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment
 	}
 	for rows.Next() {
 		var c models.Comment
-		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Rating, &c.YourReaction)
+		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
 		if err = fetchAuthor(&c); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
@@ -137,7 +138,7 @@ func (CommentRepoCRUD) FindByID(commentID int64) (*models.Comment, int, error) {
 		FROM comments
 		WHERE _id = ?`, commentID,
 	).Scan(
-		&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited,
+		&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -166,10 +167,11 @@ func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) 
 			parent_id_fkey,
 			content,
 			created,
-			edited
+			edited,
+			deleted
 		)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, now, now,
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, now, now, false,
 	); err != nil {
 		return nil, err
 	}
@@ -206,9 +208,10 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 			parent_id_fkey = ?,
 			content = ?,
 			created = ?,
-			edited = ?
+			edited = ?,
+			deleted = ?
 		WHERE _id = ?`,
-		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, comment.Created, utils.CurrentUnixTime(), comment.ID,
+		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, comment.Created, utils.CurrentUnixTime(), false, comment.ID,
 	); err != nil {
 		return nil, err
 	}
@@ -230,14 +233,44 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 //Delete deletes reply from the database
 func (CommentRepoCRUD) Delete(commentID int64) error {
 	var (
-		ctx context.Context
-		tx  *sql.Tx
-		err error
+		ctx  context.Context
+		tx   *sql.Tx
+		temp int64
+		err  error
 	)
 	ctx = context.Background()
 	tx, err = repository.DB.BeginTx(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if err = repository.DB.QueryRow("SELECT _id FROM comments WHERE parent_id_fkey = ?",
+		commentID,
+	).Scan(&temp); err != nil {
+		if err != sql.ErrNoRows {
+			return err
+		}
+	}
+	if temp != 0 {
+		if _, err = tx.ExecContext(ctx,
+			`UPDATE comments
+			SET deleted = ?
+			WHERE _id = ?`,
+			true, commentID,
+		); err != nil {
+			return err
+		}
+		if _, err = tx.ExecContext(ctx,
+			`DELETE FROM comments_reactions
+			WHERE comment_id_fkey = ?`, commentID,
+		); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+		return nil
 	}
 	_, err = tx.ExecContext(ctx,
 		`DELETE FROM comments_reactions
@@ -253,8 +286,7 @@ func (CommentRepoCRUD) Delete(commentID int64) error {
 		tx.Rollback()
 		return err
 	}
-	err = tx.Commit()
-	if err != nil {
+	if err = tx.Commit(); err != nil {
 		return err
 	}
 	return nil
@@ -300,7 +332,8 @@ func (CommentRepoCRUD) Count(postID int64) (comments string, err error) {
 	if err = repository.DB.QueryRow(
 		`SELECT count(_id)
 		FROM comments
-		WHERE post_id_fkey = ?`, postID,
+		WHERE post_id_fkey = ?
+		AND deleted = 0`, postID,
 	).Scan(
 		&comments,
 	); err != nil {

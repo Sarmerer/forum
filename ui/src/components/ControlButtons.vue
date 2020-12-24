@@ -1,21 +1,21 @@
 <template>
-  <div>
+  <div class="mr-2">
     <transition name="fade">
       <b-button-group v-if="hasPermission && !confirm && !compact" size="sm">
         <b-button
-          size="sm"
           class="controls-button"
           variant="light"
-          title="Edit"
+          v-b-tooltip.hover.bottom="'Edit'"
           :disabled="disabled"
           @click="$emit('edit-event')"
         >
           <b-icon-pencil-square color="white"></b-icon-pencil-square>
         </b-button>
+
         <b-button
-          size="sm"
           variant="outline-danger"
           class="controls-button"
+          v-b-tooltip.hover.bottom="'Delete'"
           title="Delete"
           @click="confirm = true"
           :disabled="disabled"
@@ -25,21 +25,19 @@
       </b-button-group>
       <b-button-group v-if="hasPermission && confirm" size="sm">
         <b-button
-          size="sm"
           variant="outline-success"
           class="confirm"
           @click="$emit('delete-event'), (confirm = false)"
-          title="Confirm"
+          v-b-tooltip.hover.bottom="'Confirm'"
           :disabled="disabled"
         >
           <b-icon-check></b-icon-check>
         </b-button>
         <b-button
-          size="sm"
           variant="outline-danger"
           @click="confirm = false"
           class="confirm"
-          title="Dismiss"
+          v-b-tooltip.hover.bottom="'Cancel'"
           :disabled="disabled"
         >
           <b-icon-x></b-icon-x>
@@ -48,7 +46,6 @@
     </transition>
     <b-icon-three-dots
       v-if="hasPermission && compact"
-      class="mr-3"
       @click="$bvModal.show(modalID)"
     >
     </b-icon-three-dots>

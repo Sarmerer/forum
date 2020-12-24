@@ -70,6 +70,7 @@ func (PostRepoCRUD) FindAll(userID int64, input models.InputAllPosts) (*models.P
 				SELECT count(_id)
 				FROM comments
 				WHERE post_id_fkey = p._id
+				AND deleted = 0
 			) AS comments_count,
 			IFNULL (
 				(
@@ -174,6 +175,7 @@ func (PostRepoCRUD) FindByID(postID int64, userID int64) (*models.Post, int, err
 			SELECT COUNT(_id)
 			FROM comments
 			WHERE post_id_fkey = p._id
+			AND deleted = 0
 		) AS comments_count,
 		IFNULL (
 			(
@@ -241,6 +243,7 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 				SELECT COUNT(DISTINCT author_id_fkey)
 				FROM comments
 				WHERE post_id_fkey = p._id
+				AND deleted = 0
 			),
 			0
 		) AS total_participants
@@ -294,6 +297,7 @@ func (PostRepoCRUD) FindByCategories(categories []string, requestorID int64) ([]
 			SELECT count(_id)
 			FROM comments
 			WHERE post_id_fkey = p._id
+			AND deleted = 0
 		) AS comments_count,
 		IFNULL (
 			(

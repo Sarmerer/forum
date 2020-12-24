@@ -32,10 +32,9 @@
         <small> Posts:</small> {{ userData.posts }}<br />
         <b-icon-chat></b-icon-chat>
         <small> Comments: </small>{{ userData.comments }}
-      </span>
-    </b-popover>
-    {{ userData.alias }}
-  </span>
+      </span> </b-popover
+    >{{ userData.alias }}</span
+  >
 </template>
 <script>
 import TimeAgo from "@/components/TimeAgo";

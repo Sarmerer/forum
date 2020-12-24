@@ -108,10 +108,10 @@
                 <b-row>
                   <b-col v-if="!isMobile()" cols="start">
                     <Rating
-                      v-on:rate="rate(...$event)"
                       :entity="post"
                       class="ml-n5"
                       size="lg"
+                      endpoint="post"
                     />
                   </b-col>
                   <b-col>
@@ -175,8 +175,8 @@
                       <Rating
                         class="mr-2"
                         size="sm"
-                        v-on:rate="rate(...$event)"
                         :entity="post"
+                        endpoint="post"
                       />
                     </small>
                   </b-col>

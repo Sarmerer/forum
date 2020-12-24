@@ -37,6 +37,7 @@ func (UserRepoCRUD) fetchUserStats(user *models.User) error {
 			SELECT COUNT(_id)
 			FROM comments
 			WHERE author_id_fkey = $1
+			AND deleted = 0
 		) AS comments_count,
 		(
 			(

@@ -62,6 +62,7 @@ type Comment struct {
 	Rating       int    `json:"rating"`
 	YourReaction int    `json:"your_reaction"`
 	Edited       int64  `json:"edited"`
+	Deleted      bool   `json:"deleted,omitempty"`
 
 	Author *User `json:"author"`
 

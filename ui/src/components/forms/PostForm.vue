@@ -2,6 +2,7 @@
   <span>
     <b-form-group>
       <b-form-textarea
+        aria-describedby="title-help-block"
         class="mt-1"
         v-model="form.title"
         autocomplete="off"
@@ -12,15 +13,15 @@
         required
         placeholder="* Catchy title..."
       ></b-form-textarea>
-      <small
-        v-if="form.title"
-        :style="`color: ${properTitleLength ? 'green' : 'red'}`"
-        >{{ titleLength }}/{{ maxTitleLength }}
-      </small>
+      <b-form-text id="title-help-block" v-if="form.title">
+        <span :style="`color: ${properTitleLength ? 'white' : 'red'}`"
+          >{{ titleLength }}/{{ maxTitleLength }}
+        </span>
+      </b-form-text>
     </b-form-group>
     <b-form-group>
       <b-form-textarea
-        id="textarea-auto-height"
+        aria-describedby="content-help-block"
         v-model="form.content"
         placeholder="* Cool content..."
         reqired
@@ -28,21 +29,25 @@
         rows="4"
         max-rows="50"
       ></b-form-textarea>
-      <small
-        v-if="form.content"
-        :style="`color: ${properContentLength ? 'green' : 'red'}`"
-        >{{ contentLength }}/{{ maxContentLength }}
-      </small>
+      <b-form-text id="content-help-block" v-if="form.content">
+        <span :style="`color: ${properContentLength ? 'white' : 'red'}`"
+          >{{ contentLength }}/{{ maxContentLength }}
+        </span>
+      </b-form-text>
     </b-form-group>
     <b-form-tags
+      aria-describedby="tags-help-block"
       autocomplete="off"
       remove-on-delete
       v-model="form.categories"
       tag-variant="dark"
-      :placeholder="`Lowercase, ${minTagLength}-${maxTagLength} symbols`"
+      placeholder="Tags..."
       :tag-validator="tagValidator"
       @tag-state="onTagState"
     ></b-form-tags>
+    <b-form-text id="tags-help-block">
+      Lowercase, {{ minTagLength }}-{{ maxTagLength }} symbols
+    </b-form-text>
   </span>
 </template>
 <script>
