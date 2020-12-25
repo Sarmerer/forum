@@ -59,7 +59,7 @@ type CommentRepo interface {
 	Update(comment *models.Comment) (*models.Comment, error)
 	Delete(commentID int64) error
 	DeleteGroup(postID int64) error
-	Count(postID int64) (string, error)
+	CountForPost(post *models.Post) error
 
 	Rate(commentID, userID int64, reaction int) error
 	GetRating(commentID int64, userID int64) (rating, userReaction int, err error)

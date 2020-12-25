@@ -340,19 +340,21 @@ func (CommentRepoCRUD) DeleteGroup(postID int64) error {
 	return nil
 }
 
-func (CommentRepoCRUD) Count(postID int64) (comments string, err error) {
+func (CommentRepoCRUD) CountForPost(post *models.Post) error {
+	var err error
 	if err = repository.DB.QueryRow(
-		`SELECT count(_id)
+		`SELECT COUNT(_id) AS total_comments,
+		COUNT(DISTINCT author_id_fkey) AS total_participants
 		FROM comments
-		WHERE post_id_fkey = ?
-		AND deleted = 0`, postID,
+		WHERE post_id_fkey = $1
+		AND deleted = 0`, post.ID,
 	).Scan(
-		&comments,
+		&post.CommentsCount, &post.ParticipantsCount,
 	); err != nil {
 		if err != sql.ErrNoRows {
-			return "0", err
+			return err
 		}
-		return "0", nil
+		return nil
 	}
-	return comments, nil
+	return nil
 }

@@ -23,7 +23,7 @@ func (PostRepoCRUD) GetRating(postID int64, currentUser int64) (int, int, error)
 					AND post_id_fkey = $2
 			),
 			0
-		) AS yor_reaction
+		) AS your_reaction
 		FROM posts_reactions
 		WHERE post_id_fkey = $2`,
 		currentUser, postID,
