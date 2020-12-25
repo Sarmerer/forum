@@ -35,10 +35,11 @@ func fetchAuthor(c *models.Comment) (err error) {
 //FindAll returns all replies for the specified post
 func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, error) {
 	var (
-		rows     *sql.Rows
-		comments []models.Comment
-		cache    map[int64]*models.Comment = make(map[int64]*models.Comment)
-		err      error
+		rows      *sql.Rows
+		comments  []models.Comment
+		cache     map[int64]*models.Comment = make(map[int64]*models.Comment)
+		increment func(map[int64]*models.Comment, int64)
+		err       error
 	)
 	if rows, err = repository.DB.Query(
 		`SELECT *,
@@ -66,6 +67,12 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 		}
 		return nil, nil
 	}
+	increment = func(c map[int64]*models.Comment, parentID int64) {
+		c[parentID].ChildrenLen++
+		if c[parentID].ParentID != 0 {
+			increment(c, c[parentID].ParentID)
+		}
+	}
 	for rows.Next() {
 		var c models.Comment
 		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
@@ -75,6 +82,7 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 		if c.ParentID != 0 {
 			cache[c.ParentID].Children = append(cache[c.ParentID].Children, &c)
 			cache[c.ID] = &c
+			increment(cache, c.ParentID)
 		} else {
 			comments = append(comments, c)
 			cache[c.ID] = &comments[len(comments)-1]
@@ -254,9 +262,13 @@ func (CommentRepoCRUD) Delete(commentID int64) error {
 	if temp != 0 {
 		if _, err = tx.ExecContext(ctx,
 			`UPDATE comments
-			SET deleted = ?
+			SET deleted = ?,
+				author_id_fkey = ?,
+				content = ?,
+				created = ?,
+				edited = ?
 			WHERE _id = ?`,
-			true, commentID,
+			true, 0, "", 0, 0, commentID,
 		); err != nil {
 			return err
 		}

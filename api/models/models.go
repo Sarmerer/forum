@@ -66,7 +66,8 @@ type Comment struct {
 
 	Author *User `json:"author"`
 
-	Children []*Comment `json:"children"`
+	Children    []*Comment `json:"children"`
+	ChildrenLen int64      `json:"children_length"`
 }
 
 type Rating struct {

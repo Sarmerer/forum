@@ -211,15 +211,16 @@
       </div>
       <CommentGroup
         v-if="comment.children"
-        :class="comment.collapsed ? 'd-none' : 'd-block'"
+        v-show="!comment.collapsed"
         :editor="editor"
         :comments="comment.children"
       />
       <div v-if="comment.collapsed" @click="$set(comment, 'collapsed', false)">
         <small>
-          <b-icon-plus-circle></b-icon-plus-circle>
-          <span class="primary">
-            expand tree
+          <b-icon-plus-circle class="primary"></b-icon-plus-circle>
+          <span class="text-white-50">
+            {{ comment.children_length }} more
+            {{ comment.children_length % 10 === 1 ? "comment" : "comments" }}
           </span>
         </small>
       </div>
