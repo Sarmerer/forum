@@ -27,6 +27,11 @@
                       class="mr-2"
                     >
                       {{ tab.title }}
+                      <b-badge
+                        v-if="user[tab.prop]"
+                        :variant="activeTab === tab.prop ? 'info' : 'light'"
+                        >{{ user[tab.prop] }}</b-badge
+                      >
                     </b-button>
                   </b-col>
                 </b-row>
