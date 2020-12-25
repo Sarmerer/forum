@@ -162,7 +162,7 @@ html {
   opacity: 0.87;
   font-family: "Roboto Mono", monospace !important;
   font-family: "Roboto Mono", monospace !important;
-  white-space: pre-wrap;
+  white-space: pre-line;
   white-space: -moz-pre-wrap;
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
@@ -268,6 +268,12 @@ html {
   color: #278ea5;
 }
 
+a.primary:hover {
+  color: #278ea5;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .background-primary {
   background-color: #278ea5;
 }
@@ -283,13 +289,15 @@ html {
 .secondary {
   color: #21e6c1;
 }
+
 .background-secondary {
   background-color: #21e6c1;
 }
 
 a.secondary:hover {
   color: #21e6c1;
-  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .textarea {

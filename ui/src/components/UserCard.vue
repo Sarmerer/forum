@@ -11,8 +11,8 @@
             variant="dark"
           >
           </b-avatar>
-          <router-link v-if="link" :to="`/user/${userData.id}`">
-            <h3 class="primary mb-0">
+          <router-link v-if="link" :to="`/user/${userData.id}`" class="primary">
+            <h3 class="mb-0">
               {{ userData.alias }}
             </h3>
           </router-link>

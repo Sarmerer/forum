@@ -84,15 +84,16 @@
                 </b-col>
                 <b-col class="pl-1">
                   <!-- TODO add redirect to auth page if not authorized -->
-                  <small
-                    v-if="!comment.replying"
-                    class="secondary"
-                    @click="
-                      $set(comment, 'reply', ''),
-                        $set(comment, 'replying', true)
-                    "
-                  >
-                    reply
+                  <small v-if="!comment.replying">
+                    <a
+                      class="secondary"
+                      @click="
+                        $set(comment, 'reply', ''),
+                          $set(comment, 'replying', true)
+                      "
+                    >
+                      reply
+                    </a>
                   </small>
                 </b-col>
               </b-row>
@@ -215,9 +216,13 @@
         :editor="editor"
         :comments="comment.children"
       />
-      <div v-if="comment.collapsed" @click="$set(comment, 'collapsed', false)">
+      <div
+        v-if="comment.collapsed"
+        @click="$set(comment, 'collapsed', false)"
+        class="ml-2"
+      >
         <small>
-          <b-icon-plus-circle class="primary"></b-icon-plus-circle>
+          <b-icon-plus-circle class="secondary"></b-icon-plus-circle>
           <span class="text-white-50">
             {{ comment.children_length }} more
             {{ comment.children_length % 10 === 1 ? "comment" : "comments" }}
@@ -294,12 +299,15 @@ export default {
         })
         .then((response) => {
           if (response?.data?.data) {
-            if (this.comments[parentIndex].children)
+            if (this.comments[parentIndex].children) {
               this.comments[parentIndex].children.push(response.data.data);
-            else
+              this.comments[parentIndex].children_length++;
+            } else {
               this.$set(this.comments[parentIndex], "children", [
                 response.data.data,
               ]);
+              this.$set(this.comments[parentIndex], "children_length", 1);
+            }
           }
           this.comments[parentIndex].replying = false;
         })
@@ -392,14 +400,22 @@ export default {
 }
 
 .collapse-line-m {
-  border-left: 4px solid rgba(255, 255, 255, 0.1);
   height: calc(100% - 5px);
-  margin-left: -11px;
+  margin-left: -16px;
   top: 5px;
+  width: 15px;
   position: absolute;
+  background-image: linear-gradient(
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.1)
+  );
+  background-size: 4px 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
-.collapse-line:hover {
+.collapse-line:hover,
+.collapse-line-m:hover {
   background-image: linear-gradient(grey, grey);
 }
 </style>

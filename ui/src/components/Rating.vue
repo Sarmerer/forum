@@ -2,8 +2,10 @@
   <div :class="size === 'sm' ? 'rating-col-inline' : 'rating-col'">
     <b-icon-arrow-up-short
       @click.prevent="authenticated ? rate('up') : makeToast()"
-      :class="`m-0 rating-opacity rating-item ${classUp}`"
-      :style="`color: ${entity.your_reaction == 1 ? 'green' : 'white'}`"
+      :class="
+        (!isMobile() ? 'mb-n1 ' : 'm-0 ') +
+          classGen(entity.your_reaction > 0, 'positive')
+      "
     >
     </b-icon-arrow-up-short>
     <span
@@ -18,8 +20,10 @@
     </small>
     <b-icon-arrow-down-short
       @click.prevent="authenticated ? rate('down') : makeToast()"
-      :class="`m-0 rating-opacity rating-item ${classDown}`"
-      :style="`color: ${entity.your_reaction == -1 ? 'red' : 'white'}`"
+      :class="
+        (!isMobile() ? 'mt-n1 ' : 'm-0 ') +
+          classGen(entity.your_reaction < 0, 'negative')
+      "
     ></b-icon-arrow-down-short>
   </div>
 </template>
@@ -44,12 +48,6 @@ export default {
     ...mapGetters({
       authenticated: "auth/authenticated",
     }),
-    classUp() {
-      return this.size === "sm" ? "h4" : "h3 mb-n1";
-    },
-    classDown() {
-      return this.size === "sm" ? "h4" : "h3 mt-n1";
-    },
   },
   data() {
     return {
@@ -57,6 +55,11 @@ export default {
     };
   },
   methods: {
+    classGen(reaction, variant) {
+      return `rating-opacity rating-item ${this.size === "sm" ? "h4" : "h3"} ${
+        reaction ? `${variant}-active` : this.isMobile() ? "" : variant
+      }`;
+    },
     async rate(reaction) {
       if (this.requesting) return;
       let r = reaction == "up" ? 1 : -1;
@@ -109,5 +112,21 @@ export default {
 
 .rating-opacity {
   opacity: 0.87;
+}
+
+.positive:hover {
+  color: #28a745;
+}
+
+.positive-active {
+  color: #28a745;
+}
+
+.negative:hover {
+  color: #dc3545;
+}
+
+.negative-active {
+  color: #dc3545;
 }
 </style>

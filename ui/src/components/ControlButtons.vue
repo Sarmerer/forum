@@ -74,16 +74,12 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.controls {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-}
 .confirm {
   box-shadow: none;
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
 }
+
 .controls-button {
   background-color: transparent;
   border-color: transparent;
