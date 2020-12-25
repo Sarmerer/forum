@@ -237,13 +237,13 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 			SELECT count(_id)
 			FROM comments
 			WHERE post_id_fkey = p._id
+			AND deleted = 0
 		) AS comments_count,
 		IFNULL (
 			(
 				SELECT COUNT(DISTINCT author_id_fkey)
 				FROM comments
 				WHERE post_id_fkey = p._id
-				AND deleted = 0
 			),
 			0
 		) AS total_participants
