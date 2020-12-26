@@ -114,7 +114,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Content:  input.Content,
 		AuthorID: userCtx.ID,
 		Created:  utils.CurrentUnixTime(),
-		Edited:  utils.CurrentUnixTime(),
+		Edited:   utils.CurrentUnixTime(),
 		Rating:   0,
 	}
 	if newPost, status, err = repo.Create(&post, input.Categories); err != nil {

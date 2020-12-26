@@ -33,11 +33,12 @@ func fetchAuthor(c *models.Comment) (err error) {
 }
 
 //FindAll returns all replies for the specified post
-func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, error) {
+func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]*models.Comment, error) {
 	var (
-		rows      *sql.Rows
-		comments  []models.Comment
-		cache     map[int64]*models.Comment = make(map[int64]*models.Comment)
+		rows     *sql.Rows
+		comments []*models.Comment
+		cache    map[int64]*models.Comment = make(map[int64]*models.Comment)
+
 		increment func(map[int64]*models.Comment, int64)
 		err       error
 	)
@@ -56,10 +57,10 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 					AND comment_id_fkey = c._id
 			),
 			0
-		) AS yor_reaction
+		) AS your_reaction
 		FROM comments c
 		WHERE post_id_fkey = $2
-		ORDER BY created ASC`,
+		ORDER BY lineage, rating DESC`,
 		userID, postID,
 	); err != nil {
 		if err != sql.ErrNoRows {
@@ -75,17 +76,20 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]models.Comment, err
 	}
 	for rows.Next() {
 		var c models.Comment
-		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
+		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Depth, &c.Lineage,
+			&c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
 		if err = fetchAuthor(&c); err != nil {
 			return nil, err
 		}
 		if c.ParentID != 0 {
+			// fmt.Printf("id: %d, parent: %d, cache: %v\n", c.ID, c.ParentID, cache[c.ParentID] != nil)
 			cache[c.ParentID].Children = append(cache[c.ParentID].Children, &c)
 			cache[c.ID] = &c
 			increment(cache, c.ParentID)
 		} else {
-			comments = append(comments, c)
-			cache[c.ID] = &comments[len(comments)-1]
+			comments = append(comments, &c)
+			cache[c.ID] = comments[len(comments)-1]
+			cache[c.ID].ChildrenLen++
 		}
 	}
 	return comments, nil
@@ -126,7 +130,8 @@ func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment
 	}
 	for rows.Next() {
 		var c models.Comment
-		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
+		rows.Scan(&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Depth, &c.Lineage,
+			&c.Content, &c.Created, &c.Edited, &c.Deleted, &c.Rating, &c.YourReaction)
 		if err = fetchAuthor(&c); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
@@ -146,7 +151,8 @@ func (CommentRepoCRUD) FindByID(commentID int64) (*models.Comment, int, error) {
 		FROM comments
 		WHERE _id = ?`, commentID,
 	).Scan(
-		&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Content, &c.Created, &c.Edited, &c.Deleted,
+		&c.ID, &c.AuthorID, &c.PostID, &c.ParentID, &c.Depth,
+		&c.Lineage, &c.Content, &c.Created, &c.Edited, &c.Deleted,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -173,13 +179,16 @@ func (CommentRepoCRUD) Create(comment *models.Comment) (*models.Comment, error) 
 			author_id_fkey,
 			post_id_fkey,
 			parent_id_fkey,
+			depth,
+			lineage,
 			content,
 			created,
 			edited,
 			deleted
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, now, now, false,
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		comment.AuthorID, comment.PostID, comment.ParentID,
+		comment.Depth, comment.Lineage, comment.Content, now, now, false,
 	); err != nil {
 		return nil, err
 	}
@@ -214,12 +223,15 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 		SET author_id_fkey = ?,
 			post_id_fkey = ?,
 			parent_id_fkey = ?,
+			depth = ?,
+			lineage = ?,
 			content = ?,
 			created = ?,
 			edited = ?,
 			deleted = ?
 		WHERE _id = ?`,
-		comment.AuthorID, comment.PostID, comment.ParentID, comment.Content, comment.Created, utils.CurrentUnixTime(), false, comment.ID,
+		comment.AuthorID, comment.PostID, comment.ParentID, comment.Depth, comment.Lineage,
+		comment.Content, comment.Created, utils.CurrentUnixTime(), false, comment.ID,
 	); err != nil {
 		return nil, err
 	}
@@ -238,7 +250,8 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 	return nil, errors.New("couldn't update the comment")
 }
 
-//Delete deletes reply from the database
+// Delete deletes reply from the database
+// TODO recursively delete parent comment, if it has no undeleted children
 func (CommentRepoCRUD) Delete(commentID int64) error {
 	var (
 		ctx  context.Context
@@ -265,10 +278,9 @@ func (CommentRepoCRUD) Delete(commentID int64) error {
 			SET deleted = ?,
 				author_id_fkey = ?,
 				content = ?,
-				created = ?,
 				edited = ?
 			WHERE _id = ?`,
-			true, 0, "", 0, 0, commentID,
+			true, 0, "", 0, commentID,
 		); err != nil {
 			return err
 		}
@@ -338,6 +350,10 @@ func (CommentRepoCRUD) DeleteGroup(postID int64) error {
 		return err
 	}
 	return nil
+}
+
+func (CommentRepoCRUD) recursiveDelete(commentID int64) {
+
 }
 
 func (CommentRepoCRUD) CountForPost(post *models.Post) error {

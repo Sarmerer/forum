@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/sarmerer/forum/api/models"
@@ -17,7 +18,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
 		userCtx  models.UserCtx         = utils.GetUserFromCtx(r)
-		comments []models.Comment
+		comments []*models.Comment
 		pid      int64
 		status   int
 		err      error
@@ -83,15 +84,28 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.ID, -1); err != nil {
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PostID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
+
+	getLineage := func(parent models.Comment) string {
+		if parent.ID == 0 {
+			return "/"
+		}
+		if parent.Depth > 1 {
+			return fmt.Sprintf("%s/%v", parent.Lineage, parent.ID)
+		}
+		return fmt.Sprintf("/%v", parent.ID)
+	}
+
 	comment := &models.Comment{
 		Content:  input.Content,
 		Created:  utils.CurrentUnixTime(),
-		PostID:   input.ID,
-		ParentID: input.Parent,
+		PostID:   input.PostID,
+		ParentID: input.Parent.ID,
+		Depth:    input.Parent.Depth + 1,
+		Lineage:  getLineage(input.Parent),
 		AuthorID: userCtx.ID,
 	}
 	if newComment, err = repo.Create(comment); err != nil {
@@ -117,7 +131,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if comment, status, err = repo.FindByID(input.ID); err != nil {
+	if comment, status, err = repo.FindByID(input.PostID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

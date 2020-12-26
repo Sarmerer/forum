@@ -76,6 +76,8 @@ func CheckDBIntegrity() (err error) {
 			author_id_fkey INTEGER REFERENCES users(_id),
 			post_id_fkey INTEGER REFERENCES posts(_id),
 			parent_id_fkey INTEGER REFERENCES comments(_id),
+			depth INTEGER,
+			lineage TEXT,
 			content TEXT,
 			created INTEGER,
 			edited INTEGER,

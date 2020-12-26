@@ -53,7 +53,7 @@ type CategoryRepo interface {
 
 type CommentRepo interface {
 	FindByID(commentID int64) (*models.Comment, int, error)
-	FindByPostID(postID, requestorID int64) ([]models.Comment, error)
+	FindByPostID(postID, requestorID int64) ([]*models.Comment, error)
 	FindByAuthor(userID, requestorID int64) (comments []models.Comment, status int, err error)
 	Create(comment *models.Comment) (*models.Comment, error)
 	Update(comment *models.Comment) (*models.Comment, error)

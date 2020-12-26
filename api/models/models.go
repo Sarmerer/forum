@@ -54,11 +54,13 @@ type Category struct {
 
 type Comment struct {
 	ID           int64  `json:"id"`
+	PostID       int64  `json:"post_id"`
 	AuthorID     int64  `json:"-"`
+	ParentID     int64  `json:"parent_id"`
+	Depth        int    `json:"depth"`
+	Lineage      string `json:"lineage"`
 	Content      string `json:"content"`
 	Created      int64  `json:"created"`
-	PostID       int64  `json:"post_id"`
-	ParentID     int64  `json:"parent_id"`
 	Rating       int    `json:"rating"`
 	YourReaction int    `json:"your_reaction"`
 	Edited       int64  `json:"edited"`
