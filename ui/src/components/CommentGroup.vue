@@ -21,7 +21,7 @@
           v-on:edit-event="
             (editor.editing = comment.id), (editor.content = comment.content)
           "
-          :modalID="'modal-menu' + index"
+          :modalID="'modal-menu' + comment.id"
         />
         <div v-if="editor.editing !== comment.id" class="mb-2">
           <b-row :class="isMobile() ? 'm-0' : ''">
@@ -39,7 +39,7 @@
                       <user-popover
                         noAvatar
                         :userData="comment.author"
-                        :popoverID="'c' + index"
+                        :popoverID="'c' + comment.id"
                       >
                       </user-popover>
                     </small>
@@ -68,7 +68,7 @@
                     :hasPermission="hasPermission(comment)"
                     :disabled="requesting"
                     compact
-                    :modalID="'modal-menu' + index"
+                    :modalID="'modal-menu' + comment.id"
                   />
                 </b-col>
               </b-row>
