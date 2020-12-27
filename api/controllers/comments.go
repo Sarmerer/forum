@@ -172,7 +172,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = repo.Delete(cid); err != nil {
+	if err = repo.Delete(comment); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

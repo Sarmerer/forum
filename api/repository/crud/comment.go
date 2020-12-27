@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/sarmerer/forum/api/models"
@@ -251,66 +250,22 @@ func (CommentRepoCRUD) Update(comment *models.Comment) (*models.Comment, error) 
 }
 
 // Delete deletes reply from the database
-// TODO recursively delete parent comment, if it has no undeleted children
-func (CommentRepoCRUD) Delete(commentID int64) error {
+func (CommentRepoCRUD) Delete(comment *models.Comment) error {
 	var (
-		ctx  context.Context
-		tx   *sql.Tx
-		temp int64
-		err  error
+		hasChildren bool
+		err         error
 	)
-	ctx = context.Background()
-	tx, err = repository.DB.BeginTx(ctx, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	if err = repository.DB.QueryRow("SELECT _id FROM comments WHERE parent_id_fkey = ?",
-		commentID,
-	).Scan(&temp); err != nil {
-		if err != sql.ErrNoRows {
-			return err
-		}
+	if hasChildren, err = NewCommentRepoCRUD().hasChildren(comment.ID); err != nil {
+		return err
 	}
-	if temp != 0 {
-		if _, err = tx.ExecContext(ctx,
-			`UPDATE comments
-			SET deleted = ?,
-				author_id_fkey = ?,
-				content = ?,
-				edited = ?
-			WHERE _id = ?`,
-			true, 0, "", 0, commentID,
-		); err != nil {
-			return err
-		}
-		if _, err = tx.ExecContext(ctx,
-			`DELETE FROM comments_reactions
-			WHERE comment_id_fkey = ?`, commentID,
-		); err != nil {
-			tx.Rollback()
-			return err
-		}
-		if err = tx.Commit(); err != nil {
+	if hasChildren {
+		if err = NewCommentRepoCRUD().softDelete(comment.ID); err != nil {
 			return err
 		}
 		return nil
 	}
-	_, err = tx.ExecContext(ctx,
-		`DELETE FROM comments_reactions
-		WHERE comment_id_fkey = ?`, commentID)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	_, err = tx.ExecContext(ctx,
-		`DELETE FROM comments
-		WHERE _id = ?`, commentID)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	if err = tx.Commit(); err != nil {
+	if err = NewCommentRepoCRUD().hardDelete( comment); err != nil {
 		return err
 	}
 	return nil
@@ -350,10 +305,6 @@ func (CommentRepoCRUD) DeleteGroup(postID int64) error {
 		return err
 	}
 	return nil
-}
-
-func (CommentRepoCRUD) recursiveDelete(commentID int64) {
-
 }
 
 func (CommentRepoCRUD) CountForPost(post *models.Post) error {

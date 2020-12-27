@@ -57,7 +57,7 @@ type CommentRepo interface {
 	FindByAuthor(userID, requestorID int64) (comments []models.Comment, status int, err error)
 	Create(comment *models.Comment) (*models.Comment, error)
 	Update(comment *models.Comment) (*models.Comment, error)
-	Delete(commentID int64) error
+	Delete(comment *models.Comment) error
 	DeleteGroup(postID int64) error
 	CountForPost(post *models.Post) error
 
