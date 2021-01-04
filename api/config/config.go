@@ -20,9 +20,9 @@ var (
 // API config
 const (
 	apiPortDev    = "4433"
-	apiPortProd   = "443"
+	apiPortProd   = "4433"
 	apiURLDev     = "http://localhost:" + apiPortDev
-	apiURLProd    = "https://13.53.42.178:" + apiPortProd
+	apiURLProd    = "https://13.48.44.229:" + apiPortProd
 	clientURLDev  = "http://localhost:8080"
 	clientURLProd = "https://forum-sarmerer.herokuapp.com"
 
@@ -48,7 +48,7 @@ var (
 	// instead of clientURLDev, to set CORS header Allow-Origin.
 	// It is required for session auth to work properly.
 	// Production mode can be activated with --prod flag, when starting the app.
-	Production = false
+	Production = true
 )
 
 func Init() {
