@@ -26,9 +26,9 @@ func generateCookie(cookie *http.Cookie, err error) (string, string) {
 		HttpOnly: true,
 	}
 	if config.Production {
-		// Heroku hosting uses Go version 1.12, which didin't support SameSite attribute,
-		// so I have to set that attribute manually.
-		return newCookie.String() + "; SameSite=None; Secure", newUUID
+		newCookie.Domain = config.SessionCookieDomain
+		newCookie.SameSite = http.SameSiteNoneMode
+		newCookie.Secure = true
 	}
 	return newCookie.String(), newUUID
 }

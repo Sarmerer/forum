@@ -24,7 +24,7 @@ const (
 	apiURLDev     = "http://localhost:" + apiPortDev
 	apiURLProd    = "https://13.48.44.229:" + apiPortProd
 	clientURLDev  = "http://localhost:8080"
-	clientURLProd = "https://forum-sarmerer.herokuapp.com"
+	clientURLProd = "https://forum.sarmerer.ml"
 
 	DatabaseDriver   = "sqlite3"
 	DatabasePath     = "./database"
@@ -32,8 +32,9 @@ const (
 
 	GCInterval = 24 * time.Hour // GCInterval defines the interval after which garbage collector will run
 
-	SessionCookieName = "sid"              // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
-	SessionExpiration = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
+	SessionCookieName   = "sid" // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
+	SessionCookieDomain = ".sarmerer.ml"
+	SessionExpiration   = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
 
 	UserCtxVarName = "userCtx" // Used when setting request context in middleware
 

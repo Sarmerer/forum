@@ -265,7 +265,7 @@ func (CommentRepoCRUD) Delete(comment *models.Comment) error {
 		}
 		return nil
 	}
-	if err = NewCommentRepoCRUD().hardDelete( comment); err != nil {
+	if err = NewCommentRepoCRUD().hardDelete(comment); err != nil {
 		return err
 	}
 	return nil
