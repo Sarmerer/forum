@@ -178,7 +178,7 @@ var apiRoutes = []route{
 	{
 		URI:      "/api/comments",
 		Handler:  controllers.GetComments,
-		Method:   http.MethodGet,
+		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,
 	},

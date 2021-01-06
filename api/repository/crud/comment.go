@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/sarmerer/forum/api/models"
@@ -32,35 +33,64 @@ func fetchAuthor(c *models.Comment) (err error) {
 }
 
 //FindAll returns all replies for the specified post
-func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]*models.Comment, error) {
+func (CommentRepoCRUD) FindByPostID(input *models.InputFindComments, userID int64) (*models.Comments, error) {
 	var (
-		rows     *sql.Rows
-		comments []*models.Comment
-		cache    map[int64]*models.Comment = make(map[int64]*models.Comment)
+		rows   *sql.Rows
+		result models.Comments
+		cache  map[int64]*models.Comment = make(map[int64]*models.Comment)
 
 		increment func(map[int64]*models.Comment, int64)
 		err       error
 	)
 	if rows, err = repository.DB.Query(
-		`SELECT *,
-		(
-			SELECT TOTAL(reaction)
-			FROM comments_reactions
-			WHERE comment_id_fkey = c._id
-		) AS rating,
-		IFNULL (
-			(
-				SELECT reaction
-				FROM comments_reactions
-				WHERE user_id_fkey = $1
-					AND comment_id_fkey = c._id
-			),
-			0
-		) AS your_reaction
-		FROM comments c
-		WHERE post_id_fkey = $2
-		ORDER BY lineage, rating DESC`,
-		userID, postID,
+		fmt.Sprintf(`WITH anchor AS (
+			SELECT *,
+				(
+					SELECT TOTAL(reaction)
+					FROM comments_reactions
+					WHERE comment_id_fkey = c._id
+				) AS rating,
+				IFNULL (
+					(
+						SELECT reaction
+						FROM comments_reactions
+						WHERE user_id_fkey = $1
+							AND comment_id_fkey = c._id
+					),
+					0
+				) AS your_reaction
+			FROM comments c
+			WHERE post_id_fkey = $2
+				AND depth = 1
+			ORDER BY %s
+			LIMIT %d
+			OFFSET %d
+		), children_i AS (
+			-- anchor/initial values
+			SELECT *
+			FROM anchor
+			UNION ALL
+			-- recursion
+			SELECT c.*,
+				(
+					SELECT TOTAL(reaction)
+					FROM comments_reactions
+					WHERE comment_id_fkey = c._id
+				) AS rating,
+				IFNULL (
+					(
+						SELECT reaction
+						FROM comments_reactions
+						WHERE user_id_fkey = $1
+							AND comment_id_fkey = c._id
+					),
+					0
+				) AS your_reaction
+			FROM comments c
+				JOIN children_i c1 ON c.parent_id_fkey = c1._id
+		)
+		SELECT * FROM children_i`, "rating ASC", input.Limit, input.Offset),
+		userID, input.PostID,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, err
@@ -86,12 +116,16 @@ func (CommentRepoCRUD) FindByPostID(postID, userID int64) ([]*models.Comment, er
 			cache[c.ID] = &c
 			increment(cache, c.ParentID)
 		} else {
-			comments = append(comments, &c)
-			cache[c.ID] = comments[len(comments)-1]
+			result.Comments = append(result.Comments, &c)
+			cache[c.ID] = result.Comments[len(result.Comments)-1]
 			cache[c.ID].ChildrenLen++
 		}
+		result.LoadedRows++
 	}
-	return comments, nil
+	if err = repository.DB.QueryRow(`SELECT COUNT(_id) FROM comments`).Scan(&result.TotalRows); err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 func (CommentRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Comment, int, error) {
@@ -263,10 +297,10 @@ func (CommentRepoCRUD) Delete(comment *models.Comment) error {
 		if err = NewCommentRepoCRUD().softDelete(comment.ID); err != nil {
 			return err
 		}
-		return nil
-	}
-	if err = NewCommentRepoCRUD().hardDelete(comment); err != nil {
-		return err
+	} else {
+		if err = NewCommentRepoCRUD().hardDelete(comment); err != nil {
+			return err
+		}
 	}
 	return nil
 }

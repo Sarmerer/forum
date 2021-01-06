@@ -72,6 +72,12 @@ type Comment struct {
 	ChildrenLen int64      `json:"children_length"`
 }
 
+type Comments struct {
+	Comments   []*Comment `json:"comments"`
+	LoadedRows int        `json:"loaded_rows"`
+	TotalRows  int        `json:"total_rows"`
+}
+
 type Rating struct {
 	Rating       int `json:"rating"`
 	YourReaction int `json:"your_reaction"`
