@@ -183,7 +183,7 @@
               autofocus
               v-model="comment.reply"
               @keydown.enter.exact.prevent
-              @keyup.enter.exact="reply(comment, index)"
+              @keyup.enter.exact="reply(comment, index, comment.reply)"
               keydown.enter.shift.exact="newline"
               rows="1"
               no-resize
@@ -194,10 +194,10 @@
               <b-button-group size="sm" vertical>
                 <b-button
                   :disabled="!properReplyLength(comment.reply)"
-                  variant="outline-success"
+                  variant="outline-light"
                   @click="reply(comment, index, comment.reply)"
                 >
-                  Save
+                  Say
                 </b-button>
                 <b-button
                   class="m-0"
