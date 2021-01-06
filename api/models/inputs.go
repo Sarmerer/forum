@@ -27,6 +27,7 @@ type InputPostCreateUpdate struct {
 
 type InputCommentCreateUpdate struct {
 	PostID  int64   `json:"post_id"` // post ID, to which comment is added
+	ID      int64   `json:"id"`
 	Content string  `json:"content"`
 	Parent  Comment `json:"parent"`
 }
@@ -38,12 +39,22 @@ type InputAllPosts struct {
 	Ascending   bool   `json:"ascending"`
 }
 
-type InputFind struct {
+type InputFindPost struct {
 	By         string   `json:"by"`
 	ID         int64    `json:"id"`
-	Login      string   `json:"login"`
 	AuthorID   int64    `json:"author"`
 	Categories []string `json:"categories"`
+}
+
+type InputFindUser struct {
+	By string `json:"by"`
+	ID int64  `json:"id"`
+}
+
+type InputFindComments struct {
+	PostID int64 `json:"post_id"`
+	Offset int   `json:"offset"`
+	Limit  int   `json:"limit"`
 }
 
 type InputRate struct {

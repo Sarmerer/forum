@@ -12,11 +12,15 @@
         v-if="comment.children && !comment.collapsed"
         @click="$set(comment, 'collapsed', true)"
       ></div>
-      <div v-if="comment.deleted && comment.children">
+      <div
+        v-if="comment.deleted && comment.children"
+        v-show="!comment.collapsed"
+      >
         <span class="text-white-50">deleted</span>
       </div>
-      <div v-if="!comment.deleted">
+      <div v-if="!comment.deleted" v-show="!comment.collapsed">
         <ControlModal
+          v-if="isMobile() && hasPermission(comment)"
           v-on:delete-event="deleteComment(comment.id, index)"
           v-on:edit-event="
             (editor.editing = comment.id), (editor.content = comment.content)
@@ -38,13 +42,17 @@
                     <small>
                       <user-popover
                         noAvatar
+                        popoverDirection="right"
                         :userData="comment.author"
                         :popoverID="'c' + comment.id"
                       >
                       </user-popover>
                     </small>
                   </router-link>
-                  <small v-if="!isMobile()" class="text-white-50">
+                  <small
+                    v-if="!isMobile() && comment.rating > 0"
+                    class="text-white-50"
+                  >
                     {{ comment.rating }}
                     {{
                       comment.rating % 10 === 1 || comment.rating % 10 === -1
@@ -53,14 +61,16 @@
                     }}
                   </small>
                   <small class="text-white-50">
+                    •
                     <time-ago :datetime="comment.created" tooltip="right">
                     </time-ago>
-                    <small
+                    <span
                       v-b-tooltip.hover="formatDate(comment.edited)"
                       v-if="comment.edited != comment.created"
-                      class="text-muted"
-                      >(edited)
-                    </small>
+                      class="text-white-50"
+                    >
+                      • edited
+                    </span>
                   </small>
                 </b-col>
                 <b-col v-if="isMobile()" cols="end">
@@ -82,7 +92,7 @@
                 <b-col v-if="isMobile()" cols="start">
                   <Rating :entity="comment" size="sm" endpoint="comment" />
                 </b-col>
-                <b-col class="pl-1">
+                <b-col class="pl-0">
                   <!-- TODO add redirect to auth page if not authorized -->
                   <small v-if="!comment.replying">
                     <a
@@ -114,7 +124,7 @@
           </b-row>
         </div>
         <b-row v-if="hasPermission(comment) && editor.editing === comment.id">
-          <b-col class="ml-n2">
+          <b-col>
             <b-input-group>
               <b-form-textarea
                 class="textarea"
@@ -165,6 +175,7 @@
             >
           </b-col>
         </b-row>
+
         <div v-if="comment.replying">
           <b-input-group>
             <b-form-textarea
@@ -172,9 +183,7 @@
               autofocus
               v-model="comment.reply"
               @keydown.enter.exact.prevent
-              @keyup.enter.exact="
-                reply(comment.post_id, comment.id, index, comment.reply)
-              "
+              @keyup.enter.exact="reply(comment, index, comment.reply)"
               keydown.enter.shift.exact="newline"
               rows="1"
               no-resize
@@ -185,12 +194,10 @@
               <b-button-group size="sm" vertical>
                 <b-button
                   :disabled="!properReplyLength(comment.reply)"
-                  variant="outline-success"
-                  @click="
-                    reply(comment.post_id, comment.id, index, comment.reply)
-                  "
+                  variant="outline-light"
+                  @click="reply(comment, index, comment.reply)"
                 >
-                  Save
+                  Say
                 </b-button>
                 <b-button
                   class="m-0"
@@ -219,7 +226,7 @@
       <div
         v-if="comment.collapsed"
         @click="$set(comment, 'collapsed', false)"
-        class="ml-2"
+        class="ml-n2"
       >
         <small>
           <b-icon-plus-circle class="secondary"></b-icon-plus-circle>
@@ -258,7 +265,7 @@ export default {
   data() {
     return {
       maxCommentLength: 200,
-      minCommentLength: 5,
+      minCommentLength: 1,
       requesting: false,
     };
   },
@@ -289,12 +296,16 @@ export default {
       let rl = this.replyLength(reply);
       return rl >= this.minCommentLength && rl <= this.maxCommentLength;
     },
-    async reply(postID, parentID, parentIndex, content) {
-      if (!parentID || !content || !this.properReplyLength(content)) return;
+    async reply(parent, parentIndex, content) {
+      if (!parent || !content || !this.properReplyLength(content)) return;
       return await api
         .post("comment/add", {
-          id: postID,
-          parent: parentID,
+          post_id: parent.post_id,
+          parent: {
+            id: parent.id,
+            depth: parent.depth,
+            lineage: parent.lineage,
+          },
           content: content,
         })
         .then((response) => {
@@ -394,7 +405,7 @@ export default {
     rgba(255, 255, 255, 0.1),
     rgba(255, 255, 255, 0.1)
   );
-  background-size: 4px 100%;
+  background-size: 2px 100%;
   background-repeat: no-repeat;
   background-position: center center;
 }
@@ -409,13 +420,14 @@ export default {
     rgba(255, 255, 255, 0.1),
     rgba(255, 255, 255, 0.1)
   );
-  background-size: 4px 100%;
+  background-size: 2px 100%;
   background-repeat: no-repeat;
   background-position: center center;
 }
 
 .collapse-line:hover,
 .collapse-line-m:hover {
+  background-size: 3px 100%;
   background-image: linear-gradient(grey, grey);
 }
 </style>

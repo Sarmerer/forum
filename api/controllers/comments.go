@@ -18,20 +18,20 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
 		userCtx  models.UserCtx         = utils.GetUserFromCtx(r)
-		comments []*models.Comment
-		pid      int64
+		comments *models.Comments
+		input    models.InputFindComments
 		status   int
 		err      error
 	)
-	if pid, err = utils.ParseID(r); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if _, status, err = crud.NewPostRepoCRUD().FindByID(pid, -1); err != nil {
+	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PostID, -1); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-	if comments, err = repo.FindByPostID(pid, userCtx.ID); err != nil {
+	if comments, err = repo.FindByPostID(&input, userCtx.ID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -46,7 +46,7 @@ func FindComments(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo     repository.CommentRepo = crud.NewCommentRepoCRUD()
 		userCtx  models.UserCtx         = utils.GetUserFromCtx(r)
-		input    models.InputFind
+		input    models.InputFindPost
 		comments []models.Comment
 		status   int
 		err      error
@@ -131,7 +131,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if comment, status, err = repo.FindByID(input.PostID); err != nil {
+	if comment, status, err = repo.FindByID(input.ID); err != nil {
 		response.Error(w, status, err)
 		return
 	}

@@ -22,13 +22,7 @@
     <b-navbar-nav v-if="authenticated">
       <b-nav-item>
         <router-link :to="'/user/' + user.id">
-          <b-avatar
-            size="25px"
-            variant="dark"
-            v-b-tooltip.hover.rightbottom="{ customClass: 'tooltip-sidenav' }"
-            :title="user.alias"
-            :src="user.avatar"
-          ></b-avatar>
+          <b-avatar size="25px" variant="dark" :src="user.avatar"></b-avatar>
         </router-link>
       </b-nav-item>
     </b-navbar-nav>

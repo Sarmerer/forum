@@ -27,7 +27,7 @@ type PostRepo interface {
 	// FindAll takes in user id, current page and offset,
 	// user id for server to know if that user put a like or dislike on a post,
 	// current page and offset for pagination
-	FindAll(requestorID int64, input models.InputAllPosts) (posts *models.Posts, status int, err error)
+	FindAll(requestorID int64, input *models.InputAllPosts) (posts *models.Posts, status int, err error)
 	// FindByID takes in post id and user id, for the same reasaon, as in FindAll()
 	FindByID(postID, requestorID int64) (post *models.Post, status int, err error)
 	FindByAuthor(userID, requestorID int64) (posts []models.Post, status int, err error)
@@ -53,7 +53,7 @@ type CategoryRepo interface {
 
 type CommentRepo interface {
 	FindByID(commentID int64) (*models.Comment, int, error)
-	FindByPostID(postID, requestorID int64) ([]*models.Comment, error)
+	FindByPostID(input *models.InputFindComments, requestorID int64) (*models.Comments, error)
 	FindByAuthor(userID, requestorID int64) (comments []models.Comment, status int, err error)
 	Create(comment *models.Comment) (*models.Comment, error)
 	Update(comment *models.Comment) (*models.Comment, error)

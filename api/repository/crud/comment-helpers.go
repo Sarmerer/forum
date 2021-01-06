@@ -3,7 +3,6 @@ package crud
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
@@ -46,6 +45,7 @@ func (CommentRepoCRUD) softDelete(commentID int64) error {
 func (CommentRepoCRUD) hardDelete(comment *models.Comment) error {
 	var (
 		hasChildren   bool
+		deleted       bool
 		performDelete func(*models.Comment) error
 		err           error
 	)
@@ -79,12 +79,14 @@ func (CommentRepoCRUD) hardDelete(comment *models.Comment) error {
 			if hasChildren, err = NewCommentRepoCRUD().hasChildren(comment.ParentID); err != nil {
 				return err
 			}
-			if !hasChildren {
+			if deleted, err = NewCommentRepoCRUD().isDeleted(comment.ParentID); err != nil {
+				return err
+			}
+			if !hasChildren && deleted {
 				var parent *models.Comment
 				if parent, _, err = NewCommentRepoCRUD().FindByID(comment.ParentID); err != nil {
 					return err
 				}
-				fmt.Println("deleting", parent.ID)
 				performDelete(parent)
 			}
 		}
@@ -101,8 +103,11 @@ func (CommentRepoCRUD) hasChildren(commentID int64) (bool, error) {
 		temp int64
 		err  error
 	)
-	if err = repository.DB.QueryRow("SELECT COUNT(_id) FROM comments WHERE parent_id_fkey = ? AND deleted = 0",
-		commentID,
+	if err = repository.DB.QueryRow(`
+        SELECT COUNT(_id)
+        FROM comments
+        WHERE parent_id_fkey = $1
+            AND deleted = 0`, commentID,
 	).Scan(&temp); err != nil {
 		if err != sql.ErrNoRows {
 			return false, err
@@ -113,4 +118,22 @@ func (CommentRepoCRUD) hasChildren(commentID int64) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func (CommentRepoCRUD) isDeleted(commentID int64) (bool, error) {
+	var (
+		deleted bool
+		err     error
+	)
+	if err = repository.DB.QueryRow(`
+        SELECT deleted
+        FROM comments
+        WHERE _id = $1`, commentID,
+	).Scan(&deleted); err != nil {
+		if err != sql.ErrNoRows {
+			return false, err
+		}
+		return false, nil
+	}
+	return deleted, nil
 }

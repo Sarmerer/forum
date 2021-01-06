@@ -173,6 +173,10 @@ html {
   text-decoration: none;
 }
 
+.card-hover:hover {
+  box-shadow: inset 0px 0px 0px 1px grey;
+}
+
 .text-break {
   word-break: break-word !important;
   overflow-wrap: break-word !important;
@@ -216,6 +220,10 @@ html {
 .form-control {
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
+}
+
+.form-control:disabled {
+  background-color: #101010;
 }
 
 .b-form-tags.focus,
@@ -303,9 +311,9 @@ a.secondary:hover {
 .textarea {
   background-color: #101010;
   color: gray;
-
   border: none;
 }
+
 .textarea:focus {
   color: white;
   background-color: #121212;
