@@ -80,10 +80,48 @@
           </b-col>
         </b-row>
       </div>
+      <b-row>
+        <b-col>
+          <b-input-group>
+            <b-dropdown size="sm" variant="dark" :text="options.active">
+              <b-dropdown-item
+                v-for="(option, index) in options.filters"
+                :key="index"
+                :disabled="options.active === option.text"
+                @click="options.active = option.text"
+                >{{ option.text }}</b-dropdown-item
+              >
+            </b-dropdown>
+            <b-button
+              size="sm"
+              variant="dark"
+              class="ml-1"
+              :disabled="true"
+              @click="this.getComments()"
+            >
+              <b-icon icon="arrow-counterclockwise"></b-icon>
+            </b-button>
+          </b-input-group>
+        </b-col>
+      </b-row>
       <!-- Not authenticated-end -->
       <!-- Comments-start -->
-      <CommentGroup :comments="comments" :editor="editor" />
+
+      <CommentGroup
+        :comments="[...comments, ...tempComments]"
+        :editor="editor"
+      />
       <!-- Comments-end -->
+      <b-row no-gutters align-h="center">
+        <b-button
+          v-if="totalRows > loadedRows"
+          size="sm"
+          variant="dark"
+          @click="getComments()"
+          >load {{ totalRows - loadedRows }} more
+          {{ isPlural(totalRows - loadedRows) ? "comments" : "comment" }}
+        </b-button>
+      </b-row>
     </div>
   </b-skeleton-wrapper>
 </template>
@@ -120,9 +158,23 @@ export default {
     return {
       loading: true,
       comments: [],
+      tempComments: [],
+      totalRows: 0,
+      loadedRows: 0,
+      limit: 5,
+      offset: 0,
       form: { comment: "" },
       maxCommentLength: 200,
-      minCommentLength: 5,
+      minCommentLength: 1,
+      options: {
+        active: "Most rated",
+        filters: [
+          { text: "Most rated", type: "rating" },
+          { text: "Least rated", type: "rating", descending: true },
+          { text: "Newest", type: "created" },
+          { text: "Oldest", type: "created", descending: true },
+        ],
+      },
       editor: { editing: -1, content: "" },
     };
   },
@@ -139,25 +191,36 @@ export default {
     },
     async getComments() {
       return await api
-        .get("/comments", {
-          params: { id: this.postID },
+        .post("/comments", {
+          post_id: this.postID,
+          offset: this.offset,
+          limit: this.limit,
         })
         .then((response) => {
-          this.comments = response.data.data || [];
+          this.comments.push(...(response?.data?.data?.comments || []));
+          for (var i = this.tempComments.length - 1; i >= 0; i--) {
+            for (var j = 0; j < this.comments.length; j++) {
+              if (this.tempComments[i]?.id === this.comments[j]?.id) {
+                this.tempComments.splice(i, 1);
+              }
+            }
+          }
+          this.totalRows = response?.data?.data?.total_rows || 0;
+          this.loadedRows += response?.data?.data?.loaded_rows || 0;
+          this.offset += this.limit;
         });
     },
-    async addComment(content, parent = 0) {
+    async addComment(content) {
       if (this.requesting || !this.properCommentLength) return;
       this.requesting = true;
       return await api
         .post("comment/add", {
-          id: this.postID,
+          post_id: this.postID,
           content: content,
-          parent: parent,
         })
         .then((response) => {
           this.form.comment = "";
-          if (response?.data?.data) this.comments.push(response.data.data);
+          if (response?.data?.data) this.tempComments.push(response.data.data);
         })
         .catch((error) => {
           if (error.status === 403)
