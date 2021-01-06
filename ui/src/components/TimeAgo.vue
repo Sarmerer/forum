@@ -26,7 +26,9 @@ export default {
   },
   created() {
     this.ago = moment.unix(this.datetime).short(this.isMobile());
-    this.dateFormatted = moment.unix(this.datetime).format("ddd, d MMM y, hh:mm");
+    this.dateFormatted = moment
+      .unix(this.datetime)
+      .format("ddd, D MMM y, hh:mm");
   },
 
   data() {
