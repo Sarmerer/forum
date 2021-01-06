@@ -40,7 +40,7 @@ func (PostRepoCRUD) fetchAuthor(post *models.Post) (status int, err error) {
 
 //FindAll returns all posts in the database
 //TODO improve this MESS
-func (PostRepoCRUD) FindAll(requestorID int64, input models.InputAllPosts) (*models.Posts, int, error) {
+func (PostRepoCRUD) FindAll(requestorID int64, input *models.InputAllPosts) (*models.Posts, int, error) {
 	var (
 		posts        *sql.Rows
 		result       models.Posts
@@ -80,10 +80,7 @@ func (PostRepoCRUD) FindAll(requestorID int64, input models.InputAllPosts) (*mod
 					AND deleted = 0
 				),
 				0
-			) AS total_participants,
-			(
-				SELECT COUNT(_id) FROM posts
-			) AS total_rows
+			) AS total_participants
 			FROM posts p
 			ORDER BY %s
 			LIMIT $2 OFFSET $3`,
@@ -98,7 +95,7 @@ func (PostRepoCRUD) FindAll(requestorID int64, input models.InputAllPosts) (*mod
 		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
 			&p.Created, &p.Edited, &p.EditReason, &p.Rating,
 			&p.YourReaction, &p.CommentsCount,
-			&p.ParticipantsCount, &result.TotalRows)
+			&p.ParticipantsCount)
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
 		}
@@ -106,6 +103,9 @@ func (PostRepoCRUD) FindAll(requestorID int64, input models.InputAllPosts) (*mod
 			return nil, status, err
 		}
 		result.Hot = append(result.Hot, p)
+	}
+	if err = repository.DB.QueryRow(`SELECT COUNT(_id) FROM posts`).Scan(&result.TotalRows); err != nil {
+		return nil, http.StatusInternalServerError, err
 	}
 	if result.Recent, status, err = NewPostRepoCRUD().FindRecent(recentAmount); err != nil {
 		return nil, status, err

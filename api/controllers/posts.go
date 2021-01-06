@@ -38,7 +38,7 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	input.Validate()
 
-	if result, status, err = repo.FindAll(userCtx.ID, input); err != nil {
+	if result, status, err = repo.FindAll(userCtx.ID, &input); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -57,7 +57,7 @@ func FindPost(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.PostRepo = crud.NewPostRepoCRUD()
 		userCtx models.UserCtx      = utils.GetUserFromCtx(r)
-		input   models.InputFind
+		input   models.InputFindPost
 		posts   interface{}
 		status  int
 		err     error

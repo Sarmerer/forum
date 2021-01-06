@@ -34,7 +34,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func FindUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		input  models.InputFind
+		input  models.InputFindUser
 		user   *models.User
 		status int
 		err    error
