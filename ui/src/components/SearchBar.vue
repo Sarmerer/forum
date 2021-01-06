@@ -1,15 +1,37 @@
 <template>
-  <b-input-group>
-    <b-input-group-prepend>
-      <b-button @click="$emit('toggle-search')" variant="dark">
-        <b-icon-arrow-left></b-icon-arrow-left>
-      </b-button>
-    </b-input-group-prepend>
+  <b-input-group size="sm">
+    <template #prepend>
+      <b-dropdown :text="`Find ${options.active}`" variant="dark" size="sm">
+        <b-dropdown-item
+          v-for="(filter, index) in options.filters"
+          :key="index"
+          variant="dark"
+          :disabled="filter.name == options.active"
+          @click="options.active = filter.name"
+          >{{ filter.name }}</b-dropdown-item
+        >
+      </b-dropdown>
+      <b-dropdown text="by author" variant="dark" size="sm">
+        <b-dropdown-item variant="dark">ban</b-dropdown-item>
+      </b-dropdown>
+    </template>
     <b-form-input></b-form-input>
-    <b-input-group-append>
-      <b-button variant="outline-info" v-b-popover.top="'Popover!'">
-        <b-icon-info></b-icon-info>
-      </b-button>
-    </b-input-group-append>
+
+    <template #append>
+      <b-button variant="dark"><b-icon-search></b-icon-search></b-button>
+    </template>
   </b-input-group>
 </template>
+<script>
+export default {
+  name: "SearchBar",
+  data() {
+    return {
+      options: {
+        active: "post",
+        filters: [{ name: "post" }, { name: "user" }],
+      },
+    };
+  },
+};
+</script>
