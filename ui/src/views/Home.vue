@@ -56,7 +56,7 @@
                     v-model="pagination.currentPage"
                     :total-rows="pagination.totalPages"
                     :per-page="pagination.perPage"
-                    aria-controls="my-table"
+                    aria-controls="posts"
                     @change="handlePageChange"
                     first-number
                     last-number
@@ -70,6 +70,9 @@
                     :sorter="sorter"
                   />
                 </b-col>
+              </b-row>
+              <b-row v-if="false" class="mx-3 mt-3">
+                <search-bar></search-bar>
               </b-row>
               <b-container class="mt-2" v-if="!sorter.filtered && isMobile()">
                 <b-row
@@ -101,7 +104,9 @@
                 :to="'/post/' + post.id"
                 v-for="(post, index) in posts"
                 :key="post.id"
-                :class="`text-break ${isMobile() ? 'card-m' : 'card'}`"
+                :class="
+                  `text-break ${isMobile() ? 'card-m' : 'card card-hover'}`
+                "
                 tag="div"
                 style="cursor: pointer"
               >
@@ -290,6 +295,7 @@
 </template>
 <script>
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import SearchBar from "@/components/SearchBar.vue";
 import UserPopover from "@/components/UserPopover";
 import PostFilters from "@/components/PostFilters";
 import TimeAgo from "@/components/TimeAgo";
@@ -309,11 +315,13 @@ export default {
     HomeSkeleton,
     PostFilters,
     UserPopover,
+    SearchBar,
     TimeAgo,
     Rating,
     Error,
   },
   data() {
+    SearchBar;
     return {
       showSkeleton: true,
       posts: [],
