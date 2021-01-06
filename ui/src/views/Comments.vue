@@ -119,7 +119,7 @@
           variant="dark"
           @click="getComments()"
           >load {{ totalRows - loadedRows }} more
-          {{ isPlural(totalRows - loadedRows) ? "comments" : "comment" }}
+          {{ (totalRows - loadedRows) % 10 !== 1 ? "comments" : "comment" }}
         </b-button>
       </b-row>
     </div>
