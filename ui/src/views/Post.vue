@@ -161,7 +161,7 @@ import UserCard from "@/components/UserCard";
 import Rating from "@/components/Rating";
 import Comments from "@/views/Comments";
 import { mapGetters } from "vuex";
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   props: {

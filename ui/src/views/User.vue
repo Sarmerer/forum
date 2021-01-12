@@ -124,7 +124,7 @@ import UserSkeleton from "@/components/skeletons/UserSkeleton";
 import NotFound from "@/components/NotFound";
 import UserCard from "@/components/UserCard";
 import TimeAgo from "@/components/TimeAgo";
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   watch: {

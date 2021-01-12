@@ -28,7 +28,7 @@
   </div>
 </template>
 <script>
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   data() {

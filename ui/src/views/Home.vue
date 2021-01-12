@@ -302,7 +302,7 @@ import TimeAgo from "@/components/TimeAgo";
 import Rating from "@/components/Rating";
 import Error from "@/components/Error";
 import { mapGetters } from "vuex";
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   name: "Home",

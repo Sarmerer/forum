@@ -51,7 +51,7 @@
 import PostForm from "@/components/forms/PostForm";
 import UserCard from "@/components/UserCard";
 import { mapGetters } from "vuex";
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   watch: {

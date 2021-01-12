@@ -7,7 +7,7 @@ import router from "./router";
 import store from "./store";
 import "./assets/styles.scss"; // Global styles
 import { BootstrapVue, BootstrapVueIcons } from "bootstrap-vue";
-import api from "@/router/api";
+import api from "@/api/api";
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);

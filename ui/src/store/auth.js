@@ -1,4 +1,4 @@
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   namespaced: true,

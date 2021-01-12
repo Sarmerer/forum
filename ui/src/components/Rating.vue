@@ -29,7 +29,7 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
-import api from "@/router/api";
+import api from "@/api/api";
 
 export default {
   props: {

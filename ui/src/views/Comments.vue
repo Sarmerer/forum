@@ -126,7 +126,7 @@
 import CommentsSkeleton from "@/components/skeletons/CommentsSkeleton";
 import CommentGroup from "@/components/CommentGroup";
 import { mapGetters } from "vuex";
-import api from "@/router/api";
+import api from "@/api/api";
 import eventBus from "@/event-bus";
 
 export default {
