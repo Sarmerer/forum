@@ -21,13 +21,13 @@
       <div v-if="!comment.deleted" v-show="!comment.collapsed">
         <ControlModal
           v-if="isMobile() && hasPermission(comment)"
-          v-on:delete-event="deleteComment(comment.id, index)"
+          v-on:delete-event="deleteComment(comment)"
           v-on:edit-event="
-            (editor.editing = comment.id), (editor.content = comment.content)
+            $set(comment, 'editing', true), $set(comment, 'editor', '')
           "
           :modalID="'modal-menu' + comment.id"
         />
-        <div v-if="editor.editing !== comment.id" class="mb-2">
+        <div v-if="!comment.editing" class="mb-2">
           <b-row :class="isMobile() ? 'm-0' : ''">
             <b-col v-if="!isMobile()" cols="start" class="ml-n2 mr-1">
               <Rating :entity="comment" size="md" endpoint="comment" />
@@ -111,10 +111,9 @@
             <b-col v-if="!isMobile()" cols="end" class="mr-2">
               <ControlButtons
                 :hasPermission="hasPermission(comment)"
-                v-on:delete-event="deleteComment(comment.id, index)"
+                v-on:delete-event="deleteComment(comment)"
                 v-on:edit-event="
-                  (editor.editing = comment.id),
-                    (editor.content = comment.content)
+                  $set(comment, 'editing', true), $set(comment, 'editor', '')
                 "
                 :disabled="requesting"
                 :compact="isMobile()"
@@ -123,17 +122,15 @@
             </b-col>
           </b-row>
         </div>
-        <b-row v-if="hasPermission(comment) && editor.editing === comment.id">
+        <b-row v-if="hasPermission(comment) && comment.editing">
           <b-col>
             <b-input-group>
               <b-form-textarea
                 class="textarea"
                 autofocus
-                v-model="editor.content"
+                v-model="comment.editor"
                 @keydown.enter.exact.prevent
-                @keyup.enter.exact="
-                  updateComment(comment.id, index, editor.content)
-                "
+                @keyup.enter.exact="updateComment(comment)"
                 keydown.enter.shift.exact="newline"
                 rows="1"
                 no-resize
@@ -141,37 +138,33 @@
                 max-rows="5"
               ></b-form-textarea>
               <template #append>
-                <b-button-group
-                  size="sm"
-                  vertical
-                  v-if="editor.editing === comment.id"
-                >
+                <b-button-group size="sm" vertical v-if="comment.editing">
                   <b-button
                     :disabled="
-                      editor.content == comment.content ||
-                        !properEditorLength ||
-                        requesting
+                      comment.editor == comment.content ||
+                        !properEditorLength(comment.editor) ||
+                        comment.requesting
                     "
                     variant="outline-success"
-                    @click="updateComment(comment.id, index, editor.content)"
+                    @click="updateComment(comment)"
                   >
                     Save
                   </b-button>
                   <b-button
                     class="m-0"
                     variant="outline-danger"
-                    @click="editor.editing = -1"
+                    @click="comment.editing = false"
                     :disabled="requesting"
                     >Cancel</b-button
                   >
                 </b-button-group>
               </template>
             </b-input-group>
-            <small v-if="properEditorLength"
-              >{{ editorLength }}/{{ maxCommentLength }}</small
+            <small v-if="properEditorLength(comment.editor)"
+              >{{ editorLength(comment.editor) }}/{{ maxCommentLength }}</small
             >
             <small v-else style="color: red"
-              >{{ editorLength }}/{{ maxCommentLength }}</small
+              >{{ editorLength(comment.editor) }}/{{ maxCommentLength }}</small
             >
           </b-col>
         </b-row>
@@ -183,7 +176,7 @@
               autofocus
               v-model="comment.reply"
               @keydown.enter.exact.prevent
-              @keyup.enter.exact="reply(comment, index, comment.reply)"
+              @keyup.enter.exact="reply(comment, comment.reply)"
               keydown.enter.shift.exact="newline"
               rows="1"
               no-resize
@@ -195,7 +188,7 @@
                 <b-button
                   :disabled="!properReplyLength(comment.reply)"
                   variant="outline-light"
-                  @click="reply(comment, index, comment.reply)"
+                  @click="reply(comment, comment.reply)"
                 >
                   Say
                 </b-button>
@@ -220,7 +213,6 @@
       <CommentGroup
         v-if="comment.children"
         v-show="!comment.collapsed"
-        :editor="editor"
         :comments="comment.children"
       />
       <div
@@ -247,13 +239,13 @@ import TimeAgo from "@/components/TimeAgo";
 import Rating from "@/components/Rating";
 import moment from "moment-shortformat";
 import { mapGetters } from "vuex";
-import api from "@/router/api";
+
+import eventBus from "@/event-bus";
 
 export default {
   name: "CommentGroup",
   props: {
     comments: { type: Array, required: true },
-    editor: Object,
   },
   components: {
     ControlButtons,
@@ -274,15 +266,15 @@ export default {
       user: "auth/user",
       authenticated: "auth/authenticated",
     }),
-    editorLength() {
-      return this.editor.content.replace(/(\r\n|\n|\r|\s)/g, "").length;
-    },
-    properEditorLength() {
-      let el = this.editorLength;
-      return el >= this.minCommentLength && el <= this.maxCommentLength;
-    },
   },
   methods: {
+    editorLength(editor) {
+      return editor.replace(/(\r\n|\n|\r|\s)/g, "").length;
+    },
+    properEditorLength(editor) {
+      let el = this.editorLength(editor);
+      return el >= this.minCommentLength && el <= this.maxCommentLength;
+    },
     hasPermission(comment) {
       return comment?.author?.id == this.user?.id || this.user?.role > 0;
     },
@@ -296,100 +288,16 @@ export default {
       let rl = this.replyLength(reply);
       return rl >= this.minCommentLength && rl <= this.maxCommentLength;
     },
-    async reply(parent, parentIndex, content) {
-      if (!parent || !content || !this.properReplyLength(content)) return;
-      return await api
-        .post("comment/add", {
-          post_id: parent.post_id,
-          parent: {
-            id: parent.id,
-            depth: parent.depth,
-            lineage: parent.lineage,
-          },
-          content: content,
-        })
-        .then((response) => {
-          if (response?.data?.data) {
-            if (this.comments[parentIndex].children) {
-              this.comments[parentIndex].children.push(response.data.data);
-              this.comments[parentIndex].children_length++;
-            } else {
-              this.$set(this.comments[parentIndex], "children", [
-                response.data.data,
-              ]);
-              this.$set(this.comments[parentIndex], "children_length", 1);
-            }
-          }
-          this.comments[parentIndex].replying = false;
-        })
-        .catch((error) => {
-          if (error.status === 403)
-            this.$bvToast.toast(
-              "You need to be logged in, to reply to comments!",
-              {
-                title: "Oops!",
-                variant: "danger",
-                solid: true,
-              }
-            );
-        });
+    reply(parent, content) {
+      if (!this.properReplyLength(content)) return;
+      eventBus.$emit("reply-event", [parent, content]);
     },
-    async updateComment(commentID, commentIndex, newContent) {
-      if (this.requesting || !this.properEditorLength) return;
-      this.requesting = true;
-      return await api
-        .put("comment/update", {
-          id: commentID,
-          content: newContent,
-        })
-        .then((response) => {
-          if (response?.data?.data) {
-            this.comments[commentIndex].content = response.data.data.content;
-            this.comments[commentIndex].edited = response.data.data.edited;
-          }
-        })
-        .catch((error) => {
-          if (error.status === 403)
-            this.$bvToast.toast(
-              "You need to be logged in, to update comments!",
-              {
-                title: "Oops!",
-                variant: "danger",
-                solid: true,
-              }
-            );
-        })
-        .then(() => {
-          this.editor.editing = -1;
-          this.requesting = false;
-        });
+    updateComment(comment) {
+      if (!this.properEditorLength(comment.editor)) return;
+      eventBus.$emit("update-event", [comment, comment.editor]);
     },
-    async deleteComment(commentID, commentIndex) {
-      if (this.requesting) return;
-      this.requesting = true;
-      return await api
-        .delete("comment/delete", {
-          params: { id: commentID },
-        })
-        .then(() => {
-          if (this.comments[commentIndex].children) {
-            this.$set(this.comments[commentIndex], "deleted", true);
-          } else {
-            this.comments.splice(commentIndex, 1);
-          }
-          this.requesting = false;
-        })
-        .catch((error) => {
-          if (error.status === 403)
-            this.$bvToast.toast(
-              "You need to be logged in, to delete comments!",
-              {
-                title: "Oops!",
-                variant: "danger",
-                solid: true,
-              }
-            );
-        });
+    deleteComment(comment) {
+      eventBus.$emit("delete-event", comment);
     },
   },
 };

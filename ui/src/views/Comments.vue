@@ -107,10 +107,7 @@
       <!-- Not authenticated-end -->
       <!-- Comments-start -->
 
-      <CommentGroup
-        :comments="[...comments, ...tempComments]"
-        :editor="editor"
-      />
+      <CommentGroup :comments="[...comments, ...tempComments]" />
       <!-- Comments-end -->
       <b-row no-gutters align-h="center">
         <b-button
@@ -130,6 +127,7 @@ import CommentsSkeleton from "@/components/skeletons/CommentsSkeleton";
 import CommentGroup from "@/components/CommentGroup";
 import { mapGetters } from "vuex";
 import api from "@/router/api";
+import eventBus from "@/event-bus";
 
 export default {
   name: "Comments",
@@ -161,7 +159,7 @@ export default {
       tempComments: [],
       totalRows: 0,
       loadedRows: 0,
-      limit: 5,
+      limit: 10,
       offset: 0,
       form: { comment: "" },
       maxCommentLength: 200,
@@ -183,6 +181,15 @@ export default {
       setTimeout(() => {
         this.loading = false;
       }, 500);
+    });
+    eventBus.$on("update-event", (event) => {
+      this.updateComment(...event);
+    });
+    eventBus.$on("reply-event", (event) => {
+      this.reply(...event);
+    });
+    eventBus.$on("delete-event", (comment) => {
+      this.deleteComment(comment);
     });
   },
   methods: {
@@ -234,6 +241,99 @@ export default {
             );
         })
         .then(() => (this.requesting = false));
+    },
+    async reply(parent, content) {
+      if (!parent || !content) return;
+      return await api
+        .post("comment/add", {
+          post_id: parent.post_id,
+          parent: {
+            id: parent.id,
+            depth: parent.depth,
+            lineage: parent.lineage,
+          },
+          content: content,
+        })
+        .then((response) => {
+          if (response?.data?.data) {
+            if (parent.children) {
+              parent.children.push(response.data.data);
+              parent.childrenLength++;
+            } else {
+              this.$set(parent, "children", [response.data.data]);
+              this.$set(parent, "children_length", 1);
+            }
+          }
+          parent.replying = false;
+        })
+        .catch((error) => {
+          if (error.status === 403)
+            this.$bvToast.toast(
+              "You need to be logged in, to reply to comments!",
+              {
+                title: "Oops!",
+                variant: "danger",
+                solid: true,
+              }
+            );
+        })
+        .then(() => {
+          parent.replying = false;
+          parent.requesting = false;
+        });
+    },
+    async updateComment(comment, newContent) {
+      if (comment.requesting) return;
+      this.$set(comment, "requesting", true);
+      comment.editing = false;
+      return await api
+        .put("comment/update", {
+          id: comment.id,
+          content: newContent,
+        })
+        .then((response) => {
+          if (response?.data?.data) {
+            comment.content = response.data.data.content;
+            comment.edited = response.data.data.edited;
+          }
+        })
+        .catch((error) => {
+          if (error.status === 403)
+            this.$bvToast.toast(
+              "You need to be logged in, to update comments!",
+              {
+                title: "Oops!",
+                variant: "danger",
+                solid: true,
+              }
+            );
+        })
+        .then(() => {
+          comment.requesting = false;
+        });
+    },
+    async deleteComment(comment) {
+      if (comment.requesting) return;
+      comment.requesting = true;
+      return await api
+        .delete("comment/delete", {
+          params: { id: comment.id },
+        })
+        .then(() => {
+          this.$set(comment, "deleted", true);
+          comment.requesting = false;
+        })
+        .catch((error) => {
+          if (error.status === 403)
+            this.$bvToast.toast(
+              "You need to be logged in, to delete comments!",
+              {
+                title: "Oops!",
+                variant: "danger",
+                solid: true,
+              }
+            );
+        });
     },
   },
 };

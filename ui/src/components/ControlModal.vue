@@ -36,14 +36,14 @@
           <b-button
             size="sm"
             class="mr-2"
-            variant="danger"
+            variant="outline-danger"
             @click="$emit('delete-event'), $bvModal.hide(modalID + 'confirm')"
           >
             Yes
           </b-button>
           <b-button
             size="sm"
-            variant="outline-success"
+            variant="success"
             @click="$bvModal.hide(modalID + 'confirm')"
           >
             Forget it
