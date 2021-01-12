@@ -49,7 +49,7 @@ var (
 	// instead of clientURLDev, to set CORS header Allow-Origin.
 	// It is required for session auth to work properly.
 	// Production mode can be activated with --prod flag, when starting the app.
-	Production = true
+	Production = false
 )
 
 func Init() {
