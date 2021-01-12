@@ -341,6 +341,32 @@ func (CommentRepoCRUD) DeleteGroup(postID int64) error {
 	return nil
 }
 
+func (CommentRepoCRUD) Exitsts(commentID int64) bool {
+	var (
+		id  int64
+		err error
+	)
+	if err = repository.DB.QueryRow(
+		`SELECT IFNULL(
+			(
+				SELECT _id
+				FROM comments
+				WHERE _id = 12
+					AND deleted = 0
+			),
+			-1
+		) AS exist`, commentID,
+	).Scan(
+		&id,
+	); err != nil {
+		return false
+	}
+	if id == -1 {
+		return false
+	}
+	return true
+}
+
 func (CommentRepoCRUD) CountForPost(post *models.Post) error {
 	var err error
 	if err = repository.DB.QueryRow(
