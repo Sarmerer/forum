@@ -12,10 +12,7 @@
         v-if="comment.children && !comment.collapsed"
         @click="$set(comment, 'collapsed', true)"
       ></div>
-      <div
-        v-if="comment.deleted && comment.children"
-        v-show="!comment.collapsed"
-      >
+      <div v-if="comment.deleted" v-show="!comment.collapsed">
         <span class="text-white-50">deleted</span>
       </div>
       <div v-if="!comment.deleted" v-show="!comment.collapsed">
@@ -23,7 +20,8 @@
           v-if="isMobile() && hasPermission(comment)"
           v-on:delete-event="deleteComment(comment)"
           v-on:edit-event="
-            $set(comment, 'editing', true), $set(comment, 'editor', '')
+            $set(comment, 'editing', true),
+              $set(comment, 'editor', comment.content)
           "
           :modalID="'modal-menu' + comment.id"
         />
@@ -113,7 +111,8 @@
                 :hasPermission="hasPermission(comment)"
                 v-on:delete-event="deleteComment(comment)"
                 v-on:edit-event="
-                  $set(comment, 'editing', true), $set(comment, 'editor', '')
+                  $set(comment, 'editing', true),
+                    $set(comment, 'editor', comment.content)
                 "
                 :disabled="requesting"
                 :compact="isMobile()"
