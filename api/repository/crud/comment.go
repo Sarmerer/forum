@@ -351,7 +351,7 @@ func (CommentRepoCRUD) Exitsts(commentID int64) bool {
 			(
 				SELECT _id
 				FROM comments
-				WHERE _id = 12
+				WHERE _id = ?
 					AND deleted = 0
 			),
 			-1

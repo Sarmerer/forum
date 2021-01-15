@@ -88,10 +88,11 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, status, err)
 		return
 	}
-
-	if !crud.NewCommentRepoCRUD().Exitsts(input.Parent.ID) {
-		response.Error(w, http.StatusNotFound, errors.New("parent comment not found"))
-		return
+	if input.Parent.ID > 0 {
+		if !crud.NewCommentRepoCRUD().Exitsts(input.Parent.ID) {
+			response.Error(w, http.StatusNotFound, errors.New("parent comment not found"))
+			return
+		}
 	}
 
 	getLineage := func(parent models.Comment) string {
