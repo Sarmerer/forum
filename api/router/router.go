@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 
@@ -28,11 +29,9 @@ func New() *Router {
 // ServeHTTP is called for every request, it finds an API endpoint, matching request path, and calls the handler for that path
 func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, route := range router.routes {
-		match, err := regexp.MatchString(route.Pattern, req.URL.Path)
-		if err != nil {
-			logger.CheckErrAndLog("Router", "", err)
-			return
-		}
+		fmt.Printf("|%s|,|%s|\n", route.Pattern, req.URL.Path)
+		re := regexp.MustCompile(route.Pattern)
+		match := re.MatchString(req.URL.Path)
 		if match {
 			if req.Method != route.Method && req.Method != http.MethodOptions {
 				wrongMethod(w, req)
@@ -48,11 +47,11 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 // HandleFunc adds a route pattern to the router
 func (router *Router) HandleFunc(path, method string, handler http.HandlerFunc) {
-	router.routes = append(router.routes, &Route{"^" + path + "$", handler, method})
+	router.routes = append(router.routes, &Route{fmt.Sprintf("^(%s)$", path), handler, method})
 }
 
 func (router *Router) Handle(path, method string, h http.Handler) {
-	router.routes = append(router.routes, &Route{"^" + path + "$", func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }, method})
+	router.routes = append(router.routes, &Route{fmt.Sprintf("^(%s)$", path), func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }, method})
 }
 
 func pageNotFound(w http.ResponseWriter, req *http.Request) {
