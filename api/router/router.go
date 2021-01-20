@@ -29,7 +29,6 @@ func New() *Router {
 // ServeHTTP is called for every request, it finds an API endpoint, matching request path, and calls the handler for that path
 func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for _, route := range router.routes {
-		fmt.Printf("|%s|,|%s|\n", route.Pattern, req.URL.Path)
 		re := regexp.MustCompile(route.Pattern)
 		match := re.MatchString(req.URL.Path)
 		if match {
