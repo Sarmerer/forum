@@ -53,7 +53,7 @@ const routes = [
     },
   },
   {
-    path: "/user/:id",
+    path: "/user/:userID",
     name: "User",
     meta: {
       titleSetInComponent: true,

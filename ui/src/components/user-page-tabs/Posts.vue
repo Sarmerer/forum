@@ -173,7 +173,7 @@ export default {
       return await api
         .post("post/find", {
           by: "author",
-          author: Number.parseInt(this.$route.params.id),
+          author: Number.parseInt(this.$route.params.userID),
         })
         .then((response) => {
           this.posts = response.data.data || [];

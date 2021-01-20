@@ -68,12 +68,11 @@ import api from "@/api/api";
 export default {
   name: "UserPage",
   watch: {
-    "$route.params.id": function() {
+    "$route.params.userID": function(id) {
+      if (!id || this.prevUserID == id) return;
       this.user = {};
-      this.comments = [];
-      this.activeTab = "";
       this.getUser().then(() => {
-        this.user.posts > 0 ? this.getPosts() : this.getComments();
+        this.activeTab = this.user.posts > 0 ? "PostsTab" : "CommentsTab";
       });
     },
   },
@@ -82,6 +81,7 @@ export default {
       loading: true,
       notFound: false,
       user: {},
+      prevUserID: 0,
       activeTab: "",
       tabs: [
         {
@@ -105,14 +105,20 @@ export default {
       ],
     };
   },
-  created() {
+  computed: {
+    userID: function() {
+      return Number.parseInt(this.$route.params.userID);
+    },
+  },
+  activated() {
     this.getUser().then(() => {
-      this.activeTab =
-        this.user.posts > 0
-          ? "PostsTab"
-          : this.user.comments > 0
-          ? "CommentsTab"
-          : "";
+      if (!this.activeTab)
+        this.activeTab =
+          this.user.posts > 0
+            ? "PostsTab"
+            : this.user.comments > 0
+            ? "CommentsTab"
+            : "";
       setTimeout(() => {
         this.loading = false;
         this.madeRequest = true;
@@ -139,10 +145,11 @@ export default {
       return await api
         .post("user/find", {
           by: "id",
-          id: Number.parseInt(this.$route.params.id),
+          id: this.userID,
         })
         .then((response) => {
           this.user = response.data.data;
+          this.prevUserID = this.user.id;
           document.title = this.user.alias;
         })
         .catch((error) => {
