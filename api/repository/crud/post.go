@@ -206,6 +206,9 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
 			&p.Created, &p.Edited, &p.EditReason,
 		)
+		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
+			return nil, status, err
+		}
 		if status, err = NewPostRepoCRUD().fetchCategories(&p); err != nil {
 			return nil, status, err
 		}
