@@ -1,9 +1,9 @@
 <template>
   <div>
     <div
-      v-for="(comment, index) in comments"
+      v-for="comment in comments"
       :key="comment.id"
-      class="ml-3 mt-2 position-relative"
+      :class="`mt-2 position-relative ml-${isMobile() ? '2' : '3'}`"
     >
       <div
         :class="
@@ -17,7 +17,7 @@
       </div>
       <div v-if="!comment.deleted" v-show="!comment.collapsed">
         <ControlModal
-          v-if="isMobile() && hasPermission(comment)"
+          v-if="isMobile() && hasPermission(comment.author)"
           v-on:delete-event="deleteComment(comment)"
           v-on:edit-event="
             $set(comment, 'editing', true),
@@ -31,7 +31,7 @@
               <Rating :entity="comment" size="md" endpoint="comment" />
             </b-col>
             <b-col>
-              <b-row align-h="between">
+              <b-row>
                 <b-col cols="start">
                   <router-link
                     :to="`/user/${comment.author.id}`"
@@ -71,14 +71,6 @@
                     </span>
                   </small>
                 </b-col>
-                <b-col v-if="isMobile()" cols="end">
-                  <ControlButtons
-                    :hasPermission="hasPermission(comment)"
-                    :disabled="requesting"
-                    compact
-                    :modalID="'modal-menu' + comment.id"
-                  />
-                </b-col>
               </b-row>
               <b-row>
                 <pre class="text-break m-0">
@@ -106,9 +98,9 @@
                 </b-col>
               </b-row>
             </b-col>
-            <b-col v-if="!isMobile()" cols="end" class="mr-2">
+            <b-col cols="end">
               <ControlButtons
-                :hasPermission="hasPermission(comment)"
+                :hasPermission="hasPermission(comment.author)"
                 v-on:delete-event="deleteComment(comment)"
                 v-on:edit-event="
                   $set(comment, 'editing', true),
@@ -116,12 +108,12 @@
                 "
                 :disabled="requesting"
                 :compact="isMobile()"
-                :modalID="'modal-menu' + index"
+                :modalID="'modal-menu' + comment.id"
               />
             </b-col>
           </b-row>
         </div>
-        <b-row v-if="hasPermission(comment) && comment.editing">
+        <b-row v-if="hasPermission(comment.author) && comment.editing">
           <b-col>
             <b-input-group>
               <b-form-textarea
@@ -159,12 +151,12 @@
                 </b-button-group>
               </template>
             </b-input-group>
-            <small v-if="properEditorLength(comment.editor)"
-              >{{ editorLength(comment.editor) }}/{{ maxCommentLength }}</small
-            >
-            <small v-else style="color: red"
-              >{{ editorLength(comment.editor) }}/{{ maxCommentLength }}</small
-            >
+            <small v-if="properEditorLength(comment.editor)">
+              {{ editorLength(comment.editor) }}/{{ maxCommentLength }}
+            </small>
+            <small v-else style="color: red">
+              {{ editorLength(comment.editor) }}/{{ maxCommentLength }}
+            </small>
           </b-col>
         </b-row>
 
@@ -275,8 +267,8 @@ export default {
       let el = this.editorLength(editor);
       return el >= this.minCommentLength && el <= this.maxCommentLength;
     },
-    hasPermission(comment) {
-      return comment?.author?.id == this.user?.id || this.user?.role > 0;
+    hasPermission(author) {
+      return author?.id === this.user?.id || this.user?.role > 0;
     },
     formatDate(date) {
       return moment.unix(date).format("ddd, d MMM y, hh:mm");
