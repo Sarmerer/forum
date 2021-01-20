@@ -177,6 +177,7 @@
               @keydown.enter.exact.prevent
               @keyup.enter.exact="reply(comment, comment.reply)"
               keydown.enter.shift.exact="newline"
+              @keyup.escape.exact="comment.replying = false"
               rows="1"
               no-resize
               :disabled="requesting"
