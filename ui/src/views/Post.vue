@@ -54,17 +54,15 @@
                     <pre color="white" class="text-break mb-1">{{
                       post.content
                     }}</pre>
-                    <div>
-                      <b-form-tag
-                        v-for="category in post.categories"
-                        disabled
-                        :key="category.id"
-                        :title="category.name"
-                        variant="dark"
-                        class="mr-1 mb-1"
-                        >{{ category.name }}
-                      </b-form-tag>
-                    </div>
+                    <b-form-tag
+                      v-for="category in post.categories"
+                      disabled
+                      :key="category.id"
+                      :title="category.name"
+                      variant="dark"
+                      class="mr-1 mb-1"
+                      >{{ category.name }}
+                    </b-form-tag>
                   </b-col>
                 </b-row>
                 <b-row>
@@ -136,7 +134,7 @@
                   </b-form-row>
                 </b-form>
               </div>
-              <Comments :postID="postID" />
+              <Comments v-if="!noComments" :postID="postID" />
             </div>
 
             <UserCard
@@ -166,6 +164,7 @@ import api from "@/api/api";
 export default {
   props: {
     postData: Object,
+    noComments: Boolean,
   },
   components: {
     ControlButtons,
