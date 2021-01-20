@@ -121,8 +121,9 @@ func (CommentRepoCRUD) FindByPostID(input *models.InputFindComments, userID int6
 			cache[c.ID].ChildrenLen++
 		}
 		result.LoadedRows++
+
 	}
-	if err = repository.DB.QueryRow(`SELECT COUNT(_id) FROM comments`).Scan(&result.TotalRows); err != nil {
+	if err = repository.DB.QueryRow(`SELECT COUNT(_id) FROM comments WHERE post_id_fkey = ?`, input.PostID).Scan(&result.TotalRows); err != nil {
 		return nil, err
 	}
 	return &result, nil
