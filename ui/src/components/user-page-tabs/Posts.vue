@@ -123,6 +123,7 @@
   </div>
 </template>
 <script>
+//FIXME add requesting boolean for idempotence
 import ControlButtons from "@/components/ControlButtons";
 import ControlModal from "@/components/ControlModal";
 import PostForm from "@/components/forms/PostForm";
@@ -160,8 +161,7 @@ export default {
   },
   methods: {
     hasPermission(author) {
-      if (!author?.id || !this.user?.id) return false;
-      return this.user.id === author.id;
+      return this.user?.id === author?.id || this.user?.role > 0;
     },
     reactionColor(yourReaction) {
       return yourReaction === 1 ? "green" : yourReaction === -1 ? "red" : "";
