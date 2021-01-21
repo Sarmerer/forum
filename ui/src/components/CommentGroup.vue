@@ -48,7 +48,7 @@
                     </small>
                   </router-link>
                   <small
-                    v-if="!isMobile() && comment.rating > 0"
+                    v-if="!isMobile() && comment.rating != 0"
                     class="text-white-50"
                   >
                     {{ comment.rating }}
