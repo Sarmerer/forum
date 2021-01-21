@@ -16,91 +16,105 @@
         "
         :modalID="'modal-menu' + comment.id"
       />
-      <div v-if="!comment.editing">
-        <b-row no-gutters>
+      <b-overlay
+        :show="comment.requesting"
+        rounded
+        opacity="0.6"
+        spinner-small
+        variant="dark"
+        spinner-variant="light"
+      >
+        <template #overlay>
+          <div class="text-center">
+            <b-icon icon="stopwatch" font-scale="2" animation="cylon"></b-icon>
+            <p id="cancel-label">Please wait...</p>
+          </div>
+        </template>
+        <div v-if="!comment.editing">
+          <b-row no-gutters>
+            <b-col>
+              <router-link :to="'/post/' + comment.post_id" tag="h5">
+                {{ comment.content }}
+              </router-link>
+            </b-col>
+            <b-col cols="end">
+              <ControlButtons
+                :hasPermission="hasPermission(comment.author)"
+                v-on:delete-event="deleteComment(comment)"
+                v-on:edit-event="
+                  $set(comment, 'editing', true),
+                    $set(comment, 'editor', comment.content)
+                "
+                :disabled="false"
+                :compact="isMobile()"
+                :modalID="'modal-menu' + comment.id"
+              />
+            </b-col>
+          </b-row>
+          <small>
+            <span v-b-tooltip.hover title="Rating">
+              <b-icon
+                :icon="reactionIcon(comment.your_reaction)"
+                :color="reactionColor(comment.your_reaction)"
+              >
+              </b-icon
+              >{{ comment.rating }}
+            </span>
+            <time-ago :datetime="comment.created" tooltip="right"> </time-ago>
+          </small>
+        </div>
+
+        <b-row v-if="hasPermission(comment.author) && comment.editing">
           <b-col>
-            <router-link :to="'/post/' + comment.post_id" tag="h5">
-              {{ comment.content }}
-            </router-link>
-          </b-col>
-          <b-col cols="end">
-            <ControlButtons
-              :hasPermission="hasPermission(comment.author)"
-              v-on:delete-event="deleteComment(comment)"
-              v-on:edit-event="
-                $set(comment, 'editing', true),
-                  $set(comment, 'editor', comment.content)
-              "
-              :disabled="false"
-              :compact="isMobile()"
-              :modalID="'modal-menu' + comment.id"
-            />
+            <b-input-group>
+              <b-form-textarea
+                class="textarea"
+                autofocus
+                v-model="comment.editor"
+                @keydown.enter.exact.prevent
+                @keyup.enter.exact="updateComment(comment)"
+                keydown.enter.shift.exact="newline"
+                rows="1"
+                no-resize
+                :disabled="comment.requesting"
+                max-rows="5"
+              ></b-form-textarea>
+              <template #append>
+                <b-button-group size="sm" vertical v-if="comment.editing">
+                  <b-button
+                    :disabled="
+                      comment.editor == comment.content ||
+                        !properEditorLength(comment.editor) ||
+                        comment.requesting
+                    "
+                    variant="outline-success"
+                    @click="updateComment(comment)"
+                  >
+                    Save
+                  </b-button>
+                  <b-button
+                    class="m-0"
+                    variant="outline-danger"
+                    @click="comment.editing = false"
+                    :disabled="comment.requesting"
+                    >Cancel</b-button
+                  >
+                </b-button-group>
+              </template>
+            </b-input-group>
+            <small v-if="properEditorLength(comment.editor)">
+              {{ editorLength(comment.editor) }}/{{ maxCommentLength }}
+            </small>
+            <small v-else style="color: red">
+              {{ editorLength(comment.editor) }}/{{ maxCommentLength }}
+            </small>
           </b-col>
         </b-row>
-        <small>
-          <span v-b-tooltip.hover title="Rating">
-            <b-icon
-              :icon="reactionIcon(comment.your_reaction)"
-              :color="reactionColor(comment.your_reaction)"
-            >
-            </b-icon
-            >{{ comment.rating }}
-          </span>
-          <time-ago :datetime="comment.created" tooltip="right"> </time-ago>
-        </small>
-      </div>
-
-      <b-row v-if="hasPermission(comment.author) && comment.editing">
-        <b-col>
-          <b-input-group>
-            <b-form-textarea
-              class="textarea"
-              autofocus
-              v-model="comment.editor"
-              @keydown.enter.exact.prevent
-              @keyup.enter.exact="updateComment(comment)"
-              keydown.enter.shift.exact="newline"
-              rows="1"
-              no-resize
-              :disabled="comment.requesting"
-              max-rows="5"
-            ></b-form-textarea>
-            <template #append>
-              <b-button-group size="sm" vertical v-if="comment.editing">
-                <b-button
-                  :disabled="
-                    comment.editor == comment.content ||
-                      !properEditorLength(comment.editor) ||
-                      comment.requesting
-                  "
-                  variant="outline-success"
-                  @click="updateComment(comment)"
-                >
-                  Save
-                </b-button>
-                <b-button
-                  class="m-0"
-                  variant="outline-danger"
-                  @click="comment.editing = false"
-                  :disabled="comment.requesting"
-                  >Cancel</b-button
-                >
-              </b-button-group>
-            </template>
-          </b-input-group>
-          <small v-if="properEditorLength(comment.editor)">
-            {{ editorLength(comment.editor) }}/{{ maxCommentLength }}
-          </small>
-          <small v-else style="color: red">
-            {{ editorLength(comment.editor) }}/{{ maxCommentLength }}
-          </small>
-        </b-col>
-      </b-row>
+      </b-overlay>
     </div>
   </div>
 </template>
 <script>
-//FIXME add requesting boolean for idempotence
 import ControlButtons from "@/components/ControlButtons";
 import ControlModal from "@/components/ControlModal";
 import TimeAgo from "@/components/TimeAgo";
@@ -193,13 +207,13 @@ export default {
     },
     async deleteComment(comment) {
       if (comment.requesting) return;
+      this.$set(comment, "requesting", true);
       return await api
         .delete("comment/delete", {
           params: { id: comment.id },
         })
         .then(() => {
           this.$set(comment, "deleted", true);
-          comment.requesting = false;
         })
         .catch((error) => {
           if (error.status === 403)
@@ -211,7 +225,8 @@ export default {
                 solid: true,
               }
             );
-        });
+        })
+        .then(() => (comment.requesting = false));
     },
   },
 };

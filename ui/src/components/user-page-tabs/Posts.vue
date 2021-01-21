@@ -11,119 +11,133 @@
         v-on:edit-event="edit(post)"
         :modalID="`modal-menu${post.id}`"
       />
-      <div v-if="!post.editing">
-        <b-row>
-          <b-col>
-            <router-link
-              :to="'/post/' + post.id"
-              tag="h4"
-              class="primary text-break"
-              >{{ post.title }}
-            </router-link>
-          </b-col>
-          <b-col cols="end">
-            <ControlButtons
-              :class="isMobile() ? 'mr-4' : 'mr-2'"
-              :hasPermission="hasPermission(post.author)"
-              v-on:delete-event="deletePost(post)"
-              v-on:edit-event="edit(post)"
-              :disabled="false"
-              :compact="isMobile()"
-              :modalID="`modal-menu${post.id}`"
-            />
-          </b-col>
-        </b-row>
-        <router-link :to="'/post/' + post.id" tag="pre">
-          {{ post.content }}
-        </router-link>
-        <b-row no-gutters>
-          <b-form-tag
-            v-for="category in post.categories"
-            disabled
-            :key="category.id"
-            :title="category.name"
-            variant="dark"
-            class="mr-1 mb-1"
-            >{{ category.name }}
-          </b-form-tag>
-        </b-row>
-        <b-row no-gutters>
-          <small>
-            <span v-b-tooltip.hover title="Rating">
-              <b-icon
-                :icon="reactionIcon(post.your_reaction)"
-                :color="reactionColor(post.your_reaction)"
-              >
-              </b-icon
-              >{{ post.rating }}
-            </span>
-            <span v-b-tooltip.hover title="Comments">
-              <b-icon-chat></b-icon-chat> {{ post.comments_count }}
-            </span>
-            <span v-b-tooltip.hover title="Participants">
-              <b-icon-people></b-icon-people>
-              {{ post.participants_count }}
-            </span>
-            <time-ago :datetime="post.created" tooltip="right"> </time-ago>
-          </small>
-        </b-row>
-      </div>
-      <b-form v-if="post.editing">
-        <b-form-row>
-          <b-col>
-            <PostForm
-              :form="post.editor"
-              v-on:valid-form="$set(post, 'valid', $event)"
-            />
-          </b-col>
-        </b-form-row>
-        <b-form-row class="mt-2">
-          <b-col align="end">
-            <b-button-group size="sm" v-if="!post.confirmCancel">
-              <b-button
-                variant="outline-danger"
-                @click="$set(post, 'confirmCancel', true)"
-              >
-                Cancel
-              </b-button>
-              <b-button
-                variant="outline-success"
-                :disabled="!post.valid"
-                @click.prevent="updatePost(post)"
-                class="px-3"
-              >
-                Save
-              </b-button>
-            </b-button-group>
-          </b-col>
-          <b-col align="end" v-if="post.confirmCancel">
-            <p class="m-0">Cancel editor?</p>
-            <b-button-group size="sm">
-              <b-button
-                variant="outline-danger"
-                @click="post.confirmCancel = false"
-              >
-                <b-icon-x></b-icon-x> No
-              </b-button>
-              <b-button
-                variant="outline-success"
-                @click="
-                  (post.editing = false),
-                    (post.confirmCancel = false),
-                    (post.editor = null)
-                "
-              >
-                <b-icon-check2></b-icon-check2> Yes
-              </b-button>
-            </b-button-group>
-          </b-col>
-        </b-form-row>
-      </b-form>
+      <b-overlay
+        :show="post.requesting"
+        rounded
+        opacity="0.6"
+        spinner-small
+        variant="dark"
+        spinner-variant="light"
+      >
+        <template #overlay>
+          <div class="text-center">
+            <b-icon icon="stopwatch" font-scale="2" animation="cylon"></b-icon>
+            <p id="cancel-label">Please wait...</p>
+          </div>
+        </template>
+        <div v-if="!post.editing">
+          <b-row>
+            <b-col>
+              <router-link
+                :to="`/post/${post.id}`"
+                tag="h4"
+                class="primary text-break"
+                >{{ post.title }}
+              </router-link>
+            </b-col>
+            <b-col cols="end">
+              <ControlButtons
+                :class="isMobile() ? 'mr-4' : 'mr-2'"
+                :hasPermission="hasPermission(post.author)"
+                v-on:delete-event="deletePost(post)"
+                v-on:edit-event="edit(post)"
+                :disabled="post.requesting || false"
+                :compact="isMobile()"
+                :modalID="`modal-menu${post.id}`"
+              />
+            </b-col>
+          </b-row>
+          <router-link :to="`/post/${post.id}`" tag="pre">
+            {{ post.content }}
+          </router-link>
+          <b-row no-gutters>
+            <b-form-tag
+              v-for="category in post.categories"
+              disabled
+              :key="category.id"
+              :title="category.name"
+              variant="dark"
+              class="mr-1 mb-1"
+              >{{ category.name }}
+            </b-form-tag>
+          </b-row>
+          <b-row no-gutters>
+            <small>
+              <span v-b-tooltip.hover title="Rating">
+                <b-icon
+                  :icon="reactionIcon(post.your_reaction)"
+                  :color="reactionColor(post.your_reaction)"
+                >
+                </b-icon
+                >{{ post.rating }}
+              </span>
+              <span v-b-tooltip.hover title="Comments">
+                <b-icon-chat></b-icon-chat> {{ post.comments_count }}
+              </span>
+              <span v-b-tooltip.hover title="Participants">
+                <b-icon-people></b-icon-people>
+                {{ post.participants_count }}
+              </span>
+              <time-ago :datetime="post.created" tooltip="right"> </time-ago>
+            </small>
+          </b-row>
+        </div>
+        <b-form v-if="post.editing">
+          <b-form-row>
+            <b-col>
+              <PostForm
+                :form="post.editor"
+                v-on:valid-form="$set(post, 'valid', $event)"
+              />
+            </b-col>
+          </b-form-row>
+          <b-form-row class="mt-2">
+            <b-col align="end">
+              <b-button-group size="sm" v-if="!post.confirmCancel">
+                <b-button
+                  variant="outline-danger"
+                  @click="$set(post, 'confirmCancel', true)"
+                >
+                  Cancel
+                </b-button>
+                <b-button
+                  variant="outline-success"
+                  :disabled="!post.valid || true"
+                  @click.prevent="updatePost(post)"
+                  class="px-3"
+                >
+                  Save
+                </b-button>
+              </b-button-group>
+            </b-col>
+            <b-col align="end" v-if="post.confirmCancel">
+              <p class="m-0">Cancel editor?</p>
+              <b-button-group size="sm">
+                <b-button
+                  variant="outline-danger"
+                  @click="post.confirmCancel = false"
+                >
+                  <b-icon-x></b-icon-x> No
+                </b-button>
+                <b-button
+                  variant="outline-success"
+                  @click="
+                    (post.editing = false),
+                      (post.confirmCancel = false),
+                      (post.editor = null)
+                  "
+                >
+                  <b-icon-check2></b-icon-check2> Yes
+                </b-button>
+              </b-button-group>
+            </b-col>
+          </b-form-row>
+        </b-form>
+      </b-overlay>
     </div>
   </div>
 </template>
 <script>
-//FIXME add requesting boolean for idempotence
 import ControlButtons from "@/components/ControlButtons";
 import ControlModal from "@/components/ControlModal";
 import PostForm from "@/components/forms/PostForm";
@@ -184,15 +198,20 @@ export default {
         .then(() => (this.madeRequest = true));
     },
     async deletePost(post) {
+      if (post.requesting) return;
+      this.$set(post, "requesting", true);
       return await api
         .delete("post/delete", {
           params: { id: post.id },
         })
         .then(() => {
           this.$set(post, "deleted", true);
+          this.$set(post, "requesting", false);
         });
     },
     async updatePost(post) {
+      if (post.requesting) return;
+      this.$set(post, "requesting", true);
       return await api
         .put("post/update", {
           id: post.id,
@@ -220,7 +239,8 @@ export default {
               variant: "danger",
               solid: true,
             });
-        });
+        })
+        .then(() => this.$set(post, "requesting", false));
     },
     edit(post) {
       this.$set(post, "editing", true);
