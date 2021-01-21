@@ -243,7 +243,8 @@ export default {
         .then(() => (this.requesting = false));
     },
     async reply(parent, content) {
-      if (!parent || !content) return;
+      if (parent.requesting || !parent || !content) return;
+      this.$set(parent, "requesting", true);
       return await api
         .post("comment/add", {
           post_id: parent.post_id,
@@ -314,14 +315,13 @@ export default {
     },
     async deleteComment(comment) {
       if (comment.requesting) return;
-      comment.requesting = true;
+      this.$set(comment, "requesting", true);
       return await api
         .delete("comment/delete", {
           params: { id: comment.id },
         })
         .then(() => {
           this.$set(comment, "deleted", true);
-          comment.requesting = false;
         })
         .catch((error) => {
           if (error.status === 403)
@@ -333,7 +333,8 @@ export default {
                 solid: true,
               }
             );
-        });
+        })
+        .then(() => (comment.requesting = false));
     },
   },
 };
