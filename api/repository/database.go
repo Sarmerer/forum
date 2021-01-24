@@ -38,7 +38,8 @@ func CheckDBIntegrity() (err error) {
 			created INTEGER,
 			last_active INTEGER,
 			session_id TEXT,
-			role INTEGER
+			role INTEGER,
+			oauth_provider TEXT
 		)`); err != nil {
 		return err
 	}

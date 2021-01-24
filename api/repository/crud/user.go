@@ -3,7 +3,9 @@ package crud
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
@@ -84,7 +86,9 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	}
 	for rows.Next() {
 		var u models.User
-		rows.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &u.Avatar, &u.Alias, &u.Created, &u.LastActive, &u.SessionID, &u.Role)
+		rows.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &u.Avatar, &u.Alias,
+			&u.Created, &u.LastActive, &u.SessionID, &u.Role, u.OAuthProvider,
+		)
 		users = append(users, u)
 	}
 	return users, nil
@@ -104,11 +108,13 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 				alias,
 				created,
 				last_active,
-				role
+				role,
+				oauth_provider
 		FROM users
 		WHERE _id = ?`, userID,
 	).Scan(
-		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created, &u.LastActive, &u.Role,
+		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias,
+		&u.Created, &u.LastActive, &u.Role, &u.OAuthProvider,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -125,7 +131,6 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 	var (
 		result       sql.Result
-		rowsAffected int64
 		now          int64 = utils.CurrentUnixTime()
 		lastInsertID int64
 		newUser      *models.User
@@ -135,11 +140,11 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 	name := repository.DB.QueryRow("SELECT username FROM users WHERE username = ?", user.Username).Scan(&user.Username)
 	email := repository.DB.QueryRow("SELECT email FROM users WHERE email = ?", user.Email).Scan(&user.Email)
 	if name == nil && email != nil {
-		return nil, http.StatusConflict, errors.New("name is not unique")
+		return nil, http.StatusConflict, errors.New("name is already taken")
 	} else if email == nil && name != nil {
-		return nil, http.StatusConflict, errors.New("email is not unique")
+		return nil, http.StatusConflict, errors.New("email is already taken")
 	} else if name == nil && email == nil {
-		return nil, http.StatusConflict, errors.New("name and email are not unique")
+		return nil, http.StatusConflict, errors.New("name and email are already taken")
 	}
 
 	if result, err = repository.DB.Exec(
@@ -152,14 +157,13 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 			created,
 			last_active,
 			session_id,
-			role
+			role,
+			oauth_provider
 		)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		user.Username, user.Password, user.Email, user.Avatar, user.Alias, now, now, user.SessionID, user.Role,
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		user.Username, user.Password, user.Email, user.Avatar, user.Alias, now, now,
+		user.SessionID, user.Role, &user.OAuthProvider,
 	); err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	if rowsAffected, err = result.RowsAffected(); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	if lastInsertID, err = result.LastInsertId(); err != nil {
@@ -168,36 +172,35 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 	if newUser, status, err = NewUserRepoCRUD().FindByID(lastInsertID); err != nil {
 		return nil, status, err
 	}
-	if rowsAffected > 0 {
-		return newUser, http.StatusOK, nil
-	}
-	return nil, http.StatusBadRequest, errors.New("could not create the user")
+	return newUser, http.StatusBadRequest, nil
 }
 
 //Update updates existing user in the database
 //TODO decide what we will let users to update
-func (UserRepoCRUD) Update(user *models.User) (int, error) {
+func (UserRepoCRUD) Update(user *models.User) (*models.User, int, error) {
 	var (
-		result       sql.Result
-		rowsAffected int64
-		err          error
+		updatedUser *models.User
+		status      int
+		err         error
 	)
-	if result, err = repository.DB.Exec(
+	if _, err = repository.DB.Exec(
 		`UPDATE users
-		SET alias = ?
+		SET username = ?,
+			email = ?,
+			avatar = ?,
+			alias = ?,
+			last_active = ?
 		WHERE _id = ?`,
-		user.Alias, user.ID,
+		user.Username, user.Email, user.Avatar,
+		user.Alias, user.LastActive, user.ID,
 	); err != nil {
-		return http.StatusInternalServerError, err
+		return nil, http.StatusInternalServerError, err
 	}
 
-	if rowsAffected, err = result.RowsAffected(); err != nil {
-		return http.StatusInternalServerError, err
+	if updatedUser, status, err = NewUserRepoCRUD().FindByID(user.ID); err != nil {
+		return nil, status, err
 	}
-	if rowsAffected > 0 {
-		return http.StatusOK, nil
-	}
-	return http.StatusNotModified, errors.New("could not update the user")
+	return updatedUser, http.StatusOK, nil
 }
 
 func (UserRepoCRUD) UpdateLastActivity(userID int64) error {
@@ -250,7 +253,7 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 	return http.StatusNotModified, errors.New("could not delete the user")
 }
 
-//FindByNameOrEmail finds a user by name or email in the database
+//FindByLoginOrEmail finds a user by name or email in the database
 func (UserRepoCRUD) FindByLoginOrEmail(username string) (*models.User, int, error) {
 	var (
 		u   models.User
@@ -264,12 +267,13 @@ func (UserRepoCRUD) FindByLoginOrEmail(username string) (*models.User, int, erro
 				alias,
 				created,
 	   			last_active,
-	   			role
+				role,
+				oauth_provider
 		FROM users
-		WHERE username = $1
-			OR email = $1`, username,
+		WHERE username = $1 OR email = $1`, username,
 	).Scan(
-		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created, &u.LastActive, &u.Role,
+		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created,
+		&u.LastActive, &u.Role, &u.OAuthProvider,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -277,4 +281,24 @@ func (UserRepoCRUD) FindByLoginOrEmail(username string) (*models.User, int, erro
 		return nil, http.StatusNotFound, errors.New("user not found")
 	}
 	return &u, http.StatusOK, nil
+}
+
+func (u UserRepoCRUD) Exists(logins []string) (exists bool, err error) {
+	var loginsConcat = strings.Join(logins, "\", \"")
+	if err = repository.DB.QueryRow(
+		fmt.Sprintf(
+			`SELECT EXISTS(
+			SELECT 1
+			FROM users
+			WHERE (username IN (%[1]s) OR email IN (%[1]s))
+			LIMIT 1
+			)`, fmt.Sprintf("\"%s\"", loginsConcat)),
+	).Scan(
+		&exists,
+	); err != nil {
+		if err != sql.ErrNoRows {
+			return false, err
+		}
+	}
+	return exists, nil
 }
