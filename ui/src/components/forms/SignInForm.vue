@@ -23,17 +23,34 @@
           </b-button>
         </template>
       </b-input-group>
-      <span class="mb-1 d-flex justify-content-center"> or</span>
+      <span class="mb-1">or</span>
       <div class="oauths">
         <b-button
-          variant="outline-light"
-          class="w-100 text-white-50"
+          size="sm"
+          variant="outline-dark"
+          class="text-white-50"
           href="https://github.com/login/oauth/authorize?client_id=df41c45c5f1e0a5b29fe"
+          v-b-tooltip.hover.left="'GitHub'"
         >
-          <b-icon icon="github"></b-icon> GitHub
+          <b-icon size="sm" icon="github"></b-icon>
         </b-button>
-        <b-button variant="outline-primary" class="w-100 text-white-50">
-          <b-icon icon="google"></b-icon> Google
+        <b-button
+          size="sm"
+          variant="outline-dark"
+          class="text-white-50"
+          v-b-tooltip.hover.top="'Google'"
+        >
+          <b-icon icon="google"></b-icon>
+        </b-button>
+        <b-button
+          size="sm"
+          variant="outline-dark"
+          class="text-white-50"
+          v-b-popover.hover.right="
+            'Only your public data is being stored, because we care'
+          "
+        >
+          <b-icon icon="info"></b-icon>
         </b-button>
       </div>
     </b-form-group>
@@ -100,6 +117,8 @@ export default {
 <style lang="scss" scoped>
 .oauths {
   display: flex;
-  gap: 5px;
+  gap: 10px;
+  flex-shrink: 1;
+  justify-content: center;
 }
 </style>

@@ -8,13 +8,13 @@
         </h1>
       </div>
     </div>
-    <div class="center" v-if="!showWelcomeMessage">
+    <div class="flex-container" v-if="!showWelcomeMessage">
       <div v-if="!signUpPage && !signUpPageLocal" class="auth">
         <h4 align="center">SIGN IN</h4>
         <SignInForm v-on:success="successfulAuth" />
         <small>
-          <p class="text-white-50">
-            Don't have an account yet?
+          <p class="text-white-50 d-flex justify-content-center">
+            Don't have an account?
             <a class="secondary" @click="signUpPageLocal = true">Sign up</a>
           </p></small
         >
@@ -23,7 +23,7 @@
         <h4 align="center">SIGN UP</h4>
         <SignUpForm v-on:success="successfulAuth" />
         <small>
-          <p class="text-white-50">
+          <p class="text-white-50 d-flex justify-content-center">
             Already have an account?
             <a class="secondary" @click="signUpPageLocal = false">Sign in</a>
           </p></small
@@ -100,31 +100,32 @@ export default {
 </script>
 
 <style scoped>
-.center {
-  height: 400px;
-  position: relative;
+.flex-container {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
 }
 
-.center .auth {
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.auth {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 300px;
 }
 
-.center .auth a {
+.auth a {
   cursor: pointer;
 }
 
 @media (max-width: 768px) {
-  .center .auth {
+  .auth {
     width: 50%;
   }
 }
 
 @media (max-width: 596px) {
-  .center .auth {
+  .auth {
     width: 80%;
   }
 }
