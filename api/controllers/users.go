@@ -85,12 +85,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if name != "" {
 		updatedUser.Alias = name
 	}
-	if status, err = repo.Update(updatedUser); err != nil {
+	if updatedUser, status, err = repo.Update(updatedUser); err != nil {
 		response.Error(w, status, err)
 		return
 	}
 
-	response.Success(w, "user has been updated", nil)
+	response.Success(w, "user has been updated", updatedUser)
 }
 
 //DeleteUser deletes a user from the database

@@ -49,8 +49,22 @@ var apiRoutes = []route{
 	/* -------------------------------------------------------------------------- */
 
 	{
+		URI:      "/api/oauth",
+		Handler:  controllers.OAuthHandler,
+		Method:   http.MethodPost,
+		MinRole:  config.RoleUser,
+		NeedAuth: false,
+	},
+	{
+		URI:      "/api/auth/conflict/resolve",
+		Handler:  controllers.ResolveConflict,
+		Method:   http.MethodPost,
+		MinRole:  config.RoleUser,
+		NeedAuth: false,
+	},
+	{
 		URI:      "/api/auth/signin",
-		Handler:  controllers.LogIn,
+		Handler:  controllers.SignIn,
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,

@@ -14,7 +14,6 @@ type InputUserSignUp struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 
-	Admin      bool   `json:"admin"`       //Sign up user as admin
 	AdminToken string `json:"admin_token"` // To verify that user is able to be an admin
 }
 

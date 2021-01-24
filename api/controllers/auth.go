@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/sarmerer/forum/api/OAuth"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
@@ -15,10 +18,36 @@ import (
 	"github.com/sarmerer/forum/api/utils"
 )
 
-// LogIn verifies user credinentials with database.
+func OAuthHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		providerName string         = strings.ToLower(r.FormValue("provider"))
+		provider     OAuth.Provider = OAuth.Providers[providerName]
+		cookie       string
+		sessionID    string
+		user         *models.User
+		status       int
+		err          error
+	)
+
+	if _, ok := OAuth.Providers[providerName]; !ok {
+		response.Error(w, http.StatusBadRequest, errors.New("unknown provider"))
+		return
+	}
+	cookie, sessionID = generateCookie(r.Cookie(config.SessionCookieName))
+
+	if user, status, err = provider.Auth(r.URL.Query(), sessionID); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+
+	w.Header().Set("Set-Cookie", cookie)
+	response.Success(w, "user has been created", user)
+}
+
+// SignIn verifies user credinentials with database.
 //
 // Returns User model on success
-func LogIn(w http.ResponseWriter, r *http.Request) {
+func SignIn(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo         repository.UserRepo = crud.NewUserRepoCRUD()
 		input        models.InputUserSignIn
@@ -66,7 +95,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		input          models.InputUserSignUp
 		hashedPassword string
 		cookie         string
-		role           int    = 0
 		admintToken    string = os.Getenv("ADMIN_TOKEN")
 		newSessionID   string
 		newUser        *models.User
@@ -76,13 +104,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
 		response.Error(w, http.StatusBadRequest, err)
 		return
-	}
-
-	// This line compares environment variable with name ADMMIN_TOKEN,
-	// if it exisits, and adminTolken, passed from user. If they match -
-	// user gets an admin role, if not, user gets standard role
-	if admintToken != "" && input.Admin && input.AdminToken == admintToken {
-		role = 2
 	}
 
 	if err = input.Validate(); err != nil {
@@ -102,8 +123,16 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Avatar:    fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
 		Alias:     input.Login,
 		SessionID: newSessionID,
-		Role:      role,
+		Role:      config.RoleUser,
 	}
+
+	// This line compares environment variable with name ADMMIN_TOKEN,
+	// if it exisits, and adminTolken, passed from user. If they match -
+	// user gets an admin role, if not, user gets standard role
+	if admintToken != "" && input.AdminToken == admintToken {
+		user.Role = config.RoleAdmin
+	}
+
 	if newUser, status, err = repo.Create(&user); err != nil {
 		response.Error(w, status, err)
 		return
@@ -111,7 +140,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Set-Cookie", cookie)
 	response.Success(w, "user has been created", newUser)
-	return
 }
 
 // LogOut deletes user session id from database
@@ -137,6 +165,12 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	response.Success(w, "user is logged out", nil)
 	return
+}
+
+// ResolveConflict handles the case when someone tries 
+//to use OAuth, but his username or email is already taken
+func ResolveConflict(w http.ResponseWriter, r *http.Request) {
+	
 }
 
 // Me is an endpoint function, that helps to understand if user is authenticated.
