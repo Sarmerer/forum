@@ -26,17 +26,9 @@ store.dispatch("auth/attempt").then(() => {
 Vue.mixin({
   methods: {
     isMobile: function() {
-      if (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        )
-      ) {
-        return true;
-      } else {
-        //Margin-left is equal to the width of the .sidenav element
-        document.body.style.marginLeft = "65px";
-        return false;
-      }
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
     },
   },
 });

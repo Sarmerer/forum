@@ -20,7 +20,7 @@
                       :key="tab.title"
                       :disabled="tabDisabled(tab)"
                       @click="activeTab = tab.name"
-                      :size="isMobile() ? 'sm' : 'md'"
+                      size="sm"
                       :variant="
                         `outline-${
                           activeTab === tab.name && !tab.disabled
@@ -95,6 +95,18 @@ export default {
           name: "CommentsTab",
           prop: "comments",
           component: this.PostTab,
+        },
+        {
+          title: "Upvoted",
+          prop: "saved",
+          component: this.PostTab,
+          disabled: true,
+        },
+        {
+          title: "Downvoted",
+          prop: "saved",
+          component: this.PostTab,
+          disabled: true,
         },
         {
           title: "Saved",

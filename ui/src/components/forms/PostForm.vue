@@ -38,6 +38,7 @@
     <b-form-tags
       aria-describedby="tags-help-block"
       autocomplete="off"
+      separator=" "
       remove-on-delete
       v-model="form.categories"
       tag-variant="dark"

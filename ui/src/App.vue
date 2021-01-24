@@ -25,5 +25,8 @@ export default {
       search: false,
     };
   },
+  created() {
+    if (!this.isMobile()) document.body.style.marginLeft = "65px";
+  },
 };
 </script>
