@@ -27,6 +27,11 @@ func JSON(w http.ResponseWriter, responseStatus string, httpStatus int, message,
 	w.Write(b)
 }
 
+func Respond(w http.ResponseWriter, responseStatus string, httpStatus int, message, data interface{}) {
+	w.WriteHeader(httpStatus)
+	JSON(w, responseStatus, httpStatus, message, data)
+}
+
 // Error acts as a template for a JSON function.
 // It automatically sets status to "error"
 func Error(w http.ResponseWriter, httpStatus int, err error) {

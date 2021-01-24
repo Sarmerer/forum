@@ -4,6 +4,12 @@ type InputID struct {
 	ID int64 `json:"id"`
 }
 
+type InputMergeAccounts struct {
+	ID            int64  `json:"id"`
+	MergeData     User   `json:"merge_data"`
+	Password      string `json:"password"`
+}
+
 type InputUserSignIn struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`

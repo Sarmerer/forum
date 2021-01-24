@@ -24,7 +24,7 @@ func OAuthHandler(w http.ResponseWriter, r *http.Request) {
 		provider     OAuth.Provider = OAuth.Providers[providerName]
 		cookie       string
 		sessionID    string
-		user         *models.User
+		users        []*models.User
 		status       int
 		err          error
 	)
@@ -35,13 +35,13 @@ func OAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie, sessionID = generateCookie(r.Cookie(config.SessionCookieName))
 
-	if user, status, err = provider.Auth(r.URL.Query(), sessionID); err != nil {
-		response.Error(w, status, err)
+	if users, status, err = provider.Auth(r.URL.Query(), sessionID); err != nil {
+		response.Respond(w, "error", status, err.Error(), users)
 		return
 	}
 
 	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, "user has been created", user)
+	response.Success(w, "user has been created", users[0])
 }
 
 // SignIn verifies user credinentials with database.
@@ -167,10 +167,51 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// ResolveConflict handles the case when someone tries 
+// MergeAccounts handles the case when someone tries
 //to use OAuth, but his username or email is already taken
-func ResolveConflict(w http.ResponseWriter, r *http.Request) {
-	
+func MergeAccounts(w http.ResponseWriter, r *http.Request) {
+	var (
+		repo         repository.UserRepo = crud.NewUserRepoCRUD()
+		input        models.InputMergeAccounts
+		userPassword string
+		cookie       string
+		newSessionID string
+		user         *models.User
+		status       int
+		err          error
+	)
+	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
+		response.Error(w, http.StatusBadRequest, err)
+		return
+	}
+	if userPassword, status, err = repo.GetPassword(input.ID); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+
+	if err = verifyPassword(userPassword, input.Password); err != nil {
+		response.Error(w, http.StatusForbidden, errors.New("wrong password"))
+		return
+	}
+	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
+
+	updatedUser := &input.MergeData
+	updatedUser.ID = input.ID
+	updatedUser.LastActive = utils.CurrentUnixTime()
+
+	if user, status, err = repo.Update(updatedUser); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+
+	if err = repo.UpdateSession(updatedUser.ID, newSessionID); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.Header().Set("Set-Cookie", cookie)
+	response.Success(w, fmt.Sprint("user is logged in"), user)
+
 }
 
 // Me is an endpoint function, that helps to understand if user is authenticated.

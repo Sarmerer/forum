@@ -185,14 +185,15 @@ func (UserRepoCRUD) Update(user *models.User) (*models.User, int, error) {
 	)
 	if _, err = repository.DB.Exec(
 		`UPDATE users
-		SET username = ?,
+		SET username = $1,
 			email = ?,
 			avatar = ?,
-			alias = ?,
-			last_active = ?
+			alias = $1,
+			last_active = ?,
+			oauth_provider = ?
 		WHERE _id = ?`,
 		user.Username, user.Email, user.Avatar,
-		user.Alias, user.LastActive, user.ID,
+		user.LastActive, user.OAuthProvider, user.ID,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}

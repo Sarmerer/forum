@@ -56,8 +56,8 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
-		URI:      "/api/auth/conflict/resolve",
-		Handler:  controllers.ResolveConflict,
+		URI:      "/api/auth/merge",
+		Handler:  controllers.MergeAccounts,
 		Method:   http.MethodPost,
 		MinRole:  config.RoleUser,
 		NeedAuth: false,

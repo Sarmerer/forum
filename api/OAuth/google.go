@@ -13,6 +13,6 @@ type google struct {
 
 var Google = google{}
 
-func (g google) Auth(query url.Values, sessionID string) (user *models.User, status int, err error) {
+func (g google) Auth(query url.Values, sessionID string) (users []*models.User, status int, err error) {
 	return nil, http.StatusOK, nil
 }

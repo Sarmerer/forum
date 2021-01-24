@@ -32,10 +32,11 @@ type accessTokenResponse struct {
 
 var GitHub = gitHub{AccessTokenName: "code"}
 
-func (gh gitHub) Auth(query url.Values, sessionID string) (user *models.User, status int, err error) {
+func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User, status int, err error) {
 	var (
 		atr    *accessTokenResponse
-		u      *gitHubUser
+		gUser  *gitHubUser
+		user   *models.User
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
 		exists bool
 	)
@@ -46,27 +47,34 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (user *models.User, st
 	if atr, err = getToken(query.Get(gh.AccessTokenName)); err != nil {
 		return
 	}
-	if u, err = getUser(atr.AccessToken); err != nil {
+	if gUser, err = getUser(atr.AccessToken); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	if exists, err = repo.Exists([]string{u.Login, u.Email}); err != nil {
+	if gUser.Login == "" || gUser.Email == "" {
+		return nil, http.StatusBadRequest, errors.New("invalid or expired token")
+	}
+	if exists, err = repo.Exists([]string{gUser.Login, gUser.Email}); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	if exists {
 		var oldUser *models.User
 
-		if oldUser, status, err = repo.FindByLoginOrEmail(u.Login); err != nil {
+		if oldUser, status, err = repo.FindByLoginOrEmail(gUser.Login); err != nil {
 			return nil, status, err
 		}
 
 		if oldUser.OAuthProvider != ProviderGitHub {
-			// resolve confilict
-			return nil, http.StatusConflict, errors.New("conflict")
+			var mergant *models.User = &models.User{}
+			mergant.Username = gUser.Login
+			mergant.Email = gUser.Email
+			mergant.Avatar = gUser.Avatar
+			mergant.OAuthProvider = ProviderGitHub
+			return []*models.User{mergant, oldUser}, http.StatusConflict, errors.New("conflict")
 		}
 
-		oldUser.Username = u.Login
-		oldUser.Email = u.Email
-		oldUser.Avatar = u.Avatar
+		oldUser.Username = gUser.Login
+		oldUser.Email = gUser.Email
+		oldUser.Avatar = gUser.Avatar
 		oldUser.LastActive = utils.CurrentUnixTime()
 		oldUser.OAuthProvider = ProviderGitHub
 
@@ -76,13 +84,14 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (user *models.User, st
 		if err = repo.UpdateSession(oldUser.ID, sessionID); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
+		users = append(users, user)
 	} else {
 		now := utils.CurrentUnixTime()
 		newUser := &models.User{
-			Username:      u.Login,
-			Alias:         u.Login,
-			Email:         u.Email,
-			Avatar:        u.Avatar,
+			Username:      gUser.Login,
+			Alias:         gUser.Login,
+			Email:         gUser.Email,
+			Avatar:        gUser.Avatar,
 			Created:       now,
 			LastActive:    now,
 			Role:          config.RoleUser,
@@ -92,8 +101,9 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (user *models.User, st
 		if user, status, err = repo.Create(newUser); err != nil {
 			return nil, status, err
 		}
+		users = append(users, user)
 	}
-	return user, http.StatusOK, nil
+	return users, http.StatusOK, nil
 }
 
 func getToken(code string) (atr *accessTokenResponse, err error) {
