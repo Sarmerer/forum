@@ -37,6 +37,20 @@ export default {
         })
         .catch((error) => commit("setAuthError", error));
     },
+    async merge({ dispatch, commit }, data) {
+      console.log("receiving:", data);
+      await api
+        .post(`auth/merge`, {
+          id: data.merged.id,
+          merge_data: data.merger,
+          password: data.password,
+        })
+        .then((response) => {
+          let user = response?.data?.data;
+          user ? commit("setUser", user) : dispatch("attempt");
+        })
+        .catch((error) => commit("setAuthError", error));
+    },
     async signUp({ dispatch, commit }, credentials) {
       await api
         .post(`auth/signup`, {

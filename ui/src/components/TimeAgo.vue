@@ -25,7 +25,7 @@ export default {
     tooltip: String,
   },
   created() {
-    this.ago = moment.unix(this.datetime).short(this.isMobile());
+    this.ago = moment.unix(this.datetime).short();
     this.dateFormatted = moment
       .unix(this.datetime)
       .format("ddd, D MMM y, hh:mm");

@@ -13,7 +13,7 @@
         <h4 align="center">SIGN IN</h4>
         <SignInForm v-on:success="successfulAuth" />
         <small>
-          <p class="text-white-50 d-flex justify-content-center">
+          <p class="text-white-50">
             Don't have an account?
             <a class="secondary" @click="signUpPageLocal = true">Sign up</a>
           </p></small
@@ -23,7 +23,7 @@
         <h4 align="center">SIGN UP</h4>
         <SignUpForm v-on:success="successfulAuth" />
         <small>
-          <p class="text-white-50 d-flex justify-content-center">
+          <p class="text-white-50">
             Already have an account?
             <a class="secondary" @click="signUpPageLocal = false">Sign in</a>
           </p></small
@@ -72,12 +72,13 @@ export default {
     };
   },
   beforeRouteLeave(from, to, next) {
+    this.timeLeft = 0;
     clearInterval(this.interval);
     next();
   },
   methods: {
     successfulAuth(event) {
-      if (event === "signin") this.oldUser = true;
+      this.oldUser = event === "signin";
       this.showWelcomeMessage = true;
       this.interval = setInterval(() => {
         this.timeLeft--;

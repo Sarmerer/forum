@@ -77,14 +77,17 @@ export default {
   mounted() {
     if (this.$route?.query?.provider) {
       this.OAuth(this.$route.query).then(() => {
-        let error = this.authError?.data?.message || this.authError?.data;
+        let error = this.authError?.data || this.authError?.data;
         if (error) {
-          this.$bvToast.toast(error, {
-            title: "Oops!",
-            variant: "danger",
-            solid: true,
-          });
-          this.$store.commit("auth/setAuthError", null);
+          if (error?.code === 409) {
+            this.$router.push({
+              name: "AuthMerge",
+              params: {
+                accounts: error?.data,
+              },
+            });
+            this.$store.commit("auth/setAuthError", null);
+          }
         } else {
           this.$emit("success", "signin");
         }

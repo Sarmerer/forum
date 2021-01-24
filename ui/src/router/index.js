@@ -70,6 +70,16 @@ const routes = [
     },
   },
   {
+    path: "/auth/merge",
+    name: "AuthMerge",
+    props: true,
+    component: () =>
+      import(/* webpackChunkName: "authMerge" */ "@/views/AuthMerge.vue"),
+    beforeEnter(to, from, next) {
+      store.getters["auth/authenticated"] ? next("/") : next();
+    },
+  },
+  {
     path: "/dashboard/:role",
     name: "Admin Dashboard",
     component: () =>
