@@ -26,6 +26,17 @@ export default {
     },
   },
   actions: {
+    async OAuth({ dispatch, commit }, query) {
+      await api
+        .post(`oauth`, null, {
+          params: query,
+        })
+        .then((response) => {
+          let user = response?.data?.data;
+          user ? commit("setUser", user) : dispatch("attempt");
+        })
+        .catch((error) => commit("setAuthError", error));
+    },
     async signUp({ dispatch, commit }, credentials) {
       await api
         .post(`auth/signup`, {

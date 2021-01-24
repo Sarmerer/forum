@@ -13,7 +13,7 @@
         <h4 align="center">SIGN IN</h4>
         <SignInForm v-on:success="successfulAuth" />
         <small>
-          <p>
+          <p class="text-white-50">
             Don't have an account yet?
             <a class="secondary" @click="signUpPageLocal = true">Sign up</a>
           </p></small
@@ -23,7 +23,7 @@
         <h4 align="center">SIGN UP</h4>
         <SignUpForm v-on:success="successfulAuth" />
         <small>
-          <p>
+          <p class="text-white-50">
             Already have an account?
             <a class="secondary" @click="signUpPageLocal = false">Sign in</a>
           </p></small
@@ -71,7 +71,7 @@ export default {
       interval: null,
     };
   },
-  beforeRouteLeave(to, from, next) {
+  beforeRouteLeave(from, to, next) {
     clearInterval(this.interval);
     next();
   },

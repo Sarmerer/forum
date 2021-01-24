@@ -25,7 +25,7 @@
         required
         placeholder="Email"
         class="mb-2"
-        :state="!form.email.length ? null : true"
+        :state="emailState"
       ></b-form-input>
 
       <b-form-input
@@ -55,15 +55,23 @@
         {{ passwordsMatchFeedback }}
       </b-form-invalid-feedback>
 
-      <b-form-checkbox v-model="form.admin">Sign up as admin</b-form-checkbox>
-      <b-form-input
-        v-if="form.admin"
-        v-model="form.adminToken"
-        type="password"
-        required
-        placeholder="Admin Token"
-        class="mt-1"
-      ></b-form-input>
+      <b-input-group class="mt-3">
+        <b-form-input
+          v-model="form.adminToken"
+          type="password"
+          placeholder="Admin Token"
+        ></b-form-input>
+        <template #append>
+          <b-button
+            variant="darker text-white-50"
+            v-b-popover.hover.right="
+              'You will be granted admin rights, if a valid admin token is entered here'
+            "
+          >
+            <b-icon icon="info"></b-icon>
+          </b-button>
+        </template>
+      </b-input-group>
     </b-form-group>
     <b-button
       type="submit"
@@ -96,6 +104,13 @@ export default {
     },
     loginState() {
       return this.form.login.length === 0 ? null : this.validLoginLength;
+    },
+    validEmail() {
+      const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(this.form.email).toLowerCase());
+    },
+    emailState() {
+      return this.form.email.length === 0 ? null : this.validEmail;
     },
     passwordsMatch() {
       return this.form.password === this.form.passwordConfirm;
