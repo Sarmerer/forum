@@ -123,6 +123,7 @@ func (m *manager) deleteUnverifiedUser(userID int64, code, email string, after t
 			}
 			logger.CheckErrAndLog("Garbage collector", "deleted unverified user", nil)
 		}
+		break
 	}
 }
 
