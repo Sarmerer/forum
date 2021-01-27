@@ -115,15 +115,14 @@ func (m *manager) deleteUnverifiedUser(userID int64, code, email string, after t
 			logger.CheckErrAndLog("Garbage collector", "deleting unverified user error", err)
 			return
 		}
-		fmt.Println(user)
 		if !user.Verified {
 			m.removePending(code, email)
 			if _, err = repo.Delete(user.ID); err != nil {
 				logger.CheckErrAndLog("Garbage collector", "deleting unverified user error", err)
 				return
 			}
+			logger.CheckErrAndLog("Garbage collector", "deleted unverified user", nil)
 		}
-		logger.CheckErrAndLog("Garbage collector", "deleted unverified user", nil)
 	}
 }
 
