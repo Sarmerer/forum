@@ -29,7 +29,7 @@ func SetupEnv() error {
 		err       error
 	)
 	if file, err = os.Open("./.env"); err != nil {
-		return errors.New("could not find .env file, skipping...")
+		return errors.New("could not find .env file, skipping")
 	}
 	defer file.Close()
 
@@ -37,7 +37,7 @@ func SetupEnv() error {
 	for scanner.Scan() {
 		env := strings.Split(scanner.Text(), "=")
 		if len(env) < 2 {
-			return fmt.Errorf("invalid env variable on line %d", lineCount)
+			continue
 		}
 		lineCount++
 		if os.Getenv(env[0]) != "" {

@@ -34,7 +34,7 @@ func (UserRepoCRUD) ValidateSession(sessionID string) (user models.UserCtx, stat
 		`SELECT _id,
 			role
 		FROM users
-		WHERE session_id = ?`, sessionID,
+		WHERE session_id = ? AND session_id <> ''`, sessionID,
 	).Scan(
 		&user.ID, &user.Role,
 	); err != nil {

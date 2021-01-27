@@ -3,7 +3,9 @@ package router
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/sarmerer/forum/api/logger"
@@ -46,11 +48,21 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 // HandleFunc adds a route pattern to the router
 func (router *Router) HandleFunc(path, method string, handler http.HandlerFunc) {
-	router.routes = append(router.routes, &Route{fmt.Sprintf("^(%s)$", path), handler, method})
+	var key string = fmt.Sprintf("^(%s)$", path)
+	if router.pathExists(key, method) {
+		log.Fatalf("duplicated routes: path %s method %s\n", path, method)
+		os.Exit(1)
+	}
+	router.routes = append(router.routes, &Route{key, handler, method})
 }
 
 func (router *Router) Handle(path, method string, h http.Handler) {
-	router.routes = append(router.routes, &Route{fmt.Sprintf("^(%s)$", path), func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }, method})
+	var key string = fmt.Sprintf("^(%s)$", path)
+	if router.pathExists(key, method) {
+		log.Fatalf("duplicated routes: path %s method %s\n", path, method)
+		os.Exit(1)
+	}
+	router.routes = append(router.routes, &Route{key, func(w http.ResponseWriter, r *http.Request) { h.ServeHTTP(w, r) }, method})
 }
 
 func pageNotFound(w http.ResponseWriter, req *http.Request) {
@@ -61,4 +73,13 @@ func pageNotFound(w http.ResponseWriter, req *http.Request) {
 func wrongMethod(w http.ResponseWriter, req *http.Request) {
 	logger.HTTPLogs(logger.PaintStatus(http.StatusMethodNotAllowed), "0µs", req.Host, logger.PaintMethod(req.Method), req.URL.Path)
 	response.Error(w, http.StatusMethodNotAllowed, errors.New("wrong method"))
+}
+
+func (router *Router) pathExists(pattern, method string) bool {
+	for _, r := range router.routes {
+		if r.Pattern == pattern && r.Method == method {
+			return true
+		}
+	}
+	return false
 }
