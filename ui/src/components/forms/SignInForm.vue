@@ -39,6 +39,7 @@
           variant="outline-dark"
           class="text-white-50"
           v-b-tooltip.hover.top="'Google'"
+          href="https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email&access_type=offline&response_type=code&redirect_uri=http://localhost:8081/auth?provider=google&client_id=686483498224-2430dd197rbet1ck3tig05vtoub0ocvb.apps.googleusercontent.com"
         >
           <b-icon icon="google"></b-icon>
         </b-button>
@@ -72,10 +73,13 @@ export default {
         login: "",
         password: "",
       },
+      requesting: false,
     };
   },
   mounted() {
     if (this.$route?.query?.provider) {
+      if (this.requesting) return;
+      this.requesting = true;
       this.OAuth(this.$route.query).then(() => {
         let error = this.authError?.data || this.authError?.data;
         if (error) {
@@ -91,6 +95,7 @@ export default {
         } else {
           this.$emit("success", "signin");
         }
+        this.requesting = false;
       });
     }
   },
@@ -100,6 +105,8 @@ export default {
       OAuth: "auth/OAuth",
     }),
     submitSignIn() {
+      if (this.requesting) return;
+      this.requesting = true;
       this.signIn(this.form).then(() => {
         let error = this.authError?.data?.message || this.authError?.data;
         if (error) {
@@ -112,6 +119,7 @@ export default {
         } else {
           this.$emit("success", "signin");
         }
+        this.requesting = false;
       });
     },
   },

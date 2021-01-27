@@ -35,7 +35,7 @@ var GitHub = gitHub{AccessTokenName: "code"}
 func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User, status int, err error) {
 	var (
 		atr    *accessTokenResponse
-		gUser  *gitHubUser
+		ghUser *gitHubUser
 		user   *models.User
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
 		exists bool
@@ -44,37 +44,37 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User,
 	if query.Get(gh.AccessTokenName) == "" {
 		return nil, http.StatusBadRequest, errors.New("access token not present")
 	}
-	if atr, err = getToken(query.Get(gh.AccessTokenName)); err != nil {
+	if atr, err = gh.getToken(query.Get(gh.AccessTokenName)); err != nil {
 		return
 	}
-	if gUser, err = getUser(atr.AccessToken); err != nil {
+	if ghUser, err = gh.getUser(atr.AccessToken); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	if gUser.Login == "" || gUser.Email == "" {
+	if ghUser.Login == "" || ghUser.Email == "" {
 		return nil, http.StatusBadRequest, errors.New("invalid or expired token")
 	}
-	if exists, err = repo.Exists([]string{gUser.Login, gUser.Email}); err != nil {
+	if exists, err = repo.Exists([]string{ghUser.Login, ghUser.Email}); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	if exists {
 		var oldUser *models.User
 
-		if oldUser, status, err = repo.FindByLoginOrEmail(gUser.Login); err != nil {
+		if oldUser, status, err = repo.FindByLoginOrEmail([]string{ghUser.Login, ghUser.Email}); err != nil {
 			return nil, status, err
 		}
 
 		if oldUser.OAuthProvider != ProviderGitHub {
-			var mergant *models.User = &models.User{}
-			mergant.Username = gUser.Login
-			mergant.Email = gUser.Email
-			mergant.Avatar = gUser.Avatar
-			mergant.OAuthProvider = ProviderGitHub
-			return []*models.User{mergant, oldUser}, http.StatusConflict, errors.New("conflict")
+			var merged *models.User = &models.User{}
+			merged.Username = ghUser.Login
+			merged.Email = ghUser.Email
+			merged.Avatar = ghUser.Avatar
+			merged.OAuthProvider = ProviderGitHub
+			return []*models.User{merged, oldUser}, http.StatusConflict, errors.New("conflict")
 		}
 
-		oldUser.Username = gUser.Login
-		oldUser.Email = gUser.Email
-		oldUser.Avatar = gUser.Avatar
+		oldUser.Username = ghUser.Login
+		oldUser.Email = ghUser.Email
+		oldUser.Avatar = ghUser.Avatar
 		oldUser.LastActive = utils.CurrentUnixTime()
 		oldUser.OAuthProvider = ProviderGitHub
 
@@ -88,10 +88,10 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User,
 	} else {
 		now := utils.CurrentUnixTime()
 		newUser := &models.User{
-			Username:      gUser.Login,
-			Alias:         gUser.Login,
-			Email:         gUser.Email,
-			Avatar:        gUser.Avatar,
+			Username:      ghUser.Login,
+			Alias:         ghUser.Login,
+			Email:         ghUser.Email,
+			Avatar:        ghUser.Avatar,
 			Created:       now,
 			LastActive:    now,
 			Role:          config.RoleUser,
@@ -106,7 +106,7 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User,
 	return users, http.StatusOK, nil
 }
 
-func getToken(code string) (atr *accessTokenResponse, err error) {
+func (gh gitHub) getToken(code string) (atr *accessTokenResponse, err error) {
 	var (
 		req          *http.Request
 		res          *http.Response
@@ -129,7 +129,7 @@ func getToken(code string) (atr *accessTokenResponse, err error) {
 	return
 }
 
-func getUser(token string) (user *gitHubUser, err error) {
+func (gh gitHub) getUser(token string) (user *gitHubUser, err error) {
 	var (
 		req    *http.Request
 		res    *http.Response
