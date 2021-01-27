@@ -37,32 +37,22 @@ export default {
         })
         .catch((error) => commit("setAuthError", error));
     },
-    async merge({ dispatch, commit }, data) {
-      console.log("receiving:", data);
+    async verify({ dispatch, commit }, code) {
       await api
-        .post(`auth/merge`, {
-          id: data.merged.id,
-          merge_data: data.merger,
-          password: data.password,
-        })
+        .post(`auth/verify?code=${code}`)
         .then((response) => {
           let user = response?.data?.data;
           user ? commit("setUser", user) : dispatch("attempt");
         })
         .catch((error) => commit("setAuthError", error));
     },
-    async signUp({ dispatch, commit }, credentials) {
+    async signUp({ commit }, credentials) {
       await api
         .post(`auth/signup`, {
           login: credentials.login,
           email: credentials.email,
           password: credentials.password,
-          admin: credentials.admin || false,
           admin_token: credentials.adminToken || "",
-        })
-        .then((response) => {
-          let user = response?.data?.data;
-          user ? commit("setUser", user) : dispatch("attempt");
         })
         .catch((error) => commit("setAuthError", error));
     },
