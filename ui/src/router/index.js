@@ -70,6 +70,16 @@ const routes = [
     },
   },
   {
+    path: "/auth/verify",
+    name: "AuthMerge",
+    props: true,
+    component: () =>
+      import(/* webpackChunkName: "authMerge" */ "@/views/AuthVerify.vue"),
+    beforeEnter(to, from, next) {
+      store.getters["auth/authenticated"] ? next("/") : next();
+    },
+  },
+  {
     path: "/auth/merge",
     name: "AuthMerge",
     props: true,

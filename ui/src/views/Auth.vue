@@ -8,10 +8,13 @@
         </h1>
       </div>
     </div>
-    <div class="flex-container" v-if="!showWelcomeMessage">
+    <div
+      class="flex-container"
+      v-if="!showWelcomeMessage && !showVerificationMessage"
+    >
       <div v-if="!signUpPage && !signUpPageLocal" class="auth">
         <h4 align="center">SIGN IN</h4>
-        <SignInForm v-on:success="successfulAuth" />
+        <SignInForm v-on:success="successfulSignIn" />
         <small>
           <p class="text-white-50">
             Don't have an account?
@@ -21,7 +24,7 @@
       </div>
       <div v-else class="auth">
         <h4 align="center">SIGN UP</h4>
-        <SignUpForm v-on:success="successfulAuth" />
+        <SignUpForm v-on:success="successfulSignUp" />
         <small>
           <p class="text-white-50">
             Already have an account?
@@ -30,7 +33,7 @@
         >
       </div>
     </div>
-    <div align="center" class="welcome-message" v-else>
+    <div align="center" class="welcome-message" v-if="showWelcomeMessage">
       <h3>
         Welcome{{ oldUser ? " back, " : ", " }}
         <span class="secondary">{{ user.alias }}</span
@@ -39,6 +42,14 @@
       <h6>You will be redirected back in {{ timeLeft }}</h6>
       <br />
       <b-button variant="outline-light" @click="redirect">Go back</b-button>
+    </div>
+    <div
+      align="center"
+      class="verification-message"
+      v-if="showVerificationMessage"
+    >
+      We've sent you an email, to make sure you've entered a correct one. You
+      can now close this tab.
     </div>
   </div>
 </template>
@@ -66,6 +77,7 @@ export default {
     return {
       signUpPageLocal: false,
       showWelcomeMessage: false,
+      showVerificationMessage: false,
       oldUser: false,
       timeLeft: 5,
       interval: null,
@@ -77,19 +89,20 @@ export default {
     next();
   },
   methods: {
-    successfulAuth(event) {
-      this.oldUser = event === "signin";
+    successfulSignIn() {
+      this.oldUser = true;
       this.showWelcomeMessage = true;
       this.interval = setInterval(() => {
         this.timeLeft--;
         if (this.timeLeft === 0) {
           clearInterval(this.interval);
           this.timeLeft = 5;
-          this.prevRoute
-            ? this.$router.push(this.prevRoute)
-            : this.$router.back();
+          this.$router.push("/");
         }
       }, 1000);
+    },
+    successfulSignUp() {
+      this.showVerificationMessage = true;
     },
     redirect() {
       if (this.interval) clearInterval(this.interval);

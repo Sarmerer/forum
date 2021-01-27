@@ -76,7 +76,7 @@
     <b-button
       type="submit"
       class="modal-button mb-4 w-100"
-      :disabled="!validForm"
+      :disabled="!validForm || requesting"
       variant="info"
       >Go</b-button
     >
@@ -138,6 +138,7 @@ export default {
       minLoginLength: 1,
       maxLoginLength: 15,
       minPasswordLength: 5,
+      requesting: false,
       form: {
         login: "",
         email: "",
@@ -153,6 +154,8 @@ export default {
       signUp: "auth/signUp",
     }),
     submitSignUp() {
+      if (this.requesting) return;
+      this.requesting = true;
       this.signUp(this.form).then(() => {
         let error = this.authError?.data?.message || this.authError?.data;
         if (error) {
@@ -165,6 +168,7 @@ export default {
         } else {
           this.$emit("success", "signup");
         }
+        this.requesting = false;
       });
     },
   },
