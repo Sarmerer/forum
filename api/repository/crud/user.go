@@ -87,7 +87,7 @@ func (UserRepoCRUD) FindAll() ([]models.User, error) {
 	for rows.Next() {
 		var u models.User
 		rows.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &u.Avatar, &u.Alias,
-			&u.Created, &u.LastActive, &u.SessionID, &u.Role, u.OAuthProvider,
+			&u.Created, &u.LastActive, &u.SessionID, &u.Role, &u.Verified, &u.OAuthProvider,
 		)
 		users = append(users, u)
 	}
@@ -109,12 +109,13 @@ func (UserRepoCRUD) FindByID(userID int64) (*models.User, int, error) {
 				created,
 				last_active,
 				role,
+				verified,
 				oauth_provider
 		FROM users
 		WHERE _id = ?`, userID,
 	).Scan(
 		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias,
-		&u.Created, &u.LastActive, &u.Role, &u.OAuthProvider,
+		&u.Created, &u.LastActive, &u.Role, &u.Verified, &u.OAuthProvider,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -158,11 +159,12 @@ func (UserRepoCRUD) Create(user *models.User) (*models.User, int, error) {
 			last_active,
 			session_id,
 			role,
+			verified,
 			oauth_provider
 		)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		user.Username, user.Password, user.Email, user.Avatar, user.Alias, now, now,
-		user.SessionID, user.Role, &user.OAuthProvider,
+		user.SessionID, user.Role, user.Verified, user.OAuthProvider,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -202,6 +204,22 @@ func (UserRepoCRUD) Update(user *models.User) (*models.User, int, error) {
 		return nil, status, err
 	}
 	return updatedUser, http.StatusOK, nil
+}
+
+func (UserRepoCRUD) Verify(userID int64, newValue bool) error {
+	var (
+		err error
+	)
+	if _, err = repository.DB.Exec(
+		`UPDATE users
+		SET verified = $1
+		WHERE _id = $2`,
+		newValue, userID,
+	); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (UserRepoCRUD) UpdateLastActivity(userID int64) error {
@@ -255,7 +273,39 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 }
 
 //FindByLoginOrEmail finds a user by name or email in the database
-func (UserRepoCRUD) FindByLoginOrEmail(username string) (*models.User, int, error) {
+func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, error) {
+	var (
+		u   models.User
+		lc  string = strings.Join(logins, "\", \"")
+		err error
+	)
+	if err = repository.DB.QueryRow(
+		fmt.Sprintf(
+			`SELECT _id,
+				username,
+	   			email,
+	   			avatar,
+				alias,
+				created,
+	   			last_active,
+				role,
+				verified,
+				oauth_provider
+		FROM users
+		WHERE (username IN ("%[1]s") OR email IN ("%[1]s")) AND verified = 1`, lc),
+	).Scan(
+		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created,
+		&u.LastActive, &u.Role, &u.Verified, &u.OAuthProvider,
+	); err != nil {
+		if err != sql.ErrNoRows {
+			return nil, http.StatusInternalServerError, err
+		}
+		return nil, http.StatusNotFound, errors.New("user not found")
+	}
+	return &u, http.StatusOK, nil
+}
+
+func (UserRepoCRUD) FindUnverifiedByEmail(email string) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
@@ -269,12 +319,13 @@ func (UserRepoCRUD) FindByLoginOrEmail(username string) (*models.User, int, erro
 				created,
 	   			last_active,
 				role,
+				verified,
 				oauth_provider
 		FROM users
-		WHERE username = $1 OR email = $1`, username,
+		WHERE email = ? AND verified = 0`, email,
 	).Scan(
 		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created,
-		&u.LastActive, &u.Role, &u.OAuthProvider,
+		&u.LastActive, &u.Role, &u.Verified, &u.OAuthProvider,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -291,9 +342,9 @@ func (u UserRepoCRUD) Exists(logins []string) (exists bool, err error) {
 			`SELECT EXISTS(
 			SELECT 1
 			FROM users
-			WHERE (username IN (%[1]s) OR email IN (%[1]s))
+			WHERE username IN ("%[1]s") OR email IN ("%[1]s")
 			LIMIT 1
-			)`, fmt.Sprintf("\"%s\"", loginsConcat)),
+			)`, loginsConcat),
 	).Scan(
 		&exists,
 	); err != nil {

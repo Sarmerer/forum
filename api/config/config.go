@@ -32,9 +32,10 @@ const (
 
 	GCInterval = 24 * time.Hour // GCInterval defines the interval after which garbage collector will run
 
-	SessionCookieName   = "sid" // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
-	SessionCookieDomain = ".sarmerer.ml"
-	SessionExpiration   = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
+	SessionCookieName           = "sid" // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
+	SessionCookieDomain         = ".sarmerer.ml"
+	SessionExpiration           = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
+	VerificationCodeExpiriation = 1 * time.Minute
 
 	UserCtxVarName = "userCtx" // Used when setting request context in middleware
 

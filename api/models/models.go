@@ -16,6 +16,7 @@ type User struct {
 	LastActive    int64  `json:"last_active,omitempty"`
 	SessionID     string `json:"session_id,omitempty"`
 	Role          int    `json:"role"`
+	Verified      bool   `json:"-"`
 	OAuthProvider string `json:"oauth_provider"`
 
 	Rating   int `json:"rating"`

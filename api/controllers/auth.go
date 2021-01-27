@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/sarmerer/forum/api/OAuth"
+	"github.com/sarmerer/forum/api/services/emailverification"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
@@ -54,7 +55,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		user         *models.User
 		userPassword string
 		cookie       string
-		newUUID      string
+		newSessionID string
 		status       int
 		err          error
 	)
@@ -62,7 +63,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
-	if user, status, err = repo.FindByLoginOrEmail(input.Login); err != nil {
+	if user, status, err = repo.FindByLoginOrEmail([]string{input.Login}); err != nil {
 		response.Error(w, status, err)
 		return
 	}
@@ -76,8 +77,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, errors.New("wrong login or password"))
 		return
 	}
-	cookie, newUUID = generateCookie(r.Cookie(config.SessionCookieName))
-	if err = repo.UpdateSession(user.ID, newUUID); err != nil {
+	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
+	if err = repo.UpdateSession(user.ID, newSessionID); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -94,9 +95,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		repo           repository.UserRepo = crud.NewUserRepoCRUD()
 		input          models.InputUserSignUp
 		hashedPassword string
-		cookie         string
 		admintToken    string = os.Getenv("ADMIN_TOKEN")
-		newSessionID   string
 		newUser        *models.User
 		status         int
 		err            error
@@ -115,15 +114,16 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
+
 	user := models.User{
 		Username:  input.Login,
 		Password:  hashedPassword,
 		Email:     input.Email,
 		Avatar:    fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
 		Alias:     input.Login,
-		SessionID: newSessionID,
+		SessionID: "",
 		Role:      config.RoleUser,
+		Verified:  false,
 	}
 
 	// This line compares environment variable with name ADMMIN_TOKEN,
@@ -138,8 +138,12 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, "user has been created", newUser)
+	if err = emailverification.Manager.SendVerificationEmail(newUser); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response.Success(w, "email sent", nil)
 }
 
 // LogOut deletes user session id from database
@@ -211,12 +215,49 @@ func MergeAccounts(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Set-Cookie", cookie)
 	response.Success(w, fmt.Sprint("user is logged in"), user)
-
 }
 
-// Me is an endpoint function, that helps to understand if user is authenticated.
-// When client makes an api/me request, middleware checks if user is authenticated,
-// if not, it returns 403 Forbidden http status
+func VerifyEmail(w http.ResponseWriter, r *http.Request) {
+	var (
+		repo         repository.UserRepo = crud.NewUserRepoCRUD()
+		code         string              = r.URL.Query().Get("code")
+		email        string
+		user         *models.User
+		cookie       string
+		newSessionID string
+		status       int
+		err          error
+	)
+	if code == "" {
+		response.Error(w, http.StatusBadRequest, errors.New("no verification code present"))
+		return
+	}
+	email = emailverification.Manager.GetEmail(code)
+	if email == "" {
+		response.Error(w, http.StatusBadRequest, errors.New("code has expired"))
+		return
+	}
+	if user, status, err = repo.FindUnverifiedByEmail(email); err != nil {
+		response.Error(w, status, err)
+		return
+	}
+
+	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
+
+	if err = repo.UpdateSession(user.ID, newSessionID); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	if err = repo.Verify(user.ID, true); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.Header().Set("Set-Cookie", cookie)
+	response.Success(w, "user has been verified", user)
+}
+
+// Me function returns a user with an id from request context
 func Me(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo    repository.UserRepo = crud.NewUserRepoCRUD()
