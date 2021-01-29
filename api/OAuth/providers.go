@@ -13,7 +13,7 @@ var (
 )
 
 type Provider interface {
-	Auth(query url.Values, sessionID string) (user []*models.User, status int, err error)
+	Auth(query url.Values, sessionID string) (user *models.User, status int, err error)
 }
 
 var Providers = map[string]Provider{

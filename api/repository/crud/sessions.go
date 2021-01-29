@@ -17,7 +17,7 @@ func (UserRepoCRUD) GetPassword(userID int64) (string, int, error) {
 	if err = repository.DB.QueryRow(
 		`SELECT password
 		FROM users
-		WHERE _id = ?`, userID,
+		WHERE _id = ? AND oauth_provider = ""`, userID,
 	).Scan(
 		&password,
 	); err != nil {

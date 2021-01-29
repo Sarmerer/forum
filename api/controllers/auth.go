@@ -25,7 +25,7 @@ func OAuthHandler(w http.ResponseWriter, r *http.Request) {
 		provider     OAuth.Provider = OAuth.Providers[providerName]
 		cookie       string
 		sessionID    string
-		users        []*models.User
+		user         *models.User
 		status       int
 		err          error
 	)
@@ -36,13 +36,13 @@ func OAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie, sessionID = generateCookie(r.Cookie(config.SessionCookieName))
 
-	if users, status, err = provider.Auth(r.URL.Query(), sessionID); err != nil {
-		response.Respond(w, "error", status, err.Error(), users)
+	if user, status, err = provider.Auth(r.URL.Query(), sessionID); err != nil {
+		response.Error(w, status, err)
 		return
 	}
 
 	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, "user has been created", users[0])
+	response.Success(w, "user has been created", user)
 }
 
 // SignIn verifies user credinentials with database.
@@ -171,84 +171,55 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// MergeAccounts handles the case when someone tries
-//to use OAuth, but his username or email is already taken
-func MergeAccounts(w http.ResponseWriter, r *http.Request) {
+func SendVerification(w http.ResponseWriter, r *http.Request) {
 	var (
-		repo         repository.UserRepo = crud.NewUserRepoCRUD()
-		input        models.InputMergeAccounts
-		userPassword string
-		cookie       string
-		newSessionID string
-		user         *models.User
-		status       int
-		err          error
+		email  string = r.FormValue("email")
+		status int
+		err    error
 	)
-	if err = json.NewDecoder(r.Body).Decode(&input); err != nil {
-		response.Error(w, http.StatusBadRequest, err)
+	if email == "" {
+		response.Error(w, http.StatusBadRequest, errors.New("no email provided"))
 		return
 	}
-	if userPassword, status, err = repo.GetPassword(input.ID); err != nil {
+	if status, err = emailverification.Manager.ResendVerificationEmail(email); err != nil {
 		response.Error(w, status, err)
 		return
 	}
-
-	if err = verifyPassword(userPassword, input.Password); err != nil {
-		response.Error(w, http.StatusForbidden, errors.New("wrong password"))
-		return
-	}
-	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
-
-	updatedUser := &input.MergeData
-	updatedUser.ID = input.ID
-	updatedUser.LastActive = utils.CurrentUnixTime()
-
-	if user, status, err = repo.Update(updatedUser); err != nil {
-		response.Error(w, status, err)
-		return
-	}
-
-	if err = repo.UpdateSession(updatedUser.ID, newSessionID); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, fmt.Sprint("user is logged in"), user)
 }
 
 func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	var (
 		repo         repository.UserRepo = crud.NewUserRepoCRUD()
 		code         string              = r.URL.Query().Get("code")
-		email        string
+		email        string              = r.URL.Query().Get("email")
 		user         *models.User
 		cookie       string
 		newSessionID string
 		status       int
 		err          error
 	)
-	if code == "" {
-		response.Error(w, http.StatusBadRequest, errors.New("no verification code present"))
+	if code == "" || email == "" {
+		response.Error(w, http.StatusBadRequest, errors.New("no code or email present"))
 		return
 	}
-	email = emailverification.Manager.GetEmail(code)
-	if email == "" {
-		response.Error(w, http.StatusBadRequest, errors.New("code has expired"))
+	if status, err = emailverification.Manager.Verify(email, code); err != nil {
+		response.Error(w, status, err)
 		return
 	}
+
 	if user, status, err = repo.FindUnverifiedByEmail(email); err != nil {
 		response.Error(w, status, err)
+		return
+	}
+
+	if err = repo.Verify(user.ID, true); err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	cookie, newSessionID = generateCookie(r.Cookie(config.SessionCookieName))
 
 	if err = repo.UpdateSession(user.ID, newSessionID); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if err = repo.Verify(user.ID, true); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}

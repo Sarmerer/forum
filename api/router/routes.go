@@ -63,6 +63,13 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
+		URI:      "/api/auth/send-verification",
+		Handler:  controllers.SendVerification,
+		Method:   http.MethodPost,
+		MinRole:  config.RoleUser,
+		NeedAuth: false,
+	},
+	{
 		URI:      "/api/auth/signin",
 		Handler:  controllers.SignIn,
 		Method:   http.MethodPost,

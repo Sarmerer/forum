@@ -35,7 +35,7 @@ const (
 	SessionCookieName           = "sid" // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
 	SessionCookieDomain         = ".sarmerer.ml"
 	SessionExpiration           = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
-	VerificationCodeExpiriation = 5 * time.Minute
+	VerificationCodeExpiriation = 10 * time.Minute
 
 	UserCtxVarName = "userCtx" // Used when setting request context in middleware
 

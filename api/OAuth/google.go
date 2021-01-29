@@ -8,11 +8,9 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
-	"github.com/sarmerer/forum/api/utils"
 )
 
 type google struct {
@@ -27,12 +25,11 @@ type googleUser struct {
 
 var Google = google{AccessTokenName: "code"}
 
-func (g google) Auth(query url.Values, sessionID string) (users []*models.User, status int, err error) {
+func (g google) Auth(query url.Values, sessionID string) (user *models.User, status int, err error) {
 	var (
 		atr    *accessTokenResponse
 		gUser  *googleUser
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
-		user   *models.User
 		exists bool
 	)
 	if query.Get(g.AccessTokenName) == "" {
@@ -51,53 +48,15 @@ func (g google) Auth(query url.Values, sessionID string) (users []*models.User, 
 		return nil, http.StatusInternalServerError, err
 	}
 	if exists {
-		var oldUser *models.User
-
-		if oldUser, status, err = repo.FindByLoginOrEmail([]string{gUser.Login, gUser.Email}); err != nil {
+		if user, status, err = updateUser((*oAuthUser)(gUser), sessionID); err != nil {
 			return nil, status, err
 		}
-
-		if oldUser.OAuthProvider != ProviderGoogle {
-			var merger *models.User = &models.User{}
-			merger.Username = gUser.Login
-			merger.Email = gUser.Email
-			merger.Avatar = gUser.Avatar
-			merger.OAuthProvider = ProviderGoogle
-			return []*models.User{merger, oldUser}, http.StatusConflict, errors.New("conflict")
-		}
-
-		oldUser.Username = gUser.Login
-		oldUser.Email = gUser.Email
-		oldUser.Avatar = gUser.Avatar
-		oldUser.LastActive = utils.CurrentUnixTime()
-		oldUser.OAuthProvider = ProviderGitHub
-
-		if user, status, err = repo.Update(oldUser); err != nil {
-			return nil, status, err
-		}
-		if err = repo.UpdateSession(oldUser.ID, sessionID); err != nil {
-			return nil, http.StatusInternalServerError, err
-		}
-		users = append(users, user)
 	} else {
-		now := utils.CurrentUnixTime()
-		newUser := &models.User{
-			Username:      gUser.Login,
-			Alias:         gUser.Login,
-			Email:         gUser.Email,
-			Avatar:        gUser.Avatar,
-			Created:       now,
-			LastActive:    now,
-			Role:          config.RoleUser,
-			SessionID:     sessionID,
-			OAuthProvider: ProviderGitHub,
-		}
-		if user, status, err = repo.Create(newUser); err != nil {
+		if user, status, err = createUser((*oAuthUser)(gUser), sessionID); err != nil {
 			return nil, status, err
 		}
-		users = append(users, user)
 	}
-	return users, http.StatusOK, nil
+	return user, http.StatusOK, nil
 }
 
 func (g google) getToken(code string) (atr *accessTokenResponse, err error) {

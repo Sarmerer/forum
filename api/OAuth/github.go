@@ -8,11 +8,9 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
-	"github.com/sarmerer/forum/api/utils"
 )
 
 type gitHub struct {
@@ -32,11 +30,10 @@ type accessTokenResponse struct {
 
 var GitHub = gitHub{AccessTokenName: "code"}
 
-func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User, status int, err error) {
+func (gh gitHub) Auth(query url.Values, sessionID string) (user *models.User, status int, err error) {
 	var (
 		atr    *accessTokenResponse
 		ghUser *gitHubUser
-		user   *models.User
 		repo   repository.UserRepo = crud.NewUserRepoCRUD()
 		exists bool
 	)
@@ -56,54 +53,17 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (users []*models.User,
 	if exists, err = repo.Exists([]string{ghUser.Login, ghUser.Email}); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
+
 	if exists {
-		var oldUser *models.User
-
-		if oldUser, status, err = repo.FindByLoginOrEmail([]string{ghUser.Login, ghUser.Email}); err != nil {
+		if user, status, err = updateUser((*oAuthUser)(ghUser), sessionID); err != nil {
 			return nil, status, err
 		}
-
-		if oldUser.OAuthProvider != ProviderGitHub {
-			var merged *models.User = &models.User{}
-			merged.Username = ghUser.Login
-			merged.Email = ghUser.Email
-			merged.Avatar = ghUser.Avatar
-			merged.OAuthProvider = ProviderGitHub
-			return []*models.User{merged, oldUser}, http.StatusConflict, errors.New("conflict")
-		}
-
-		oldUser.Username = ghUser.Login
-		oldUser.Email = ghUser.Email
-		oldUser.Avatar = ghUser.Avatar
-		oldUser.LastActive = utils.CurrentUnixTime()
-		oldUser.OAuthProvider = ProviderGitHub
-
-		if user, status, err = repo.Update(oldUser); err != nil {
-			return nil, status, err
-		}
-		if err = repo.UpdateSession(oldUser.ID, sessionID); err != nil {
-			return nil, http.StatusInternalServerError, err
-		}
-		users = append(users, user)
 	} else {
-		now := utils.CurrentUnixTime()
-		newUser := &models.User{
-			Username:      ghUser.Login,
-			Alias:         ghUser.Login,
-			Email:         ghUser.Email,
-			Avatar:        ghUser.Avatar,
-			Created:       now,
-			LastActive:    now,
-			Role:          config.RoleUser,
-			SessionID:     sessionID,
-			OAuthProvider: ProviderGitHub,
-		}
-		if user, status, err = repo.Create(newUser); err != nil {
+		if user, status, err = createUser((*oAuthUser)(ghUser), sessionID); err != nil {
 			return nil, status, err
 		}
-		users = append(users, user)
 	}
-	return users, http.StatusOK, nil
+	return user, http.StatusOK, nil
 }
 
 func (gh gitHub) getToken(code string) (atr *accessTokenResponse, err error) {
