@@ -11,7 +11,7 @@
             <UserCard :userData="user" />
           </div>
           <div class="main-col">
-            <div class="user-info" v-if="user.posts || user.comments">
+            <div class="user-info">
               <div :class="isMobile() ? 'card-m' : 'card'">
                 <b-row>
                   <b-col>

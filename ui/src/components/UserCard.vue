@@ -62,11 +62,10 @@
             class="ml-3"
             variant="dark"
             badge-offset="-0.2em"
-            :badge="userData.role > 0"
-            :badge-right="userData.role > 0"
-            badge-variant="info"
+            :badge="userData.role === 2"
+            badge-variant="dark"
           >
-            <template #badge>
+            <template v-if="userData.role === 2" #badge>
               <div v-b-tooltip.left :title="userData.role == 2 ? 'Admin' : ''">
                 <b-icon-code-slash></b-icon-code-slash>
               </div>
