@@ -37,9 +37,14 @@ export default {
         })
         .catch((error) => commit("setAuthError", error));
     },
-    async verify({ dispatch, commit }, code) {
+    async resendVerification({ commit }, email) {
       await api
-        .post(`auth/verify?code=${code}`)
+        .post(`auth/send-verification?code=${email}`)
+        .catch((error) => commit("setAuthError", error));
+    },
+    async verify({ dispatch, commit }, input) {
+      await api
+        .post(`auth/verify?code=${input.code}&email=${input.email}`)
         .then((response) => {
           let user = response?.data?.data;
           user ? commit("setUser", user) : dispatch("attempt");

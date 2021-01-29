@@ -1,5 +1,6 @@
 <template>
   <b-form @submit.prevent="submitSignIn">
+    <h4>SIGN IN</h4>
     <b-form-group>
       <b-form-input
         autocomplete="off"
@@ -29,7 +30,9 @@
           size="sm"
           variant="outline-dark"
           class="text-white-50"
-          href="https://github.com/login/oauth/authorize?client_id=df41c45c5f1e0a5b29fe"
+          :href="
+            `https://github.com/login/oauth/authorize?client_id=df41c45c5f1e0a5b29fe&redirect_uri=http://localhost:8081/auth/github?redirect=${prevRoute}`
+          "
           v-b-tooltip.hover.left="'GitHub'"
         >
           <b-icon size="sm" icon="github"></b-icon>
@@ -55,12 +58,23 @@
         </b-button>
       </div>
     </b-form-group>
+    <small>
+      <p class="text-white-50">
+        Don't have an account?
+        <a
+          class="secondary"
+          @click="$emit('changeActiveComponent', 'SignUpForm')"
+          >Sign up</a
+        >
+      </p>
+    </small>
   </b-form>
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
 
 export default {
+  props: { prevRoute: String },
   computed: {
     ...mapGetters({ authError: "auth/authError" }),
     validform() {
@@ -73,14 +87,17 @@ export default {
         login: "",
         password: "",
       },
+      provider: this.$route.params.provider || "",
       requesting: false,
     };
   },
   mounted() {
-    if (this.$route?.query?.provider) {
+    if (this.provider) {
       if (this.requesting) return;
       this.requesting = true;
-      this.OAuth(this.$route.query).then(() => {
+      let query = this.$route.query;
+      query.provider = this.provider;
+      this.OAuth(query).then(() => {
         let error = this.authError?.data || this.authError?.data;
         if (error) {
           if (error?.code === 409) {
@@ -93,7 +110,10 @@ export default {
             this.$store.commit("auth/setAuthError", null);
           }
         } else {
-          this.$emit("success", "signin");
+          this.$emit("changeActiveComponent", {
+            component: "Welcome",
+            props: { prevRoute: this.$route?.query?.redirect },
+          });
         }
         this.requesting = false;
       });
@@ -117,7 +137,10 @@ export default {
           });
           this.$store.commit("auth/setAuthError", null);
         } else {
-          this.$emit("success", "signin");
+          this.$emit("changeActiveComponent", {
+            component: "Welcome",
+            props: { prevRoute: this.prevRoute },
+          });
         }
         this.requesting = false;
       });

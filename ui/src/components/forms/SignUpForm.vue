@@ -1,5 +1,6 @@
 <template>
   <b-form @submit.prevent="submitSignUp">
+    <h4>SIGN UP</h4>
     <b-form-group>
       <b-form-input
         autocomplete="off"
@@ -31,40 +32,51 @@
       <b-form-input
         autocomplete="off"
         v-model="form.password"
-        type="password"
+        :type="passwordInputType"
         required
         placeholder="Password"
         class="mb-2"
-        :state="passwordsState"
       ></b-form-input>
 
-      <b-form-input
-        v-model="form.passwordConfirm"
-        id="password"
-        type="password"
-        required
-        placeholder="Confirm password"
-        class="mb-2"
-        :state="passwordsState"
-      ></b-form-input>
-      <b-form-invalid-feedback
-        class="mt-n2 mb-2"
-        id="password-feedback"
-        v-if="passwordsState !== null"
-      >
-        {{ passwordsMatchFeedback }}
-      </b-form-invalid-feedback>
+      <b-input-group class="mb-2">
+        <b-form-input
+          v-model="form.passwordConfirm"
+          id="password"
+          :type="passwordInputType"
+          required
+          placeholder="Confirm password"
+          :state="passwordsState"
+        ></b-form-input>
 
-      <b-input-group class="mt-3">
+        <b-input-group-append>
+          <b-button
+            variant="darker text-white-50"
+            v-b-tooltip.hover.right="'Show password'"
+            size="sm"
+            @click="showPassword"
+          >
+            <b-icon-eye> </b-icon-eye>
+          </b-button>
+        </b-input-group-append>
+        <b-form-invalid-feedback
+          id="password-feedback"
+          v-if="passwordsState !== null"
+        >
+          {{ passwordsMatchFeedback }}
+        </b-form-invalid-feedback>
+      </b-input-group>
+
+      <b-input-group>
         <b-form-input
           v-model="form.adminToken"
           type="password"
-          placeholder="Admin Token"
+          placeholder="Admin token"
         ></b-form-input>
         <template #append>
           <b-button
+            size="sm"
             variant="darker text-white-50"
-            v-b-popover.hover.right="
+            v-b-tooltip.hover.right="
               'You will be granted admin rights, if a valid admin token is entered here'
             "
           >
@@ -80,12 +92,23 @@
       variant="info"
       >Go</b-button
     >
+    <small>
+      <p class="text-white-50">
+        Already have an account?
+        <a
+          class="secondary"
+          @click="$emit('changeActiveComponent', 'SignInForm')"
+          >Sign in</a
+        >
+      </p>
+    </small>
   </b-form>
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
 
 export default {
+  props: { prevRoute: String },
   computed: {
     ...mapGetters({ authError: "auth/authError", user: "auth/user" }),
     validForm() {
@@ -135,6 +158,7 @@ export default {
   },
   data() {
     return {
+      passwordInputType: "password",
       minLoginLength: 1,
       maxLoginLength: 15,
       minPasswordLength: 5,
@@ -166,10 +190,17 @@ export default {
           });
           this.$store.commit("auth/setAuthError", null);
         } else {
-          this.$emit("success", "signup");
+          this.$emit("changeActiveComponent", {
+            component: "Verify",
+            props: { email: this.form.email, prevRoute: this.prevRoute },
+          });
         }
         this.requesting = false;
       });
+    },
+    showPassword() {
+      this.passwordInputType =
+        this.passwordInputType === "password" ? "text" : "password";
     },
   },
 };

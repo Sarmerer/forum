@@ -55,8 +55,7 @@
             :disabled="!password.length"
             variant="outline-light"
             @click="submitMerge"
-          >
-            Merge
+            >Merge
           </b-button>
         </b-input-group-append>
       </b-input-group>
@@ -64,7 +63,7 @@
   </div>
 </template>
 <script>
-import TimeAgo from "../components/TimeAgo.vue";
+import TimeAgo from "@/components/TimeAgo.vue";
 import { mapActions } from "vuex";
 
 export default {
@@ -75,16 +74,26 @@ export default {
   data() {
     return {
       password: "",
+      requesting: false,
     };
   },
   created() {
-    if (this.accounts?.length !== 2) return this.$router.push("/");
+    if (this.accounts?.length !== 2) {
+      this.$bvToast.toast("failed to load accounts", {
+        title: "Oops!",
+        variant: "info",
+        solid: true,
+      });
+      return this.$router.push("/");
+    }
   },
   methods: {
     ...mapActions({
       merge: "auth/merge",
     }),
     submitMerge() {
+      if (this.requesting) return;
+      this.requesting = true;
       this.merge({
         password: this.password,
         merger: this.accounts[0],
@@ -99,6 +108,7 @@ export default {
           });
           this.$store.commit("auth/setAuthError", null);
         }
+        this.requesting = false;
       });
     },
   },
