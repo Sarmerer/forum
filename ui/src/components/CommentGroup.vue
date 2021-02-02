@@ -33,20 +33,16 @@
             <b-col>
               <b-row>
                 <b-col cols="start">
-                  <router-link
-                    :to="`/user/${comment.author.id}`"
-                    class="text-white-50 text-underscore"
-                  >
-                    <small>
-                      <user-popover
-                        noAvatar
-                        popoverDirection="right"
-                        :userData="comment.author"
-                        :popoverID="'c' + comment.id"
-                      >
-                      </user-popover>
-                    </small>
-                  </router-link>
+                  <small>
+                    <user-popover
+                      noAvatar
+                      popoverDirection="right"
+                      :userData="comment.author"
+                      :popoverID="'c' + comment.id"
+                    >
+                    </user-popover>
+                  </small>
+
                   <small
                     v-if="!isMobile() && comment.rating != 0"
                     class="text-white-50"

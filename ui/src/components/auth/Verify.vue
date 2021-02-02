@@ -18,7 +18,7 @@
           </b-form-input>
           <b-input-group-append>
             <b-button
-              :disabled="!code.length"
+              :disabled="!code.length || requesting"
               size="sm"
               type="submit"
               variant="outline-dark"

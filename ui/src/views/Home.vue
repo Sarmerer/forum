@@ -65,8 +65,8 @@
                 </b-col>
                 <b-col v-if="pagination.totalPages > 1" cols="end">
                   <PostFilters
-                    :orderCallback="order"
-                    :sortCallback="sort"
+                    v-on:order-event="order($event)"
+                    v-on:sort-event="sort()"
                     :sorter="sorter"
                   />
                 </b-col>
@@ -93,8 +93,8 @@
                 </b-row>
                 <b-row v-if="pagination.totalPages > 1" align-h="center">
                   <PostFilters
-                    :orderCallback="order"
-                    :sortCallback="sort"
+                    v-on:order-event="order($event)"
+                    v-on:sort-event="sort()"
                     :sorter="sorter"
                   />
                 </b-row>
@@ -133,7 +133,18 @@
                     <h4 class="primary">
                       {{ post.title }}
                     </h4>
-                    <pre class="mb-1">{{ post.content }}</pre>
+                    <pre v-if="!post.is_image" class="mb-1">
+                      {{ post.content }}
+                    </pre>
+                    <b-img-lazy
+                      v-if="post.is_image"
+                      :src="post.content"
+                      class="mb-2"
+                      center
+                      rounded
+                      fluid-grow
+                    >
+                    </b-img-lazy>
                     <b-form-tag
                       v-for="(category, index) in post.categories"
                       disabled
@@ -161,16 +172,12 @@
                   <b-col cols="end" class="mr-4">
                     <small v-if="!isMobile()"
                       >by
-                      <router-link
-                        :to="'/user/' + post.author.id"
-                        class="secondary"
+                      <user-popover
+                        :userData="post.author"
+                        :popoverID="'p' + index"
                       >
-                        <user-popover
-                          :userData="post.author"
-                          :popoverID="'p' + index"
-                        >
-                        </user-popover>
-                      </router-link>
+                      </user-popover>
+
                       <time-ago :datetime="post.created" tooltip="bottom">
                       </time-ago>
                     </small>
@@ -222,18 +229,14 @@
                   style="cursor: pointer"
                 >
                   <small>
-                    <router-link
-                      :to="'/user/' + post.author.id"
-                      class="secondary"
+                    <user-popover
+                      :userData="post.author"
+                      :popoverID="'r' + index"
+                      popoverDirection="right"
+                      noAvatar
                     >
-                      <user-popover
-                        :userData="post.author"
-                        :popoverID="'r' + index"
-                        popoverDirection="right"
-                        noAvatar
-                      >
-                      </user-popover>
-                    </router-link>
+                    </user-popover>
+
                     <time-ago :datetime="post.created" tooltip="right">
                     </time-ago>
                   </small>
@@ -363,7 +366,7 @@ export default {
           per_page: this.pagination.perPage,
           current_page: currentPage,
           order_by: this.sorter.orderBy,
-          ascending: this.sorter.asc,
+          direction: this.sorter?.asc ? "desc" : "asc",
         })
         .then((response) => {
           this.error.show = false;
@@ -387,12 +390,13 @@ export default {
       });
     },
     sort() {
+      if (this.sorter.throttled) return;
       this.sorter.asc = !this.sorter.asc;
       this.throttle();
     },
     order(by) {
-      if (this.sorter.orderBy === by) return;
-      this.sorter.orderBy = this.sorter.orderBy = by;
+      if (this.sorter.throttled || this.sorter.orderBy === by) return;
+      this.sorter.orderBy = by;
       this.throttle();
     },
     throttle() {

@@ -2,7 +2,7 @@
   <div>
     <b-button
       variant="dark"
-      @click="sortCallback()"
+      @click="$emit('sort-event')"
       :disabled="sorter.throttled"
       class="mx-2"
       v-b-tooltip.hover
@@ -14,8 +14,8 @@
       <b-button
         v-for="filter in filters"
         :key="filter.orderBy"
-        :disabled="sorter.throttled"
-        @click="orderCallback(filter.orderBy)"
+        :disabled="sorter.throttled || sorter.orderBy === filter.orderBy"
+        @click="$emit('order-event', filter.orderBy)"
         v-b-tooltip.hover
         :title="`${sorter.asc ? 'Most' : 'Least'} ${filter.title}`"
         :variant="sorter.orderBy == filter.orderBy ? 'info' : 'dark'"
@@ -28,14 +28,6 @@
 <script>
 export default {
   props: {
-    orderCallback: {
-      type: Function,
-      required: true,
-    },
-    sortCallback: {
-      type: Function,
-      required: true,
-    },
     sorter: {
       type: Object,
       required: true,

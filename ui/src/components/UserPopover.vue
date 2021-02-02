@@ -6,6 +6,7 @@
       variant="dark"
       size="15px"
     ></b-avatar>
+
     <b-popover
       :target="`user-info-popover${popoverID}`"
       triggers="hover"
@@ -32,9 +33,15 @@
         <small> Posts:</small> {{ userData.posts }}<br />
         <b-icon-chat></b-icon-chat>
         <small> Comments: </small>{{ userData.comments }}
-      </span> </b-popover
-    >{{ userData.alias }}</span
-  >
+      </span>
+    </b-popover>
+    &nbsp;
+    <router-link
+      :to="`/user/${userData.id}`"
+      class="secondary text-underscore"
+      >{{ userData.alias }}</router-link
+    >
+  </span>
 </template>
 <script>
 import TimeAgo from "@/components/TimeAgo";

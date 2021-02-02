@@ -15,7 +15,7 @@
         <NotFound v-if="notFound" />
         <div v-else>
           <ControlModal
-            v-on:edit-event="edit()"
+            v-on:edit-event="$set(post, 'editing', true)"
             v-on:delete-event="deletePost()"
             modalID="modal-menu"
           />
@@ -25,7 +25,7 @@
             </div>
             <div class="main-col">
               <div :class="`${isMobile() ? 'card-m' : 'card'}`">
-                <b-row v-if="!editor.editing">
+                <b-row v-if="!post.editing">
                   <b-col cols="start">
                     <Rating
                       :entity="post"
@@ -44,16 +44,25 @@
                           :class="isMobile() ? 'mr-4' : 'mr-2'"
                           :hasPermission="hasPermission"
                           v-on:delete-event="deletePost()"
-                          v-on:edit-event="edit()"
+                          v-on:edit-event="$set(post, 'editing', true)"
                           :disabled="requesting"
                           :compact="isMobile()"
                           modalID="modal-menu"
                         />
                       </b-col>
                     </b-row>
-                    <pre color="white" class="text-break mb-1">{{
-                      post.content
-                    }}</pre>
+                    <pre v-if="!post.is_image" class="mb-1">
+                      {{ post.content }}
+                    </pre>
+                    <b-img-lazy
+                      v-if="post.is_image"
+                      :src="post.content"
+                      class="mb-2"
+                      center
+                      rounded
+                      fluid-grow
+                    >
+                    </b-img-lazy>
                     <b-form-tag
                       v-for="category in post.categories"
                       disabled
@@ -63,76 +72,74 @@
                       class="mr-1 mb-1"
                       >{{ category.name }}
                     </b-form-tag>
+                    <b-row>
+                      <b-col>
+                        <small>
+                          <span v-b-tooltip.hover title="Comments">
+                            <b-icon-chat></b-icon-chat>
+                            {{ post.comments_count }}
+                          </span>
+                          <span v-b-tooltip.hover title="Participants">
+                            <b-icon-people></b-icon-people>
+                            {{ post.participants_count }}
+                          </span>
+                        </small>
+                      </b-col>
+                      <b-col v-if="isMobile()" cols="end" class="mr-3">
+                        <small>
+                          <Rating size="sm" :entity="post" endpoint="post" />
+                        </small>
+                      </b-col>
+                    </b-row>
                   </b-col>
                 </b-row>
-                <b-row>
-                  <b-col>
-                    <small>
-                      <span v-b-tooltip.hover title="Comments">
-                        <b-icon-chat></b-icon-chat> {{ post.comments_count }}
-                      </span>
-                      <span v-b-tooltip.hover title="Participants">
-                        <b-icon-people></b-icon-people>
-                        {{ post.participants_count }}
-                      </span>
-                    </small>
-                  </b-col>
-                  <b-col v-if="isMobile()" cols="end" class="mr-3">
-                    <small>
-                      <Rating size="sm" :entity="post" endpoint="post" />
-                    </small>
-                  </b-col>
-                </b-row>
-                <b-form v-if="editor.editing" @submit.prevent="updatePost()">
-                  <b-form-row>
-                    <b-col>
-                      <PostForm
-                        :form="editor"
-                        v-on:valid-form="editor.valid = $event"
-                      />
-                    </b-col>
-                  </b-form-row>
-                  <b-form-row class="mt-2">
-                    <b-col align="end">
-                      <b-button-group size="sm" v-if="!editor.confirmCancel">
-                        <b-button
-                          variant="outline-danger"
-                          @click="editor.confirmCancel = true"
-                        >
-                          Cancel
-                        </b-button>
-                        <b-button
-                          variant="outline-success"
-                          :disabled="!editor.valid"
-                          type="submit"
-                          class="px-3"
-                        >
-                          Save
-                        </b-button>
-                      </b-button-group>
-                    </b-col>
-                    <b-col align="end" v-if="editor.confirmCancel">
-                      <p class="m-0">Cancel editor?</p>
-                      <b-button-group size="sm">
-                        <b-button
-                          variant="outline-danger"
-                          @click="editor.confirmCancel = false"
-                        >
-                          <b-icon-x></b-icon-x> No
-                        </b-button>
-                        <b-button
-                          variant="outline-success"
-                          @click="
-                            (editor.editing = false),
-                              (editor.confirmCancel = false)
-                          "
-                        >
-                          <b-icon-check2></b-icon-check2> Yes
-                        </b-button>
-                      </b-button-group>
-                    </b-col>
-                  </b-form-row>
-                </b-form>
+                <div v-if="post.editing">
+                  <h4 align="center">Edit post</h4>
+                  <PostForm :formData="post" edit v-on:post-update="updatePost">
+                    <template slot="buttons" slot-scope="props">
+                      <b-row class="mt-2">
+                        <b-col align="end">
+                          <b-button-group size="sm" v-if="!post.confirmCancel">
+                            <b-button
+                              variant="outline-danger"
+                              @click="$set(post, 'confirmCancel', true)"
+                            >
+                              Cancel
+                            </b-button>
+                            <b-button
+                              variant="outline-success"
+                              :disabled="!props.validForm"
+                              type="submit"
+                              class="px-3"
+                            >
+                              Save
+                            </b-button>
+                          </b-button-group>
+                        </b-col>
+                        <b-col align="end" v-if="post.confirmCancel">
+                          <p class="m-0">Cancel editor?</p>
+                          <b-button-group size="sm">
+                            <b-button
+                              variant="outline-success"
+                              @click="post.confirmCancel = false"
+                            >
+                              <b-icon-x></b-icon-x> No
+                            </b-button>
+                            <b-button
+                              variant="outline-danger"
+                              @click="
+                                (post.editing = false),
+                                  (post.confirmCancel = false)
+                              "
+                            >
+                              <b-icon-check2></b-icon-check2> Yes
+                            </b-button>
+                          </b-button-group>
+                        </b-col>
+                      </b-row>
+                    </template>
+                  </PostForm>
+                </div>
               </div>
               <Comments v-if="!noComments" :postID="postID" />
             </div>
@@ -186,17 +193,9 @@ export default {
   },
   data() {
     return {
+      postID: Number.parseInt(this.$route.params.id),
       post: {},
       categories: [],
-      editor: {
-        title: "",
-        content: "",
-        categories: [],
-        editing: false,
-        valid: false,
-        confirmCancel: false,
-      },
-      postID: Number.parseInt(this.$route.params.id),
       requesting: false,
       loading: true,
       notFound: false,
@@ -207,11 +206,9 @@ export default {
     if (this.postData) {
       document.title = this.postData.title;
       this.post = this.postData;
-      setTimeout(() => {
-        this.loading = false;
-      }, 500);
+      this.loading = false;
     } else {
-      Promise.all([this.getPost()]).then(() => {
+      this.getPost().then(() => {
         setTimeout(() => {
           this.loading = false;
         }, 500);
@@ -260,60 +257,10 @@ export default {
           this.requesting = false;
         });
     },
-    async updatePost() {
-      this.requesting = true;
-      return await api
-        .put("post/update", {
-          id: this.post.id,
-          title: this.editor.title,
-          content: this.editor.content,
-          categories: this.editor.categories,
-        })
-        .then((response) => {
-          if (response?.data?.data) {
-            this.post = response.data.data;
-            document.title = this.post.title;
-          }
-        })
-        .catch((error) => {
-          if (error.status === 403)
-            this.$bvToast.toast("You need to be logged in, to update posts!", {
-              title: "Oops!",
-              variant: "danger",
-              solid: true,
-            });
-        })
-        .then(() => {
-          this.requesting = false;
-          this.editor.editing = false;
-        });
-    },
-    edit() {
-      this.editor.title = this.post.title;
-      this.editor.content = this.post.content;
-      this.editor.categories = this.post.categories
-        ? this.post.categories.map((c) => c.name)
-        : [];
-      this.editor.editing = true;
-    },
-    async rate(reaction, post) {
-      if (this.requesting) return;
-      let r = reaction == "up" ? 1 : -1;
-      if (
-        (reaction == "up" && post.your_reaction == 1) ||
-        (reaction == "down" && post.your_reaction == -1)
-      ) {
-        r = 0;
-      }
-      await api
-        .post("post/rate", { id: this.postID, reaction: r })
-        .then((response) => {
-          post.your_reaction = response.data.data.your_reaction;
-          post.rating = response.data.data.rating;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+    updatePost(post) {
+      this.post = post;
+      document.title = this.post.title;
+      this.requesting = false;
     },
   },
 };

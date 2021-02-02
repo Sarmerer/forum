@@ -8,7 +8,7 @@
       <ControlModal
         v-if="isMobile() && hasPermission(post.author)"
         v-on:delete-event="deletePost(post)"
-        v-on:edit-event="edit(post)"
+        v-on:edit-event="$set(post, 'editing', true)"
         :modalID="`modal-menu${post.id}`"
       />
       <b-overlay
@@ -40,15 +40,24 @@
                 :class="isMobile() ? 'mr-4' : 'mr-2'"
                 :hasPermission="hasPermission(post.author)"
                 v-on:delete-event="deletePost(post)"
-                v-on:edit-event="edit(post)"
+                v-on:edit-event="$set(post, 'editing', true)"
                 :disabled="post.requesting || false"
                 :compact="isMobile()"
                 :modalID="`modal-menu${post.id}`"
               />
             </b-col>
           </b-row>
-          <router-link :to="`/post/${post.id}`" tag="pre">
-            {{ post.content }}
+          <router-link :to="`/post/${post.id}`">
+            <pre v-if="!post.is_image" class="mb-1">{{ post.content }}</pre>
+            <b-img-lazy
+              v-if="post.is_image"
+              :src="post.content"
+              class="mb-2"
+              center
+              rounded
+              fluid-grow
+            >
+            </b-img-lazy>
           </router-link>
           <b-row no-gutters>
             <b-form-tag
@@ -82,57 +91,56 @@
             </small>
           </b-row>
         </div>
-        <b-form v-if="post.editing">
-          <b-form-row>
-            <b-col>
-              <PostForm
-                :form="post.editor"
-                v-on:valid-form="$set(post, 'valid', $event)"
-              />
-            </b-col>
-          </b-form-row>
-          <b-form-row class="mt-2">
-            <b-col align="end">
-              <b-button-group size="sm" v-if="!post.confirmCancel">
-                <b-button
-                  variant="outline-danger"
-                  @click="$set(post, 'confirmCancel', true)"
-                >
-                  Cancel
-                </b-button>
-                <b-button
-                  variant="outline-success"
-                  :disabled="!post.valid || true"
-                  @click.prevent="updatePost(post)"
-                  class="px-3"
-                >
-                  Save
-                </b-button>
-              </b-button-group>
-            </b-col>
-            <b-col align="end" v-if="post.confirmCancel">
-              <p class="m-0">Cancel editor?</p>
-              <b-button-group size="sm">
-                <b-button
-                  variant="outline-danger"
-                  @click="post.confirmCancel = false"
-                >
-                  <b-icon-x></b-icon-x> No
-                </b-button>
-                <b-button
-                  variant="outline-success"
-                  @click="
-                    (post.editing = false),
-                      (post.confirmCancel = false),
-                      (post.editor = null)
-                  "
-                >
-                  <b-icon-check2></b-icon-check2> Yes
-                </b-button>
-              </b-button-group>
-            </b-col>
-          </b-form-row>
-        </b-form>
+        <div v-if="post.editing">
+          <h4 align="center">Edit post</h4>
+          <PostForm
+            edit
+            :formData="post"
+            v-on:post-update="updatePost(post, $event)"
+          >
+            <template slot="buttons" slot-scope="props">
+              <b-row class="mt-2">
+                <b-col align="end">
+                  <b-button-group size="sm" v-if="!post.confirmCancel">
+                    <b-button
+                      variant="outline-danger"
+                      @click="$set(post, 'confirmCancel', true)"
+                    >
+                      Cancel
+                    </b-button>
+                    <b-button
+                      variant="outline-success"
+                      :disabled="!props.validForm"
+                      type="submit"
+                      class="px-3"
+                    >
+                      Save
+                    </b-button>
+                  </b-button-group>
+                </b-col>
+                <b-col align="end" v-if="post.confirmCancel">
+                  <p class="m-0">Cancel editor?</p>
+                  <b-button-group size="sm">
+                    <b-button
+                      variant="outline-success"
+                      @click="post.confirmCancel = false"
+                    >
+                      <b-icon-x></b-icon-x> No
+                    </b-button>
+                    <b-button
+                      variant="outline-danger"
+                      @click="
+                        (post.editing = false), (post.confirmCancel = false)
+                      "
+                    >
+                      <b-icon-check2></b-icon-check2> Yes
+                    </b-button>
+                  </b-button-group>
+                </b-col>
+              </b-row>
+            </template>
+          </PostForm>
+        </div>
       </b-overlay>
     </div>
   </div>
@@ -209,46 +217,9 @@ export default {
           this.$set(post, "requesting", false);
         });
     },
-    async updatePost(post) {
-      if (post.requesting) return;
-      this.$set(post, "requesting", true);
-      return await api
-        .put("post/update", {
-          id: post.id,
-          title: post.editor.title,
-          content: post.editor.content,
-          categories: post.editor.categories,
-        })
-        .then((response) => {
-          if (response?.data?.data) {
-            if (!response?.data?.data) return;
-            post.title = response.data.data.title;
-            post.content = response.data.data.content;
-            post.categories = response.data.data.categories;
-            post.updatred = response.data.data.updated;
-            document.title = post.title;
-            post.editing = false;
-            post.confirmCancel = false;
-            post.editor = null;
-          }
-        })
-        .catch((error) => {
-          if (error.status === 403)
-            this.$bvToast.toast("You need to be logged in, to update posts!", {
-              title: "Oops!",
-              variant: "danger",
-              solid: true,
-            });
-        })
-        .then(() => this.$set(post, "requesting", false));
-    },
-    edit(post) {
-      this.$set(post, "editing", true);
-      this.$set(post, "editor", {
-        title: post.title,
-        content: post.content,
-        categories: post.categories ? post.categories.map((c) => c.name) : [],
-      });
+    updatePost(post, newData) {
+      Object.assign(post, newData);
+      this.$set(post, "editing", false);
     },
   },
 };
