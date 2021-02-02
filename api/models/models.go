@@ -29,6 +29,7 @@ type Post struct {
 	AuthorID     int64      `json:"-"`
 	Title        string     `json:"title"`
 	Content      string     `json:"content"`
+	IsImage      bool       `json:"is_image"`
 	Created      int64      `json:"created"`
 	Edited       int64      `json:"edited"`
 	EditReason   string     `json:"edit_reason"`

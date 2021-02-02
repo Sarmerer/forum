@@ -246,13 +246,13 @@ var apiRoutes = []route{
 	/*                                 Images server                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		URI:     "/images",
+		URI:     "/api/images",
 		Handler: controllers.ServeImage,
-		Method:  http.MethodPost,
+		Method:  http.MethodGet,
 		MinRole: config.RoleUser,
 	},
 	{
-		URI:     "/image/upload",
+		URI:     "/api/image/upload",
 		Handler: controllers.UploadImage,
 		Method:  http.MethodPost,
 		MinRole: config.RoleUser,

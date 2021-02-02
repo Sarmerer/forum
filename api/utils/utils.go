@@ -73,6 +73,15 @@ func ParseFlags(args []string) []string {
 	return res
 }
 
+func CreateFolderIfNotExists(path string) (err error) {
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		if err = os.Mkdir(path, 0755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func FormatRequest(r *http.Request) string {
 	var request []string
 	url := fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto)

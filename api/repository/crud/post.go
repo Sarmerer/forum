@@ -44,8 +44,9 @@ func (PostRepoCRUD) FindAll(requestorID int64, input *models.InputAllPosts) (*mo
 	var (
 		posts        *sql.Rows
 		result       models.Posts
-		offset       int = (input.CurrentPage - 1) * input.PerPage
-		recentAmount int = 5
+		offset       int    = (input.CurrentPage - 1) * input.PerPage
+		recentAmount int    = 5
+		orderBy      string = fmt.Sprintf("%s %s", input.OrderBy, input.Direction)
 		status       int
 		err          error
 	)
@@ -84,7 +85,7 @@ func (PostRepoCRUD) FindAll(requestorID int64, input *models.InputAllPosts) (*mo
 			FROM posts p
 			ORDER BY %s
 			LIMIT $2 OFFSET $3`,
-			input.OrderBy),
+			orderBy),
 		requestorID, input.PerPage, offset,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -92,10 +93,15 @@ func (PostRepoCRUD) FindAll(requestorID int64, input *models.InputAllPosts) (*mo
 	for posts.Next() {
 		var err error
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
-			&p.Created, &p.Edited, &p.EditReason, &p.Rating,
-			&p.YourReaction, &p.CommentsCount,
-			&p.ParticipantsCount)
+
+		if err = posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
+			&p.IsImage, &p.Created, &p.Edited, &p.EditReason,
+			&p.Rating, &p.YourReaction, &p.CommentsCount,
+			&p.ParticipantsCount,
+		); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
 		}
@@ -131,7 +137,12 @@ func (PostRepoCRUD) FindRecent(amount int) ([]models.Post, int, error) {
 	}
 	for posts.Next() {
 		var p models.Post
-		posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content, &p.Created, &p.Edited, &p.EditReason)
+		if err = posts.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
+			&p.IsImage, &p.Created, &p.Edited, &p.EditReason,
+		); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
 		}
@@ -160,7 +171,7 @@ func (PostRepoCRUD) FindByID(postID int64, requestorID int64) (*models.Post, int
 		postID,
 	).Scan(
 		&p.ID, &p.AuthorID, &p.Title, &p.Content,
-		&p.Created, &p.Edited, &p.EditReason,
+		&p.IsImage, &p.Created, &p.Edited, &p.EditReason,
 	); err != nil {
 		if err != sql.ErrNoRows {
 			return nil, http.StatusInternalServerError, err
@@ -204,7 +215,7 @@ func (PostRepoCRUD) FindByAuthor(userID, requestorID int64) ([]models.Post, int,
 	for rows.Next() {
 		var p models.Post
 		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,
-			&p.Created, &p.Edited, &p.EditReason,
+			&p.IsImage, &p.Created, &p.Edited, &p.EditReason,
 		)
 		if status, err = NewPostRepoCRUD().fetchAuthor(&p); err != nil {
 			return nil, status, err
@@ -280,12 +291,14 @@ func (PostRepoCRUD) Create(post *models.Post, categories []string) (*models.Post
 			author_id_fkey,
 			title,
 			content,
+			is_image,
 			created,
 			edited,
 			edit_reason
 		)
-	VALUES (?, ?, ?, ?,? ,?)`,
-		post.AuthorID, post.Title, post.Content, now, now, post.EditReason,
+	VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		post.AuthorID, post.Title, post.Content,
+		post.IsImage, now, now, post.EditReason,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -326,11 +339,12 @@ func (PostRepoCRUD) Update(post *models.Post, userCtx models.UserCtx) (*models.P
 		SET author_id_fkey = ?,
 			title = ?,
 			content = ?,
+			is_image = ?,
 			created = ?,
 			edited = ?,
 			edit_reason = ?
 		WHERE _id = ?`,
-		post.AuthorID, post.Title, post.Content, post.Created,
+		post.AuthorID, post.Title, post.Content, post.IsImage, post.Created,
 		utils.CurrentUnixTime(), post.EditReason, post.ID,
 	); err != nil {
 		return nil, http.StatusInternalServerError, err

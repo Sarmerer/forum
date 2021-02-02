@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 func (i *InputAllPosts) Validate() {
@@ -11,15 +12,18 @@ func (i *InputAllPosts) Validate() {
 	m["created"] = true
 	m["total_participants"] = true
 	m["comments_count"] = true
-	if _, ok := m[i.OrderBy]; ok {
-		if i.Ascending {
-			i.OrderBy += " DESC"
-		} else {
-			i.OrderBy += " ASC"
-		}
-	} else {
-		i.OrderBy = "rating DESC"
+	if _, ok := m[i.OrderBy]; !ok {
+		i.OrderBy = "rating"
 	}
+
+	var direction = strings.ToLower(i.Direction)
+
+	if direction != "desc" && direction != "asc" {
+		i.Direction = "asc"
+	} else {
+		i.Direction = direction
+	}
+
 	if i.CurrentPage < 1 {
 		i.CurrentPage = 1
 	}
@@ -50,4 +54,16 @@ func (i InputRate) Validate() error {
 		return errors.New("reaction should be -1, 0 or 1")
 	}
 	return nil
+}
+
+func (i InputPostCreateUpdate) Validate(post *Post) {
+	if i.Title != "" {
+		post.Title = i.Title
+	}
+	if i.Content != "" {
+		post.Content = i.Content
+	}
+
+	post.IsImage = i.IsImage
+
 }

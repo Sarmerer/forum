@@ -112,6 +112,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	post = models.Post{
 		Title:    input.Title,
 		Content:  input.Content,
+		IsImage:  input.IsImage,
 		AuthorID: userCtx.ID,
 		Created:  utils.CurrentUnixTime(),
 		Edited:   utils.CurrentUnixTime(),
@@ -152,8 +153,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post.Title = input.Title
-	post.Content = input.Content
+	input.Validate(post)
 
 	if err = crud.NewCategoryRepoCRUD().Update(input.ID, input.Categories); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)

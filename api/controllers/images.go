@@ -11,19 +11,24 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/response"
 	uuid "github.com/satori/go.uuid"
 )
 
 func ServeImage(w http.ResponseWriter, r *http.Request) {
-	filename := "logo.png"
+	filename := r.FormValue("image")
+	if filename == "" {
+		response.Error(w, http.StatusBadRequest, errors.New("no image name provided"))
+		return
+	}
 	w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(filename)))
-	http.ServeFile(w, r, "./database/images/"+filename)
+	http.ServeFile(w, r, fmt.Sprintf("./database/images/%s", filename))
 }
 
 func UploadImage(w http.ResponseWriter, r *http.Request) {
 	var (
-		maxImageSize int64 = 5 * 1024 * 1024 // 5mb
+		maxImageSize int64 = 2 * 1024 * 1024 // 5mb
 		image        multipart.File
 		handler      *multipart.FileHeader
 		file         *os.File
@@ -31,7 +36,7 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 		err          error
 	)
 	if r.ContentLength > maxImageSize {
-		response.Error(w, http.StatusBadRequest, errors.New("image is too heavy"))
+		response.Error(w, http.StatusExpectationFailed, errors.New("image is too heavy"))
 		return
 	}
 	if image, handler, err = r.FormFile("image"); err != nil {
@@ -49,7 +54,7 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 	extension := fileNameSplit[len(fileNameSplit)-1]
 	fileName = fmt.Sprint(uuid.NewV4())
 
-	if file, err = os.Create("./database/images/" + fileName + extension); err != nil {
+	if file, err = os.Create(fmt.Sprintf("./database/images/%s.%s", fileName, extension)); err != nil {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -58,5 +63,5 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	response.Success(w, "file has been uploaded", fileName)
+	response.Success(w, "file has been uploaded", fmt.Sprintf("%s/api/images?image=%s.%s", config.APIURL, fileName, extension))
 }

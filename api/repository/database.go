@@ -2,18 +2,19 @@ package repository
 
 import (
 	"database/sql"
-	"os"
 
 	"github.com/sarmerer/forum/api/config"
+	"github.com/sarmerer/forum/api/utils"
 )
 
 var DB *sql.DB
 
 func InitDB() (err error) {
-	if _, err = os.Stat(config.DatabasePath); os.IsNotExist(err) {
-		if err = os.Mkdir(config.DatabasePath, 0755); err != nil {
-			return err
-		}
+	if err = utils.CreateFolderIfNotExists(config.DatabasePath); err != nil {
+		return err
+	}
+	if err = utils.CreateFolderIfNotExists(config.DatabasePath + "/images"); err != nil {
+		return err
 	}
 	if DB, err = sql.Open(config.DatabaseDriver, config.DatabasePath+"/"+config.DatabaseFileName); err != nil {
 		return err
@@ -51,6 +52,7 @@ func CheckDBIntegrity() (err error) {
 			author_id_fkey INTEGER REFERENCES users(_id),
 			title TEXT,
 			content TEXT,
+			is_image INTEGER,
 			created INTEGER,
 			edited INTEGER,
 			edit_reason TEXT
