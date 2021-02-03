@@ -66,7 +66,7 @@ func (g google) getToken(code string) (atr *accessTokenResponse, err error) {
 		uri          string       = "https://oauth2.googleapis.com/token"
 		clientID     string       = os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 		clientSecret string       = os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-		url          string       = fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=http://localhost:8081/auth?provider=google", uri, clientID, clientSecret, code)
+		url          string       = fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=http://localhost:8081/auth/google", uri, clientID, clientSecret, code)
 		client       *http.Client = &http.Client{}
 	)
 	if req, err = http.NewRequest("POST", url, nil); err != nil {
