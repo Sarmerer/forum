@@ -7,21 +7,15 @@ import (
 )
 
 func (i *InputAllPosts) Validate() {
-	m := make(map[string]bool)
-	m["rating"] = true
-	m["created"] = true
-	m["total_participants"] = true
-	m["comments_count"] = true
-	if _, ok := m[i.OrderBy]; !ok {
+	variants := []string{"rating", "created", "total_participants", "comments_count"}
+	if !includes(variants, i.OrderBy) {
 		i.OrderBy = "rating"
 	}
 
 	var direction = strings.ToLower(i.Direction)
 
 	if direction != "desc" && direction != "asc" {
-		i.Direction = "asc"
-	} else {
-		i.Direction = direction
+		i.Direction = "desc"
 	}
 
 	if i.CurrentPage < 1 {
@@ -56,7 +50,7 @@ func (i InputRate) Validate() error {
 	return nil
 }
 
-func (i InputPostCreateUpdate) Validate(post *Post) {
+func (i *InputPostCreateUpdate) Validate(post *Post) {
 	if i.Title != "" {
 		post.Title = i.Title
 	}
@@ -66,4 +60,34 @@ func (i InputPostCreateUpdate) Validate(post *Post) {
 
 	post.IsImage = i.IsImage
 
+}
+
+func (i *InputFindComments) Validate() {
+	variants := []string{"rating", "created"}
+
+	if !includes(variants, i.OrderBy) {
+		i.OrderBy = "rating"
+	}
+
+	var direction = strings.ToLower(i.Direction)
+
+	if direction != "desc" && direction != "asc" {
+		i.Direction = "desc"
+	}
+
+	if i.Offset < 0 {
+		i.Offset = 0
+	}
+	if i.Limit < 1 {
+		i.Limit = 10
+	}
+}
+
+func includes(array []string, item string) bool {
+	for _, i := range array {
+		if i == item {
+			return true
+		}
+	}
+	return false
 }

@@ -6,7 +6,7 @@
     <div :class="isMobile() ? 'card-m' : 'card'">
       <!-- Comment form-start -->
       <b-form v-if="authenticated" @submit.prevent="addComment(form.comment)">
-        <b-input-group class="mt-1 mb-1">
+        <b-input-group class="mt-1">
           <b-textarea
             type="text"
             class="textarea"
@@ -91,13 +91,18 @@
       </div>
       <b-row>
         <b-col>
-          <b-input-group>
-            <b-dropdown size="sm" variant="dark" :text="options.active">
+          <b-input-group v-if="comments.length > 1" class="mt-1">
+            <b-dropdown
+              :disabled="requesting"
+              size="sm"
+              variant="dark"
+              :text="options.active.text"
+            >
               <b-dropdown-item
                 v-for="(option, index) in options.filters"
                 :key="index"
-                :disabled="options.active === option.text"
-                @click="options.active = option.text"
+                :disabled="options.active.text === option.text"
+                @click="order(option)"
                 >{{ option.text }}</b-dropdown-item
               >
             </b-dropdown>
@@ -116,7 +121,7 @@
       <!-- Not authenticated-end -->
       <!-- Comments-start -->
 
-      <CommentGroup :comments="[...comments, ...tempComments]" />
+      <CommentGroup :comments="comments" />
       <!-- Comments-end -->
       <b-row no-gutters align-h="center">
         <b-button
@@ -156,6 +161,11 @@ export default {
       let cl = this.commentLength;
       return cl >= this.minCommentLength && cl <= this.maxCommentLength;
     },
+    comments() {
+      return [...this.fetchedComments, ...this.tempComments].filter(
+        (c) => !c.deleted
+      );
+    },
   },
   components: {
     CommentsSkeleton,
@@ -164,22 +174,24 @@ export default {
   data() {
     return {
       loading: true,
-      comments: [],
+      fetchedComments: [],
+      requesting: false,
       tempComments: [],
       totalRows: 0,
       loadedRows: 0,
       limit: 10,
       offset: 0,
+      ordered: false,
       form: { comment: "" },
       maxCommentLength: 200,
       minCommentLength: 1,
       options: {
-        active: "Most rated",
+        active: { text: "Most rated", type: "rating", direction: "desc" },
         filters: [
-          { text: "Most rated", type: "rating" },
-          { text: "Least rated", type: "rating", descending: true },
-          { text: "Newest", type: "created" },
-          { text: "Oldest", type: "created", descending: true },
+          { text: "Most rated", type: "rating", direction: "desc" },
+          { text: "Least rated", type: "rating", direction: "asc" },
+          { text: "Newest", type: "created", direction: "desc" },
+          { text: "Oldest", type: "created", direction: "asc" },
         ],
       },
       editor: { editing: -1, content: "" },
@@ -205,25 +217,57 @@ export default {
     hasPermission(comment) {
       return comment?.author?.id == this.user?.id || this.user?.role > 0;
     },
+    async order(option) {
+      if (this.requesting) return;
+      this.requesting = true;
+      Object.assign(this.options.active, option);
+      return await api
+        .post("/comments", {
+          post_id: this.postID,
+          offset: 0,
+          limit: this.limit,
+          order_by: this.options.active.type,
+          direction: this.options.active.direction,
+        })
+        .then((response) => {
+          this.tempComments = [];
+          this.fetchedComments = response?.data?.data?.comments || [];
+          this.offset = 0;
+          this.totalRows = response?.data?.data?.total_rows || 0;
+          this.loadedRows = response?.data?.data?.loaded_rows || 0;
+          this.requesting = false;
+          this.ordered = true;
+        });
+    },
     async getComments() {
+      if (this.requesting) return;
+      this.requesting = true;
       return await api
         .post("/comments", {
           post_id: this.postID,
           offset: this.offset,
           limit: this.limit,
+          order_by: this.options.active.type,
+          direction: this.options.active.direction,
         })
         .then((response) => {
-          this.comments.push(...(response?.data?.data?.comments || []));
+          this.ordered
+            ? (this.fetchedComments = response?.data?.data?.comments || [])
+            : this.fetchedComments.push(
+                ...(response?.data?.data?.comments || [])
+              );
+          this.ordered = false;
           for (var i = this.tempComments.length - 1; i >= 0; i--) {
-            for (var j = 0; j < this.comments.length; j++) {
-              if (this.tempComments[i]?.id === this.comments[j]?.id) {
+            for (var j = 0; j < this.fetchedComments.length; j++) {
+              if (this.tempComments[i]?.id === this.fetchedComments[j]?.id) {
                 this.tempComments.splice(i, 1);
               }
             }
           }
+          this.offset += this.limit;
           this.totalRows = response?.data?.data?.total_rows || 0;
           this.loadedRows += response?.data?.data?.loaded_rows || 0;
-          this.offset += this.limit;
+          this.requesting = false;
         });
     },
     async addComment(content) {
@@ -331,6 +375,7 @@ export default {
         })
         .then(() => {
           this.$set(comment, "deleted", true);
+          this.offset--;
         })
         .catch((error) => {
           if (error.status === 403)

@@ -37,8 +37,9 @@ func (CommentRepoCRUD) FindByPostID(input *models.InputFindComments, userID int6
 	var (
 		rows   *sql.Rows
 		result models.Comments
-		cache  map[int64]*models.Comment = make(map[int64]*models.Comment)
+		order  string = fmt.Sprintf("%s %s", input.OrderBy, input.Direction)
 
+		cache     map[int64]*models.Comment = make(map[int64]*models.Comment)
 		increment func(map[int64]*models.Comment, int64)
 		err       error
 	)
@@ -89,7 +90,7 @@ func (CommentRepoCRUD) FindByPostID(input *models.InputFindComments, userID int6
 			FROM comments c
 				JOIN children_i c1 ON c.parent_id_fkey = c1._id
 		)
-		SELECT * FROM children_i`, "rating ASC", input.Limit, input.Offset),
+		SELECT * FROM children_i`, order, input.Limit, input.Offset),
 		userID, input.PostID,
 	); err != nil {
 		if err != sql.ErrNoRows {
@@ -120,6 +121,7 @@ func (CommentRepoCRUD) FindByPostID(input *models.InputFindComments, userID int6
 			cache[c.ID] = result.Comments[len(result.Comments)-1]
 			cache[c.ID].ChildrenLen++
 		}
+
 		result.LoadedRows++
 
 	}

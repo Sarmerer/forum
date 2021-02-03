@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
@@ -63,10 +64,11 @@ func (g google) getToken(code string) (atr *accessTokenResponse, err error) {
 	var (
 		req          *http.Request
 		res          *http.Response
-		uri          string       = "https://oauth2.googleapis.com/token"
+		baseURI      string       = "https://oauth2.googleapis.com/token"
+		redirectURI               = config.ClientURL
 		clientID     string       = os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 		clientSecret string       = os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-		url          string       = fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=http://localhost:8081/auth/google", uri, clientID, clientSecret, code)
+		url          string       = fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s/auth/google", baseURI, clientID, clientSecret, code, redirectURI)
 		client       *http.Client = &http.Client{}
 	)
 	if req, err = http.NewRequest("POST", url, nil); err != nil {

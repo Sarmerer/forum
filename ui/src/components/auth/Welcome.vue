@@ -49,7 +49,8 @@ export default {
     redirect() {
       if (this.interval) clearInterval(this.interval);
       this.timeLeft = 5;
-      this.$router.push(this.redirectParam || this.prevRoute);
+      let next = this.redirectParam || this.prevRoute;
+      if (next !== this.$route.path) this.$router.push(next);
     },
   },
 };

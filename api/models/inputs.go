@@ -48,9 +48,11 @@ type InputFindUser struct {
 }
 
 type InputFindComments struct {
-	PostID int64 `json:"post_id"`
-	Offset int   `json:"offset"`
-	Limit  int   `json:"limit"`
+	PostID    int64  `json:"post_id"`
+	Offset    int    `json:"offset"`
+	Limit     int    `json:"limit"`
+	OrderBy   string `json:"order_by"`
+	Direction string `json:"direction"`
 }
 
 type InputRate struct {

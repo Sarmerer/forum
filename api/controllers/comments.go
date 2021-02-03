@@ -27,6 +27,9 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+
+	input.Validate()
+
 	if _, status, err = crud.NewPostRepoCRUD().FindByID(input.PostID, -1); err != nil {
 		response.Error(w, status, err)
 		return
@@ -55,6 +58,7 @@ func FindComments(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, err)
 		return
 	}
+
 	switch input.By {
 	case "author":
 		if comments, status, err = repo.FindByAuthor(input.AuthorID, userCtx.ID); err != nil {
