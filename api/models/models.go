@@ -6,36 +6,52 @@ type UserCtx struct {
 }
 
 type User struct {
+	// public data
 	ID            int64  `json:"id"`
-	Username      string `json:"username"`
-	Password      string `json:"password,omitempty"`
-	Email         string `json:"email"`
 	Avatar        string `json:"avatar"`
 	Alias         string `json:"alias"`
 	Created       int64  `json:"created,omitempty"`
 	LastActive    int64  `json:"last_active,omitempty"`
-	SessionID     string `json:"session_id,omitempty"`
 	Role          int    `json:"role"`
-	Verified      bool   `json:"-"`
 	OAuthProvider string `json:"oauth_provider"`
 
-	Rating   int `json:"rating"`
-	Posts    int `json:"posts"`
-	Comments int `json:"comments"`
+	// private data
+	// some fields are omitted from json for security reasons
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	SessionID string `json:"-"`
+	Password  string `json:"-"`
+	Verified  bool   `json:"-"`
+
+	// stats
+	Rating int `json:"rating"`
+
+	Posts          int `json:"posts"`
+	PostsUpvoted   int `json:"posts_upvoted"`
+	PostsDownvoted int `json:"posts_downvoted"`
+
+	Comments          int `json:"comments"`
+	CommentsUpvoted   int `json:"comments_upvoted"`
+	CommentsDownvoted int `json:"comments_downvoted"`
 }
 
 type Post struct {
-	ID           int64      `json:"id"`
-	AuthorID     int64      `json:"-"`
-	Title        string     `json:"title"`
-	Content      string     `json:"content"`
-	IsImage      bool       `json:"is_image"`
-	Created      int64      `json:"created"`
-	Edited       int64      `json:"edited"`
-	EditReason   string     `json:"edit_reason"`
-	Categories   []Category `json:"categories"`
-	Rating       int        `json:"rating"`
-	YourReaction int        `json:"your_reaction"`
+	ID       int64  `json:"id"`
+	AuthorID int64  `json:"-"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
+
+	// Content field is used as an image src, when IsImage is true
+	IsImage    bool       `json:"is_image"`
+	Created    int64      `json:"created"`
+	Edited     int64      `json:"edited"`
+	EditReason string     `json:"edit_reason"`
+	Categories []Category `json:"categories"`
+	Rating     int        `json:"rating"`
+
+	// reaction of a user with x ID, where x is an ID from request context.
+	// See UserCtx model
+	YourReaction int `json:"your_reaction"`
 
 	Author *User `json:"author"`
 
@@ -43,6 +59,7 @@ type Post struct {
 	ParticipantsCount int `json:"participants_count"`
 }
 
+// Posts is a helper type for Post. It allows to include additional data to response
 type Posts struct {
 	Hot       []Post `json:"hot"`
 	Recent    []Post `json:"recent"`
@@ -75,6 +92,7 @@ type Comment struct {
 	ChildrenLen int64      `json:"children_length"`
 }
 
+// Comments is a helper type for Comment. It allows to include additional data to response
 type Comments struct {
 	Comments   []*Comment `json:"comments"`
 	LoadedRows int        `json:"loaded_rows"`

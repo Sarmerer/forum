@@ -21,8 +21,8 @@ var (
 const (
 	apiPortDev    = "4433"
 	apiPortProd   = "4433"
-	apiURLDev     = "http://localhost:" + apiPortDev
-	apiURLProd    = "https://13.48.44.229:" + apiPortProd
+	apiURLDev     = "http://localhost:" + apiPortDev + "/api"
+	apiURLProd    = "https://api.sarmerer.ml"
 	clientURLDev  = "http://localhost:8080"
 	clientURLProd = "https://forum.sarmerer.ml"
 
@@ -36,6 +36,8 @@ const (
 	SessionCookieDomain         = ".sarmerer.ml"
 	SessionExpiration           = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
 	VerificationCodeExpiriation = 10 * time.Minute
+
+	MaxImageUploadSize = 2 * 1024 * 1024
 
 	UserCtxVarName = "userCtx" // Used when setting request context in middleware
 

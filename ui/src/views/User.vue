@@ -12,35 +12,36 @@
           </div>
           <div class="main-col">
             <div class="user-info">
-              <div :class="isMobile() ? 'card-m' : 'card'">
-                <b-row>
-                  <b-col>
-                    <b-button
-                      v-for="tab in tabs"
-                      :key="tab.title"
-                      :disabled="tabDisabled(tab)"
-                      @click="activeTab = tab.name"
-                      size="sm"
-                      :variant="
-                        `outline-${
-                          activeTab === tab.name && !tab.disabled
-                            ? 'info'
-                            : tabDisabled(tab)
-                            ? 'dark'
-                            : 'light'
-                        }`
-                      "
-                      class="mr-2"
-                    >
-                      {{ tab.title }}
-                      <b-badge
-                        v-if="user[tab.prop]"
-                        :variant="activeTab === tab.name ? 'info' : 'light'"
-                        >{{ user[tab.prop] }}
-                      </b-badge>
-                    </b-button>
-                  </b-col>
-                </b-row>
+              <div
+                class="tabs-wrapper"
+                :class="{
+                  card: !isMobile(),
+                  'card-m': isMobile(),
+                }"
+              >
+                <b-button
+                  v-for="tab in tabs"
+                  :key="tab.title"
+                  :disabled="tabDisabled(tab)"
+                  @click="activeTab = tab.name"
+                  size="sm"
+                  :variant="
+                    `outline-${
+                      activeTab === tab.name && !tab.disabled
+                        ? 'info'
+                        : tabDisabled(tab)
+                        ? 'dark'
+                        : 'light'
+                    }`
+                  "
+                >
+                  {{ tab.title }}
+                  <b-badge
+                    v-if="user[tab.prop]"
+                    :variant="activeTab === tab.name ? 'info' : 'light'"
+                    >{{ user[tab.prop] }}
+                  </b-badge>
+                </b-button>
               </div>
               <component :is="activeTab"></component>
             </div>
@@ -172,15 +173,10 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.user-info .user-card {
-  cursor: pointer;
-}
-
-.user-info .user-card:hover {
-  border: white;
-}
-
-.user-card h3 {
-  text-align: center;
+.tabs-wrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 </style>

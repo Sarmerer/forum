@@ -209,7 +209,7 @@
             <div
               class="text-break"
               :class="{
-                'card-m d-none': isMoblie() && sorter.filtered,
+                'card-m d-none': isMobile() && sorter.filtered,
                 'card-m d-block': isMobile() && !sorter.filtered,
                 card: !isMobile(),
               }"

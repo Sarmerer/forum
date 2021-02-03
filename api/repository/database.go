@@ -2,21 +2,38 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/utils"
 )
 
+// DB is a global database connection.
+// Making so removes "connect to db" step from every operation with database,
+// which reduces response time massively
 var DB *sql.DB
 
+// InitDB creates crucial for database and an entire API folders,
+// and sets up a global database connection
 func InitDB() (err error) {
+	var (
+		dbUser string = os.Getenv("DB_USER")
+		dbPass string = os.Getenv("DB_PASS")
+		dbAuth string
+	)
 	if err = utils.CreateFolderIfNotExists(config.DatabasePath); err != nil {
 		return err
 	}
 	if err = utils.CreateFolderIfNotExists(config.DatabasePath + "/images"); err != nil {
 		return err
 	}
-	if DB, err = sql.Open(config.DatabaseDriver, config.DatabasePath+"/"+config.DatabaseFileName); err != nil {
+
+	if dbUser != "" && dbPass != "" {
+		dbAuth = fmt.Sprintf("?_auth&_auth_user=%s&_auth_pass=%s", dbUser, dbPass)
+	}
+
+	if DB, err = sql.Open(config.DatabaseDriver, fmt.Sprintf("%s/%s%s", config.DatabasePath, config.DatabaseFileName, dbAuth)); err != nil {
 		return err
 	}
 	DB.SetMaxIdleConns(100)
@@ -26,7 +43,7 @@ func InitDB() (err error) {
 	return nil
 }
 
-// CheckDBIntegrity create database directory and tables, if they don't exist already
+// CheckDBIntegrity creates tables, if they don't exist already
 func CheckDBIntegrity() (err error) {
 	if _, err = DB.Exec(
 		`CREATE TABLE IF NOT EXISTS users (

@@ -86,7 +86,7 @@ export default {
     },
     makeToast() {
       this.$bvToast.toast(
-        "You need to be logged in, to rate entitys and comments!",
+        "You need to be logged in, to rate posts and comments",
         {
           title: "Oops!",
           variant: "danger",

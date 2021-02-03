@@ -28,7 +28,7 @@ func ServeImage(w http.ResponseWriter, r *http.Request) {
 
 func UploadImage(w http.ResponseWriter, r *http.Request) {
 	var (
-		maxImageSize int64 = 2 * 1024 * 1024 // 5mb
+		maxImageSize int64 = config.MaxImageUploadSize
 		image        multipart.File
 		handler      *multipart.FileHeader
 		file         *os.File
@@ -63,5 +63,5 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	response.Success(w, "file has been uploaded", fmt.Sprintf("%s/api/images?image=%s.%s", config.APIURL, fileName, extension))
+	response.Success(w, "file has been uploaded", fmt.Sprintf("%s/images?image=%s.%s", config.APIURL, fileName, extension))
 }
