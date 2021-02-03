@@ -24,7 +24,7 @@
               <UserCard v-if="post.author" link :userData="post.author" />
             </div>
             <div class="main-col">
-              <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+              <div :class="{ 'card-m': isMobile(), card: !isMobile() }">
                 <b-row v-if="!post.editing">
                   <b-col cols="start">
                     <Rating

@@ -63,13 +63,14 @@
                 "
                 variant="success"
                 size="sm"
-                :class="!isMobile() ? 'mr-2' : ''"
+                :class="{ 'mr-2': !isMobile() }"
                 >Sign Up
               </b-button>
             </b-container>
             <b-container
               :tag="isMobile() ? 'div' : 'span'"
-              :class="`p-0 m-0 ${isMobile() ? 'mt-2' : ''}`"
+              class="p-0 m-0"
+              :class="{ 'mt-2': isMobile() }"
             >
               <b-button
                 @click="

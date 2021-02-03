@@ -104,9 +104,11 @@
                 :to="'/post/' + post.id"
                 v-for="(post, index) in posts"
                 :key="post.id"
-                :class="
-                  `text-break ${isMobile() ? 'card-m' : 'card card-hover'}`
-                "
+                class="text-break"
+                :class="{
+                  'card-m': isMobile(),
+                  'card card-hover': !isMobile(),
+                }"
                 tag="div"
                 style="cursor: pointer"
               >
@@ -205,15 +207,12 @@
 
           <div class="info-col">
             <div
-              :class="
-                `text-break ${
-                  isMobile()
-                    ? sorter.filtered
-                      ? 'card-m d-none'
-                      : 'card-m d-block'
-                    : 'card'
-                }`
-              "
+              class="text-break"
+              :class="{
+                'card-m d-none': isMoblie() && sorter.filtered,
+                'card-m d-block': isMobile() && !sorter.filtered,
+                card: !isMobile(),
+              }"
             >
               <h3 class="primary">RECENT</h3>
               <span v-if="!recent.length"
@@ -247,7 +246,10 @@
               </span>
             </div>
             <!-- Start of categories -->
-            <div :class="`text-break ${isMobile() ? 'card-m' : 'card'}`">
+            <div
+              class="text-break"
+              :class="{ 'card-m': isMobile(), card: !isMobile() }"
+            >
               <b-row>
                 <b-col>
                   <h3 class="primary">

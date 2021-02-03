@@ -1,5 +1,5 @@
 <template>
-  <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+  <div :class="{ 'card-m': isMobile(), card: !isMobile() }">
     <b-skeleton
       type="input"
       variant="dark"

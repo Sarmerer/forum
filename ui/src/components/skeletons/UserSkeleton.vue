@@ -29,7 +29,7 @@
       <div class="main-col">
         <div>
           <div>
-            <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+            <div :class="{ 'card-m': isMobile(), card: !isMobile() }">
               <b-skeleton
                 variant="dark"
                 type="button"
@@ -39,7 +39,7 @@
             </div>
           </div>
           <div v-for="index in 5" v-bind:key="index">
-            <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+            <div :class="{ 'card-m': isMobile(), card: !isMobile() }">
               <b-skeleton
                 variant="dark"
                 animation="wave"

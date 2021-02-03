@@ -3,8 +3,10 @@
     <b-icon-arrow-up-short
       @click.prevent="authenticated ? rate('up') : makeToast()"
       :class="
-        (!isMobile() ? 'mb-n1 ' : 'm-0 ') +
-          classGen(entity.your_reaction > 0, 'positive')
+        `${!isMobile() ? 'mb-n1' : 'm-0'} ${classGen(
+          entity.your_reaction > 0,
+          'positive'
+        )}`
       "
     >
     </b-icon-arrow-up-short>
@@ -21,8 +23,10 @@
     <b-icon-arrow-down-short
       @click.prevent="authenticated ? rate('down') : makeToast()"
       :class="
-        (!isMobile() ? 'mt-n1 ' : 'm-0 ') +
-          classGen(entity.your_reaction < 0, 'negative')
+        `${!isMobile() ? 'mt-n1 ' : 'm-0 '} ${classGen(
+          entity.your_reaction < 0,
+          'negative'
+        )}`
       "
     ></b-icon-arrow-down-short>
   </div>

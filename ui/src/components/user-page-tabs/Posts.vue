@@ -3,7 +3,10 @@
     <div
       v-for="post in filteredPosts"
       :key="post.id"
-      :class="isMobile() ? 'card-m' : 'card'"
+      :class="{
+        'card-m': isMobile(),
+        'card card-hover': !isMobile(),
+      }"
     >
       <ControlModal
         v-if="isMobile() && hasPermission(post.author)"

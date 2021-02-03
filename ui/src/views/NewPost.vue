@@ -5,7 +5,8 @@
         <UserCard :userData="user" link />
       </div>
       <div
-        :class="`main-col p-3 ${isMobile() ? 'card-m' : 'card'}`"
+        class="main-col p-3"
+        :class="{ 'card-m': isMobile(), card: !isMobile() }"
         id="new-post"
       >
         <h4 align="center">Create new post</h4>

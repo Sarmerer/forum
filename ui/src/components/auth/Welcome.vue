@@ -28,7 +28,7 @@ export default {
     };
   },
   beforeRouteLeave(from, to, next) {
-    this.timeLeft = 0;
+    this.timeLeft = 5;
     clearInterval(this.interval);
     next();
   },

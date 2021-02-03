@@ -1,9 +1,11 @@
 <template>
   <div>
     <div
-      :class="
-        `user-card text-break ${isMobile() ? 'card-m' : 'card card-hover'}`
-      "
+      class="user-card text-break"
+      :class="{
+        'card-m': isMobile(),
+        'card card-hover': !isMobile(),
+      }"
       v-for="comment in filteredComments"
       :key="comment.id"
     >

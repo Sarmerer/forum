@@ -3,7 +3,8 @@
     <div
       v-for="comment in comments"
       :key="comment.id"
-      :class="`mt-2 position-relative ml-${isMobile() ? '2' : '3'}`"
+      class="mt-2 position-relative"
+      :class="{ 'ml-2': isMobile(), 'ml-3': !isMobile() }"
     >
       <div
         :class="
@@ -26,7 +27,7 @@
           :modalID="'modal-menu' + comment.id"
         />
         <div v-if="!comment.editing" class="mb-2">
-          <b-row :class="isMobile() ? 'm-0' : ''">
+          <b-row :class="{ 'm-0': isMobile() }">
             <b-col v-if="!isMobile()" cols="start" class="ml-n2 mr-1">
               <Rating :entity="comment" size="md" endpoint="comment" />
             </b-col>

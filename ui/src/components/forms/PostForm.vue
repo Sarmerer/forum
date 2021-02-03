@@ -78,7 +78,7 @@
             @dragover.prevent
             @drop.prevent="onImageDrop"
           >
-            <div v-if="selectedImage">
+            <div v-if="imagePreview">
               <b-img-lazy
                 :src="imagePreview"
                 center
@@ -93,7 +93,7 @@
                 <b-icon-x></b-icon-x>
               </b-button>
             </div>
-            <div v-if="!selectedImage" class="file-input">
+            <div v-if="!imagePreview" class="file-input">
               <label for="file">Drop an image or click to select</label>
               <input
                 class="image-upload"

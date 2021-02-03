@@ -30,13 +30,13 @@
         </div>
       </div>
       <div class="main-col">
-        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+        <div :class="{ 'card-m': isMobile(), card: !isMobile() }">
           <b-skeleton variant="dark" animation="wave" width="75%"></b-skeleton>
           <b-skeleton variant="dark" animation="wave" width="55%"></b-skeleton>
           <b-skeleton variant="dark" animation="wave" width="65%"></b-skeleton>
           <b-skeleton variant="dark" animation="wave" width="0%"></b-skeleton>
         </div>
-        <div :class="`${isMobile() ? 'card-m' : 'card'}`">
+        <div :class="{ 'card-m': isMobile(), card: !isMobile() }">
           <b-skeleton
             type="input"
             variant="dark"
