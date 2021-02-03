@@ -31,7 +31,7 @@
           variant="outline-dark"
           class="text-white-50"
           :href="
-            `https://github.com/login/oauth/authorize?client_id=df41c45c5f1e0a5b29fe&redirect_uri=http://localhost:8081/auth/github?redirect=${prevRoute}`
+            `https://github.com/login/oauth/authorize?client_id=df41c45c5f1e0a5b29fe&redirect_uri=https://forum.sarmerer.ml/auth/github?redirect=${prevRoute}`
           "
           v-b-tooltip.hover.left="'GitHub'"
         >
@@ -42,7 +42,9 @@
           variant="outline-dark"
           class="text-white-50"
           v-b-tooltip.hover.top="'Google'"
-          href="https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email&access_type=offline&response_type=code&redirect_uri=http://localhost:8081/auth?provider=google&client_id=686483498224-2430dd197rbet1ck3tig05vtoub0ocvb.apps.googleusercontent.com"
+          :href="
+            `https://accounts.google.com/o/oauth2/v2/auth?client_id=686483498224-2430dd197rbet1ck3tig05vtoub0ocvb.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email&access_type=offline&response_type=code&redirect_uri=https://forum.sarmerer.ml/auth/google?redirect=${prevRoute}`
+          "
         >
           <b-icon icon="google"></b-icon>
         </b-button>
