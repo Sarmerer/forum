@@ -38,7 +38,7 @@ const (
 
 	VerificationCodeExpiriation = 10 * time.Minute
 
-	MaxImageUploadSize = 2 * 1024 * 1024
+	MaxImageUploadSize = 5 * 1024 * 1024
 
 	UserCtxVarName = "userCtx" // Used when setting request context in middleware
 

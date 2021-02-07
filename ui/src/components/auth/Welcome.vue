@@ -50,7 +50,7 @@ export default {
       if (this.interval) clearInterval(this.interval);
       this.timeLeft = 5;
       let next = this.redirectParam || this.prevRoute;
-      if (next !== this.$route.path) this.$router.push(next);
+      if (next !== this.$route.path) this.$router.go(next);
     },
   },
 };

@@ -231,12 +231,12 @@ export default {
         : this.createPostWithText;
 
       if (this.contentType === "image" && this.imageChanged) {
-        this.uploadImage().then(() => action());
+        this.uploadImage(action);
       } else {
         action();
       }
     },
-    async uploadImage() {
+    async uploadImage(callback) {
       if (this.requesting) return;
       this.requesting = true;
       const fd = new FormData();
@@ -254,9 +254,15 @@ export default {
         })
         .then((response) => {
           this.form.content = response.data.data;
-          this.requesting = false;
+	  callback()
         })
-        .catch((error) => console.log(error));
+        .catch(() => {
+	this.$bvToast.toast("This image is too heavy!", {
+            title: "Oops!",
+            variant: "danger",
+            solid: true,
+          });
+	}).then(this.requesting = false)
     },
     async createPostWithText() {
       if (this.requesting) return;
