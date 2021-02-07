@@ -352,7 +352,7 @@ export default {
   },
   activated() {
     if (this.sorter.filtered) return;
-    Promise.all([this.getPosts(0), this.getCategories()]).then(() => {
+    Promise.all([this.getPosts(this.pagination.currentPage), this.getCategories()]).then(() => {
       setTimeout(() => {
         this.showSkeleton = false;
       }, 500);
