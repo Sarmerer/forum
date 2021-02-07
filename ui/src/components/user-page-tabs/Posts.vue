@@ -158,6 +158,13 @@ import api from "@/api/api";
 
 export default {
   name: "PostsTab",
+  watch: {
+    "$route.params.userID": function(id) {
+      if (!id) return;
+      this.posts = [];
+      this.getPosts();
+    },
+  },
   data() {
     return {
       posts: [],

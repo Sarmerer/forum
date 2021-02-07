@@ -4,14 +4,30 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/repository/crud"
 	"github.com/sarmerer/forum/api/response"
+	"github.com/sarmerer/forum/api/services/ratelimiter"
 	"github.com/sarmerer/forum/api/utils"
 )
+
+func RateLimit(capacity int, timeLimit time.Duration, cooldown time.Duration) func(http.HandlerFunc) http.HandlerFunc {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var ip string = getUserIPAddress(r)
+
+			if ratelimiter.LimitExceeded(ip, capacity, timeLimit, cooldown) {
+				response.Error(w, http.StatusTooManyRequests, errors.New("you have been rate limited"))
+			} else {
+				next(w, r)
+			}
+		})
+	}
+}
 
 // SetContext middleware adds requestor's ID and role to the request,
 //which is later used to identify requestor as user

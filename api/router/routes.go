@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/sarmerer/forum/api/config"
 	"github.com/sarmerer/forum/api/controllers"
@@ -15,6 +16,14 @@ type route struct {
 	MinRole  int
 	NeedAuth bool
 	Activity bool
+
+	RateLimit limit
+}
+
+type limit struct {
+	Requests int
+	PerTime  time.Duration
+	Cooldown time.Duration
 }
 
 // SetupRoutes sets handlers with middleware chains to API routes
@@ -25,6 +34,10 @@ func (mux *Router) SetupRoutes() {
 			middleware.Logger,
 			middleware.SetHeaders,
 			middleware.SetContext,
+		}
+		if (limit{} != route.RateLimit) {
+			limiter := middleware.RateLimit(route.RateLimit.Requests, route.RateLimit.PerTime, route.RateLimit.Cooldown)
+			seq = append(seq, limiter)
 		}
 		if route.NeedAuth {
 			seq = append(seq, middleware.AuthorizedOnly)
@@ -56,25 +69,28 @@ var apiRoutes = []route{
 		NeedAuth: false,
 	},
 	{
-		URI:      "/api/auth/verify",
-		Handler:  controllers.VerifyEmail,
-		Method:   http.MethodPost,
-		MinRole:  config.RoleUser,
-		NeedAuth: false,
+		URI:       "/api/auth/verify",
+		Handler:   controllers.VerifyEmail,
+		Method:    http.MethodPost,
+		MinRole:   config.RoleUser,
+		NeedAuth:  false,
+		RateLimit: limit{Requests: 3, PerTime: time.Second},
 	},
 	{
-		URI:      "/api/auth/send-verification",
-		Handler:  controllers.SendVerification,
-		Method:   http.MethodPost,
-		MinRole:  config.RoleUser,
-		NeedAuth: false,
+		URI:       "/api/auth/send-verification",
+		Handler:   controllers.SendVerification,
+		Method:    http.MethodPost,
+		MinRole:   config.RoleUser,
+		NeedAuth:  false,
+		RateLimit: limit{Requests: 1, PerTime: time.Minute, Cooldown: 1 * time.Minute},
 	},
 	{
-		URI:      "/api/auth/signin",
-		Handler:  controllers.SignIn,
-		Method:   http.MethodPost,
-		MinRole:  config.RoleUser,
-		NeedAuth: false,
+		URI:       "/api/auth/signin",
+		Handler:   controllers.SignIn,
+		Method:    http.MethodPost,
+		MinRole:   config.RoleUser,
+		NeedAuth:  false,
+		RateLimit: limit{Requests: 10, PerTime: time.Minute, Cooldown: 2 * time.Minute},
 	},
 	{
 		URI:      "/api/auth/signup",

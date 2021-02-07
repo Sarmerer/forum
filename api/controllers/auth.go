@@ -96,6 +96,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		input          models.InputUserSignUp
 		hashedPassword string
 		admintToken    string = os.Getenv("ADMIN_TOKEN")
+		verifiedState  bool
 		newUser        *models.User
 		status         int
 		err            error
@@ -115,6 +116,10 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !config.RequireEmailVerification {
+		verifiedState = true
+	}
+
 	user := models.User{
 		Username:  input.Login,
 		Password:  hashedPassword,
@@ -123,7 +128,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Alias:     input.Login,
 		SessionID: "",
 		Role:      config.RoleUser,
-		Verified:  false,
+		Verified:  verifiedState,
 	}
 
 	// This line compares environment variable with name ADMMIN_TOKEN,
@@ -138,9 +143,11 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = emailverification.Manager.SendVerificationEmail(newUser); err != nil {
-		response.Error(w, http.StatusInternalServerError, err)
-		return
+	if config.RequireEmailVerification {
+		if err = emailverification.Manager.SendVerificationEmail(newUser); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			return
+		}
 	}
 
 	response.Success(w, "email sent", nil)

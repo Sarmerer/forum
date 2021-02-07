@@ -161,7 +161,7 @@ export default {
           id: this.userID,
         })
         .then((response) => {
-          this.user = response.data.data;
+          this.user = response?.data?.data;
           this.prevUserID = this.user.id;
           document.title = this.user.alias;
         })

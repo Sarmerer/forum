@@ -32,9 +32,10 @@ const (
 
 	GCInterval = 24 * time.Hour // GCInterval defines the interval after which garbage collector will run
 
-	SessionCookieName           = "sid" // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
-	SessionCookieDomain         = ".sarmerer.ml"
-	SessionExpiration           = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
+	SessionCookieName   = "sid" // SessionCookieName defines the name of the session cookie, which will be stored in client's cookie-jar
+	SessionCookieDomain = ".sarmerer.ml"
+	SessionExpiration   = 2 * 24 * time.Hour // SessionExpiration defines the session cookie life time
+
 	VerificationCodeExpiriation = 10 * time.Minute
 
 	MaxImageUploadSize = 2 * 1024 * 1024
@@ -52,7 +53,8 @@ var (
 	// instead of clientURLDev, to set CORS header Allow-Origin.
 	// It is required for session auth to work properly.
 	// Production mode can be activated with --prod flag, when starting the app.
-	Production = false
+	Production               = false
+	RequireEmailVerification = false
 )
 
 func Init() {
@@ -60,5 +62,6 @@ func Init() {
 		ClientURL = clientURLProd
 		APIURL = apiURLProd
 		APIPort = apiPortProd
+		RequireEmailVerification = true
 	}
 }

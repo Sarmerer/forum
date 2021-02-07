@@ -155,7 +155,11 @@ export default {
       return this.contentLength <= this.maxContentLength;
     },
     validImage() {
-      return this.contentType === "image" ? this.selectedImage != null : true;
+      return this.contentType === "image"
+        ? this.imagePreview
+          ? true
+          : this.selectedImage != null
+        : true;
     },
   },
   data() {

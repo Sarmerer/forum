@@ -5,7 +5,6 @@
       @click="$emit('sort-event')"
       :disabled="sorter.throttled"
       class="mx-2"
-      v-b-tooltip.hover
       :title="sorter.asc ? 'Ascending' : 'Descending'"
     >
       <b-icon :icon="sorter.asc ? 'sort-up' : 'sort-down-alt'"> </b-icon>
@@ -16,7 +15,6 @@
         :key="filter.orderBy"
         :disabled="sorter.throttled || sorter.orderBy === filter.orderBy"
         @click="$emit('order-event', filter.orderBy)"
-        v-b-tooltip.hover
         :title="`${sorter.asc ? 'Most' : 'Least'} ${filter.title}`"
         :variant="sorter.orderBy == filter.orderBy ? 'info' : 'dark'"
       >

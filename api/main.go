@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/sarmerer/forum/api/config"
-	"github.com/sarmerer/forum/api/gc"
 	"github.com/sarmerer/forum/api/logger"
 	"github.com/sarmerer/forum/api/repository"
 	"github.com/sarmerer/forum/api/router"
+	"github.com/sarmerer/forum/api/services/garbagecollector"
 	"github.com/sarmerer/forum/api/utils"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -18,9 +18,6 @@ import (
 // Init does necessary preparations to successfully run the API
 func Init() {
 	log.Println("Starting server...")
-
-	gc.Start()
-	logger.InitLogs("Garbage collector", nil)
 
 	var err error
 	err = utils.SetupEnv()
@@ -31,6 +28,9 @@ func Init() {
 
 	err = repository.CheckDBIntegrity()
 	logger.InitLogs("Database integrity", err)
+
+	garbagecollector.Start()
+	logger.InitLogs("Garbage collector", nil)
 
 	flags := utils.ParseFlags(os.Args[1:])
 	for _, flag := range flags {

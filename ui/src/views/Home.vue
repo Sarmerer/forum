@@ -52,10 +52,10 @@
               <b-row class="mx-3 mt-3" v-if="!sorter.filtered && !isMobile()">
                 <b-col>
                   <b-pagination
-                    v-if="pagination.totalPages > pagination.perPage"
+                    v-if="pagination.totalPosts > pagination.postsPerPage"
                     v-model="pagination.currentPage"
-                    :total-rows="pagination.totalPages"
-                    :per-page="pagination.perPage"
+                    :total-rows="pagination.totalPosts"
+                    :per-page="pagination.postsPerPage"
                     aria-controls="posts"
                     @change="handlePageChange"
                     first-number
@@ -63,7 +63,7 @@
                   >
                   </b-pagination>
                 </b-col>
-                <b-col v-if="pagination.totalPages > 1" cols="end">
+                <b-col v-if="pagination.totalPosts > 1" cols="end">
                   <PostFilters
                     v-on:order-event="order($event)"
                     v-on:sort-event="sort()"
@@ -76,14 +76,14 @@
               </b-row>
               <b-container class="mt-2" v-if="!sorter.filtered && isMobile()">
                 <b-row
-                  v-if="pagination.totalPages > pagination.perPage"
+                  v-if="pagination.totalPosts > pagination.postsPerPage"
                   align-h="center"
                   class="mb-2"
                 >
                   <b-pagination
                     v-model="pagination.currentPage"
-                    :total-rows="pagination.totalPages"
-                    :per-page="pagination.perPage"
+                    :total-rows="pagination.totalPosts"
+                    :per-page="pagination.postsPerPage"
                     aria-controls="my-table"
                     @change="handlePageChange"
                     first-number
@@ -91,7 +91,7 @@
                   >
                   </b-pagination>
                 </b-row>
-                <b-row v-if="pagination.totalPages > 1" align-h="center">
+                <b-row v-if="pagination.totalPosts > 1" align-h="center">
                   <PostFilters
                     v-on:order-event="order($event)"
                     v-on:sort-event="sort()"
@@ -340,7 +340,7 @@ export default {
         prevCategories: [],
         filtered: false,
       },
-      pagination: { currentPage: 1, totalPages: 1, perPage: 7 },
+      pagination: { currentPage: 1, totalPosts: 1, postsPerPage: 7 },
       error: {
         show: false,
         status: Number,
@@ -352,7 +352,10 @@ export default {
   },
   activated() {
     if (this.sorter.filtered) return;
-    Promise.all([this.getPosts(0), this.getCategories()]).then(() => {
+    Promise.all([
+      this.getPosts(this.pagination.currentPage),
+      this.getCategories(),
+    ]).then(() => {
       setTimeout(() => {
         this.showSkeleton = false;
       }, 500);
@@ -365,7 +368,7 @@ export default {
     async getPosts(currentPage) {
       return await api
         .post("posts", {
-          per_page: this.pagination.perPage,
+          per_page: this.pagination.postsPerPage,
           current_page: currentPage,
           order_by: this.sorter.orderBy,
           direction: this.sorter?.asc ? "desc" : "asc",
@@ -374,7 +377,7 @@ export default {
           this.error.show = false;
           this.posts = response.data?.data?.hot || [];
           this.recent = response.data?.data?.recent || [];
-          this.pagination.totalPages = response?.data?.data?.total_rows || 0;
+          this.pagination.totalPosts = response?.data?.data?.total_rows || 0;
         })
         .catch((error) => {
           this.posts = [];

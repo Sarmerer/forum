@@ -125,9 +125,14 @@ import api from "@/api/api";
 
 export default {
   name: "CommentsTab",
-  mounted() {
-    this.getComments();
+  watch: {
+    "$route.params.userID": function(id) {
+      if (!id) return;
+      this.comments = [];
+      this.getComments();
+    },
   },
+
   data() {
     return {
       comments: [],
@@ -144,6 +149,9 @@ export default {
       user: "auth/user",
       authenticated: "auth/authenticated",
     }),
+  },
+  mounted() {
+    this.getComments();
   },
   methods: {
     hasPermission(author) {

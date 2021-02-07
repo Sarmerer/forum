@@ -1,7 +1,6 @@
-package gc
+package garbagecollector
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/sarmerer/forum/api/config"
@@ -18,15 +17,18 @@ func Start() {
 }
 
 func garbageCollector() {
+	go closeSessions()
+}
+
+func closeSessions() {
 	var (
 		repo  repository.UserRepo = crud.NewUserRepoCRUD()
 		users []models.User
 		err   error
 	)
 	for {
-		<-time.After(config.GCInterval)
+		time.Sleep(config.GCInterval)
 		deauthedUsers := 0
-		start := time.Now()
 		if users, err = repo.FindAll(); err != nil {
 			logger.CheckErrAndLog("Garbage collector", "", err)
 			return
@@ -39,6 +41,5 @@ func garbageCollector() {
 				deauthedUsers++
 			}
 		}
-		logger.CheckErrAndLog("Garbage collector", fmt.Sprintf("closed %v sessions. Took %s", deauthedUsers, time.Since(start)), nil)
 	}
 }
