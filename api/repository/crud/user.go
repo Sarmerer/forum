@@ -3,7 +3,6 @@ package crud
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -276,7 +275,6 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, error) {
 	var (
 		u   models.User
-		lc  string = strings.Join(logins, "\", \"")
 		err error
 	)
 	if err = repository.DB.QueryRow(
@@ -291,7 +289,7 @@ func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, erro
 				verified,
 				oauth_provider
 		FROM users
-		WHERE (username IN ($1) OR email IN ($1)) AND verified = 1`, lc,
+		WHERE (username IN ($1) OR email IN ($1)) AND verified = 1`, strings.Join(logins, ", "),
 	).Scan(
 		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created,
 		&u.LastActive, &u.Role, &u.Verified, &u.OAuthProvider,
@@ -335,15 +333,13 @@ func (UserRepoCRUD) FindUnverifiedByEmail(email string) (*models.User, int, erro
 }
 
 func (u UserRepoCRUD) Exists(logins []string) (exists bool, err error) {
-	var loginsConcat = strings.Join(logins, "\", \"")
 	if err = repository.DB.QueryRow(
-		fmt.Sprintf(
-			`SELECT EXISTS(
+		`SELECT EXISTS(
 			SELECT 1
 			FROM users
-			WHERE username IN ("%[1]s") OR email IN ("%[1]s")
+			WHERE username IN ($1) OR email IN ($1)
 			LIMIT 1
-			)`, loginsConcat),
+			)`, strings.Join(logins, ", "),
 	).Scan(
 		&exists,
 	); err != nil {

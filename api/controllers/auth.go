@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -86,7 +85,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Set-Cookie", cookie)
-	response.Success(w, fmt.Sprint("user is logged in"), user)
+	response.Success(w, "user is logged in", user)
 }
 
 // SignUp creates new user record in database
@@ -150,9 +149,10 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
+		response.Success(w, "email sent", nil)
+		return
 	}
-
-	response.Success(w, "email sent", nil)
+	response.Success(w, "user created", nil)
 }
 
 // LogOut deletes user session id from database
