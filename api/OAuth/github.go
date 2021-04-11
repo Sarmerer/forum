@@ -50,7 +50,7 @@ func (gh gitHub) Auth(query url.Values, sessionID string) (user *models.User, st
 	if ghUser.Login == "" || ghUser.Email == "" {
 		return nil, http.StatusBadRequest, errors.New("invalid or expired token")
 	}
-	if exists, err = repo.Exists([]string{ghUser.Login, ghUser.Email}); err != nil {
+	if exists, err = repo.Exists(ghUser.Login, ghUser.Email); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 

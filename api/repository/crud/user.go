@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/sarmerer/forum/api/models"
 	"github.com/sarmerer/forum/api/repository"
@@ -272,7 +271,7 @@ func (UserRepoCRUD) Delete(userID int64) (int, error) {
 }
 
 //FindByLoginOrEmail finds a user by name or email in the database
-func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, error) {
+func (UserRepoCRUD) FindByLoginOrEmail(username, email string) (*models.User, int, error) {
 	var (
 		u   models.User
 		err error
@@ -289,7 +288,7 @@ func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, erro
 				verified,
 				oauth_provider
 		FROM users
-		WHERE (username IN ($1) OR email IN ($1)) AND verified = 1`, strings.Join(logins, ", "),
+		WHERE username = $1 OR email = $2 AND verified = 1`, username, email,
 	).Scan(
 		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created,
 		&u.LastActive, &u.Role, &u.Verified, &u.OAuthProvider,
@@ -332,14 +331,13 @@ func (UserRepoCRUD) FindUnverifiedByEmail(email string) (*models.User, int, erro
 	return &u, http.StatusOK, nil
 }
 
-func (u UserRepoCRUD) Exists(logins []string) (exists bool, err error) {
+func (u UserRepoCRUD) Exists(username, email string) (exists bool, err error) {
 	if err = repository.DB.QueryRow(
 		`SELECT EXISTS(
 			SELECT 1
 			FROM users
-			WHERE username IN ($1) OR email IN ($1)
-			LIMIT 1
-			)`, strings.Join(logins, ", "),
+			WHERE username = $1 OR email = $2
+			)`, username, email,
 	).Scan(
 		&exists,
 	); err != nil {

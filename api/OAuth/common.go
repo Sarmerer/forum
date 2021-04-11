@@ -49,7 +49,7 @@ func updateUser(from *oAuthUser, sessionID string) (*models.User, int, error) {
 		err    error
 	)
 
-	if user, status, err = repo.FindByLoginOrEmail([]string{from.Login, from.Email}); err != nil {
+	if user, status, err = repo.FindByLoginOrEmail(from.Login, from.Email); err != nil {
 		return nil, status, err
 	}
 

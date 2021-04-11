@@ -45,7 +45,7 @@ func (g google) Auth(query url.Values, sessionID string) (user *models.User, sta
 	if gUser.Login == "" || gUser.Email == "" {
 		return nil, http.StatusBadRequest, errors.New("invalid or expired token")
 	}
-	if exists, err = repo.Exists([]string{gUser.Login, gUser.Email}); err != nil {
+	if exists, err = repo.Exists(gUser.Login, gUser.Email); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	if exists {

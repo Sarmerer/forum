@@ -5,3 +5,4 @@ database
 ssl
 .env
 tests/test.sql
+main
