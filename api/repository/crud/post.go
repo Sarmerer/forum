@@ -242,17 +242,19 @@ func (PostRepoCRUD) FindByCategories(categories []string, requestorID int64) ([]
 		err    error
 	)
 	if rows, err = repository.DB.Query(
-		fmt.Sprintf(`SELECT p.*
+		`SELECT p.*
 		FROM posts_categories_bridge AS pcb
 		INNER JOIN posts as p ON p._id = pcb.post_id_fkey
 		INNER JOIN categories AS c ON c._id = pcb.category_id_fkey
-		WHERE c.name IN (%s)
+		WHERE c.name IN ($1)
 		GROUP BY p._id
-		HAVING COUNT(DISTINCT c._id) = $1`, fmt.Sprintf("\"%s\"", strings.Join(categories, "\", \""))),
+		HAVING COUNT(DISTINCT c._id) = $2`,
+		strings.Join(categories, ", "),
 		len(categories),
 	); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
+
 	for rows.Next() {
 		var p models.Post
 		rows.Scan(&p.ID, &p.AuthorID, &p.Title, &p.Content,

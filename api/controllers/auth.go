@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/sarmerer/forum/api/OAuth"
@@ -124,7 +126,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		Username:  input.Login,
 		Password:  hashedPassword,
 		Email:     input.Email,
-		Avatar:    fmt.Sprintf("https://avatars.dicebear.com/api/male/%s.svg", input.Login),
+		Avatar:    url.PathEscape(path.Join("https://avatars.dicebear.com/api/male/", input.Login, ".svg")),
 		Alias:     input.Login,
 		SessionID: "",
 		Role:      config.RoleUser,

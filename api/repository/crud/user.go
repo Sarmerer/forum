@@ -280,8 +280,7 @@ func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, erro
 		err error
 	)
 	if err = repository.DB.QueryRow(
-		fmt.Sprintf(
-			`SELECT _id,
+		`SELECT _id,
 				username,
 	   			email,
 	   			avatar,
@@ -292,7 +291,7 @@ func (UserRepoCRUD) FindByLoginOrEmail(logins []string) (*models.User, int, erro
 				verified,
 				oauth_provider
 		FROM users
-		WHERE (username IN ("%[1]s") OR email IN ("%[1]s")) AND verified = 1`, lc),
+		WHERE (username IN ($1) OR email IN ($1)) AND verified = 1`, lc,
 	).Scan(
 		&u.ID, &u.Username, &u.Email, &u.Avatar, &u.Alias, &u.Created,
 		&u.LastActive, &u.Role, &u.Verified, &u.OAuthProvider,

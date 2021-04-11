@@ -24,6 +24,9 @@ func (i *InputAllPosts) Validate() {
 	if i.PerPage < 1 {
 		i.PerPage = 7
 	}
+	if i.PerPage > 20 {
+		i.PerPage = 20
+	}
 }
 
 func (i InputUserSignUp) Validate() error {
@@ -80,6 +83,9 @@ func (i *InputFindComments) Validate() {
 	}
 	if i.Limit < 1 {
 		i.Limit = 10
+	}
+	if i.Limit > 100 {
+		i.Limit = 100
 	}
 }
 
