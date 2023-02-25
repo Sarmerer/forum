@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.4
-	github.com/sarmerer/forum v0.0.0-20201019125805-646f27d7dba2 // indirect
 	github.com/satori/go.uuid v1.2.0
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+	golang.org/x/crypto v0.1.0
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
